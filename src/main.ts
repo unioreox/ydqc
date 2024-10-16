@@ -8,7 +8,7 @@ import router from './router'
 
 // vant 组件库
 import 'vant/lib/index.css';
-import {Button, NavBar} from "vant";
+import {Button, NavBar, Tabbar, TabbarItem} from "vant";
 
 const app = createApp(App)
 
@@ -18,5 +18,7 @@ app.use(router)
 // 注册组件
 app.use(Button);
 app.use(NavBar);
+app.use(Tabbar);
+app.use(TabbarItem);
 
 app.mount('#app')
