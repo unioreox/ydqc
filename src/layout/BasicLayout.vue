@@ -13,5 +13,8 @@ import BottomBar from "@/components/BottomBar.vue";
 </template>
 
 <style scoped>
-
+.app-container {
+  height: 100vh;
+  width: 100%;
+}
 </style>

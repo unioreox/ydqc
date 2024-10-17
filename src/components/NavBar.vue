@@ -25,7 +25,6 @@ const updateNavBar = () => {
 
       // 在父路由的子路由中寻找匹配，确保组合路径的正确性
       childRoute = r.children?.find(c => route.path === `${r.path}${c.path !== "" ? "/" + c.path : ""}`);
-      console.log(childRoute);
     }
   }
 

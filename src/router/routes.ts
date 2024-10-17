@@ -27,6 +27,22 @@ const routes = [
         ]
     },
     {
+        path: '/leaderboard',
+        name: '排行榜',
+        component: () => import('../layout/BasicLayout.vue'),
+        meta: {
+            icon: 'bar-chart-o',
+            hideInMenu: false
+        },
+        children: [
+            {
+                path: '',
+                name: '排行榜',
+                component: () => import(/* webpackChunkName: "LeaderBoard" */'@/views/leaderBoard/LeaderBoardView.vue')
+            }
+        ]
+    },
+    {
         path: '/user',
         name: '我的',
         component: () => import( '../layout/BasicLayout.vue'),
@@ -46,6 +62,14 @@ const routes = [
                 component: () => import(/* webpackChunkName: "UserInfo" */'@/views/user/UserInfoView.vue')
             }
         ]
+    },
+    {
+        path: "/login",
+        name: "登录",
+        component: () => import("@/views/login/LoginView.vue"),
+        meta: {
+            hideInMenu: true
+        }
     }
 ]
 

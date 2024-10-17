@@ -19,6 +19,6 @@ app.use(router)
 app.use(Button);
 app.use(NavBar);
 app.use(Tabbar);
-app.use(TabbarItem);
+app.use(TabbarItem);   
 
 app.mount('#app')

@@ -13,7 +13,7 @@ const activeRoute = (path: string) => {
 };
 
 // 过滤掉 `hideInMenu` 为 true 的路由
-const visibleRoutes = computed(() => routes.filter(route => !route.meta.hideInMenu));
+const visibleRoutes = computed(() => routes.filter(route => !route.meta?.hideInMenu));
 
 // 页面加载时设置当前激活的项目
 onMounted(() => {
@@ -32,7 +32,7 @@ onMounted(() => {
           replace
           :key="index"
           :to="route.path"
-          :icon="route.meta.icon">
+          :icon="route.meta?.icon">
         <span v-if="route.name">{{ route.name }}</span>
       </van-tabbar-item>
     </van-tabbar>

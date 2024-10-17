@@ -12,3 +12,7 @@ a {
 ul, ol {
     list-style: none;
 }
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
