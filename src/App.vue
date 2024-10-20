@@ -19,21 +19,20 @@ onMounted(() => {
     if (res.data) {
       wx.config({
         debug: import.meta.env.MODE === 'development',
-        appId: res.data.appId!,
-        timestamp: +res.data.timestamp!,
-        nonceStr: res.data.nonceStr!,
-        signature: res.data.signature!,
+        appId: res.data.data?.appId!,
+        timestamp: +res.data.data?.timestamp!,
+        nonceStr: res.data.data?.nonceStr!,
+        signature: res.data.data?.signature!,
         jsApiList: ['getLocation', 'onMenuShareAppMessage', 'onMenuShareTimeline']
       });
-    }
-  }).then(() => {
-    wx.ready(() => {
-      if (import.meta.env.MODE === 'development') {
+      wx.ready(() => {
         showNotify("微信 js-sdk 配置成功")
-      }
-      console.log('微信 js-sdk 配置成功')
-    })
-  })
+      })
+      wx.error((res) => {
+        showNotify("微信 js-sdk 配置失败:" + res.errMsg, {type: 'danger'})
+      })
+    }
+  });
 })
 </script>
 

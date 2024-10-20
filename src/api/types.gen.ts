@@ -47,7 +47,7 @@ export type ApiResponseRecordVO = {
 };
 
 export type RecordVO = {
-    status?: 'PENDING' | 'FINISHED' | 'CANCELED';
+    status?: 'PENDING' | 'FINISHED' | 'CANCELLED';
     progress?: number;
     startTime?: string;
     halfTime?: string;
@@ -58,7 +58,13 @@ export type RecordVO = {
     totalMilliseconds?: string;
 };
 
-export type status = 'PENDING' | 'FINISHED' | 'CANCELED';
+export type status = 'PENDING' | 'FINISHED' | 'CANCELLED';
+
+export type ApiResponseWxConfig = {
+    code?: number;
+    msg?: string;
+    data?: WxConfig;
+};
 
 export type WxConfig = {
     appId?: string;
@@ -160,7 +166,7 @@ export type GetWxConfigData = {
     };
 };
 
-export type GetWxConfigResponse = (WxConfig);
+export type GetWxConfigResponse = (ApiResponseWxConfig);
 
 export type GetWxConfigError = unknown;
 

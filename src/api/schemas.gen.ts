@@ -131,7 +131,7 @@ export const RecordVOSchema = {
     properties: {
         status: {
             type: 'string',
-            enum: ['PENDING', 'FINISHED', 'CANCELED']
+            enum: ['PENDING', 'FINISHED', 'CANCELLED']
         },
         progress: {
             type: 'integer',
@@ -162,6 +162,22 @@ export const RecordVOSchema = {
         },
         totalMilliseconds: {
             type: 'string'
+        }
+    }
+} as const;
+
+export const ApiResponseWxConfigSchema = {
+    type: 'object',
+    properties: {
+        code: {
+            type: 'integer',
+            format: 'int32'
+        },
+        msg: {
+            type: 'string'
+        },
+        data: {
+            '$ref': '#/components/schemas/WxConfig'
         }
     }
 } as const;

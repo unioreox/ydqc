@@ -78,7 +78,7 @@ const fetchCollegeUsers = async () => {
 
       <van-tabs v-model:active="current" :before-change="beforeChange"
                 sticky animated swipeable class="custom-tabs">
-        <van-tab title="Top 30">
+        <van-tab title="最佳成绩 Top 30">
           <div class="px-4 py-2 bg-gray-100 text-gray-700 font-semibold flex">
             <span class="w-1/6 text-center"> 排名 </span>
             <span class="w-2/6 pl-14"> 姓名 </span>
@@ -103,7 +103,7 @@ const fetchCollegeUsers = async () => {
             </li>
           </ul>
         </van-tab>
-        <van-tab title="完成次数">
+        <van-tab title="完成次数 Top 10">
           <div class="px-4 py-2 bg-gray-100 text-gray-700 font-semibold flex">
             <span class="w-1/6 text-center"> 排名 </span>
             <span class="w-2/6 pl-14"> 姓名 </span>
@@ -128,7 +128,7 @@ const fetchCollegeUsers = async () => {
             </li>
           </ul>
         </van-tab>
-        <van-tab title="学院排名">
+        <van-tab title="学院人次 Top 10">
           <div class="px-4 py-2 bg-gray-100 text-gray-700 font-semibold flex">
             <span class="w-1/6 text-center"> 排名 </span>
             <span class="w-2/6 pl-14"> 学院 </span>
