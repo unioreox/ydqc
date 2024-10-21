@@ -1,13 +1,9 @@
 <script setup lang="ts">
-import {infoApi} from "@/api";
 
-infoApi().then(res => {
-  console.log(res.data)
-})
 </script>
 
 <template>
-111
+
 </template>
 
 <style scoped>

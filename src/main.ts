@@ -23,7 +23,8 @@ import {
     Circle,
     Step,
     Steps,
-    Popup
+    Popup,
+    CellGroup
 } from "vant";
 
 const app = createApp(App)
@@ -47,6 +48,7 @@ app.use(Circle);
 app.use(Step);
 app.use(Steps);
 app.use(Popup);
+app.use(CellGroup);
 
 // 请求库配置相关
 import "@/api/config";

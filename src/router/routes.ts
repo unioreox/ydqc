@@ -70,6 +70,21 @@ const routes = [
         meta: {
             hideInMenu: true
         }
+    },
+    {
+        path: "/finish",
+        name: "恭喜完成",
+        component: () => import("@/layout/BasicLayout.vue"),
+        meta: {
+            hideInMenu: true
+        },
+        children: [
+            {
+                path: "",
+                name: "恭喜完成",
+                component: () => import("@/views/finish/FinishView.vue"),
+            }
+        ]
     }
 ]
 

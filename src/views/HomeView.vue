@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import {ref, onMounted, computed} from 'vue'
+import {computed, onMounted, ref} from 'vue'
 import {showNotify} from 'vant'
 import AMapLoader from "@amap/amap-jsapi-loader";
 import 'vant/es/notify/style'
 import init, {RsaEncryptor} from "@/util/rsa_wasm";
-import {doCheckin, getLastRecord, infoApi, listRecord, loginApi, type RecordVO} from "@/api";
+import {doCheckin, getLastRecord, infoApi, loginApi, type RecordVO} from "@/api";
 import md5 from "md5";
 import router from "@/router";
 import {useUserStore} from "@/stores/user";
@@ -14,7 +14,7 @@ import wx from "weixin-js-sdk";
 const userStore = useUserStore();
 const curRecord = ref<RecordVO>({
   "status": "PENDING",
-  "progress": 1,
+  "progress": 0,
   "startTime": "",
   "halfTime": "",
   "endTime": "",
@@ -31,6 +31,7 @@ const canCheckIn = ref(false)
 const showSuccessPopup = ref(false)
 const map = ref(null);
 const isLoading = ref(true);
+const isSubmitting = ref(false)
 
 const checkInButtonText = computed(() => {
   const steps = ['起点打卡', '中途打卡', '终点打卡']
@@ -52,15 +53,26 @@ const form = ref<Form>({
 /**
  * 获取最后一条记录，如果有未完成的记录，提示用户继续
  */
-const getLastRecordHandle = () => {
+const getLastRecordHandle = async () => {
   getLastRecord().then(res => {
     console.log(res.data)
     if (res.data?.data) {
       if (res.data.data.status === "PENDING") {
+        console.log("回填未完成的记录")
         showNotify({type: 'info', message: '您有未完成的挑战，请继续'})
         // 更新当前记录
         curRecord.value = res.data.data
+        // 更新当前步骤
+        currentStep.value = res.data.data.progress
+        // 更新表单的类型
+        if (res.data.data.progress !== 3) {
+          form.value.type = res.data.data.progress + 1
+        } else {
+          form.value.type = 1
+        }
       } else {
+        curRecord.value.progress = 0
+        currentStep.value = 0
         showNotify({type: 'success', message: '点击发起挑战或者再次挑战！😏'})
       }
     }
@@ -110,16 +122,12 @@ async function encryptDataAndCheckInHandle() {
   // 生成 state
   const state = md5(timestamp + salt);
 
-  doCheckin({
+  return await doCheckin({
     body: {
       data: encrypted,
       state: state,
       timestamp: timestamp + "",
     }
-  }).then(res => {
-    return res.data;
-  }).catch(err => {
-    return null;
   });
 }
 
@@ -167,11 +175,13 @@ const updateLocation = () => {
 }
 
 const performCheckIn = async () => {
+  if (isSubmitting.value) {
+    return;
+  }
+  isSubmitting.value = true;
   try {
     const result = await encryptDataAndCheckInHandle();
-    if (result.data.code === 0) {
-      currentStep.value++
-      form.value.type < 3 ? form.value.type++ : form.value.type = 1
+    if (result.data?.code === 0) {
       showSuccessPopup.value = true
       await getLastRecordHandle();
       if (currentStep.value === 3) {
@@ -179,7 +189,10 @@ const performCheckIn = async () => {
       }
     }
   } catch (error) {
+    alert(error)
     showNotify({type: 'danger', message: '打卡失败，请重试'})
+  } finally {
+    isSubmitting.value = false;
   }
 }
 
@@ -213,7 +226,7 @@ loginAndGetInfoHandle();
 onMounted(async () => {
   try {
     await getLastRecordHandle()
-    currentStep.value = curRecord.value.progress - 1
+    console.log('当前进度', currentStep.value)
     initMap()
     updateLocation()
   } catch (error) {
@@ -259,24 +272,25 @@ onMounted(async () => {
           size="large"
           :disabled="!canCheckIn"
           @click="performCheckIn"
+          :loading="isSubmitting"
       >
         {{ checkInButtonText }}
       </van-button>
     </div>
 
     <van-popup v-model:show="showSuccessPopup" round position="bottom">
-      <div class="p-6 text-center" v-if="form.type === 1">
+      <div class="p-6 text-center" v-if="curRecord.progress === 1">
         <van-icon name="success" size="48" color="#07c160"/>
         <h2 class="mt-4 text-xl font-bold"> 打卡成功！</h2>
-        <p class="mt-2"> 继续前进到下一个检查点 </p>
+        <p class="mt-2"> 欢迎你加入“FUN 山越岭”登山挑战赛！迈开步子，顶峰相见！ </p>
         <van-button type="primary" block class="mt-4" @click="closeSuccessPopup">
           确定
         </van-button>
       </div>
-      <div class="p-6 text-center" v-else-if="form.type === 2">
+      <div class="p-6 text-center" v-else-if="curRecord.progress === 2">
         <van-icon name="success" size="48" color="#07c160"/>
         <h2 class="mt-4 text-xl font-bold"> 打卡成功！</h2>
-        <p class="mt-2"> 继续前进到下一个检查点 </p>
+        <p class="mt-2"> 遵道而行, 但到半途须努力; 会心不远, 要登绝顶莫辞劳！嗨起来！小团子为你打 call！</p>
         <van-button type="primary" block class="mt-4" @click="closeSuccessPopup">
           确定
         </van-button>
@@ -284,9 +298,9 @@ onMounted(async () => {
       <div class="p-6 text-center" v-else>
         <van-icon name="success" size="48" color="#07c160"/>
         <h2 class="mt-4 text-xl font-bold"> 打卡成功！</h2>
-        <p class="mt-2"> 继续前进到下一个检查点 </p>
+        <p class="mt-2"> 恭喜你完成挑战 </p>
         <van-button type="primary" block class="mt-4" @click="closeSuccessPopup">
-          确定
+          前往统计页面
         </van-button>
       </div>
     </van-popup>
