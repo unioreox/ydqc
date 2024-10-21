@@ -65,6 +65,11 @@ const routes = [
                 path: 'records',
                 name: '记录查询',
                 component: () => import(/* webpackChunkName: "UserRecords" */'@/views/user/UserRecordsView.vue')
+            },
+            {
+                path: 'edit',
+                name: '修改资料',
+                component: () => import(/* webpackChunkName: "UserEdit" */'@/views/user/UserEditView.vue')
             }
         ]
     },

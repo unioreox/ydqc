@@ -24,7 +24,8 @@ import {
     Step,
     Steps,
     Popup,
-    CellGroup
+    CellGroup,
+    Field
 } from "vant";
 
 const app = createApp(App)
@@ -49,6 +50,7 @@ app.use(Step);
 app.use(Steps);
 app.use(Popup);
 app.use(CellGroup);
+app.use(Field);
 
 // 请求库配置相关
 import "@/api/config";
