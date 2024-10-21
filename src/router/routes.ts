@@ -60,6 +60,11 @@ const routes = [
                 path: 'profile',
                 name: '个人信息',
                 component: () => import(/* webpackChunkName: "UserInfo" */'@/views/user/UserInfoView.vue')
+            },
+            {
+                path: 'records',
+                name: '记录查询',
+                component: () => import(/* webpackChunkName: "UserRecords" */'@/views/user/UserRecordsView.vue')
             }
         ]
     },

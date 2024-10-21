@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {useUserStore} from "@/stores/user";
-import {computed} from 'vue';
+import { roleText, idLabel } from "@/util/user";
 import {
   User as UserIcon,
   Award,
@@ -11,30 +11,6 @@ import {
 import {infoApi} from "@/api";
 
 const {user} = useUserStore();
-
-// 不用三元，而是每个都判断，因为有 ADMIN 和 BANNED
-const roleText = computed(() => {
-  if (user?.role === 'ADMIN') {
-    return '管理员';
-  } else if (user?.role === 'TEACHER') {
-    return '教师';
-  } else if (user?.role === 'STUDENT') {
-    return '学生';
-  } else if (user?.role === 'BANNED') {
-    return '封禁用户';
-  }
-});
-const idLabel = computed(() => {
-  if (user?.role === 'ADMIN') {
-    return '管理员ID';
-  } else if (user?.role === 'TEACHER') {
-    return '职工号';
-  } else if (user?.role === 'STUDENT') {
-    return '学号';
-  } else if (user?.role === 'BANNED') {
-    return 'ID';
-  }
-});
 </script>
 
 <template>
