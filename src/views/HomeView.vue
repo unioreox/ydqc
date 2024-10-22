@@ -4,7 +4,7 @@ import {showNotify} from 'vant'
 import AMapLoader from "@amap/amap-jsapi-loader";
 import 'vant/es/notify/style'
 import init, {RsaEncryptor} from "@/util/rsa_wasm";
-import {doCheckin, getLastRecord, infoApi, loginApi, type RecordVO} from "@/api";
+import {type CheckPoint, doCheckin, getLastRecord, infoApi, listCheckPoint, loginApi, type RecordVO} from "@/api";
 import md5 from "md5";
 import router from "@/router";
 import {useUserStore} from "@/stores/user";
@@ -14,9 +14,7 @@ import wx from "weixin-js-sdk";
 const userStore = useUserStore();
 const curRecord = ref<RecordVO>({
   "status": "PENDING",
-  "progress": 0,
   "startTime": "",
-  "halfTime": "",
   "endTime": "",
   "isValid": true,
   "createdAt": "",
@@ -32,10 +30,11 @@ const showSuccessPopup = ref(false)
 const map = ref(null);
 const isLoading = ref(true);
 const isSubmitting = ref(false)
+const checkPoints = ref<CheckPoint[]>([])
+const matchedPoint = ref<CheckPoint | undefined>({})
 
 const checkInButtonText = computed(() => {
-  const steps = ['起点打卡', '中途打卡', '终点打卡']
-  return currentStep.value < 3 ? steps[currentStep.value] : '挑战完成'
+  return currentStep.value === 0 ? '起点打卡' : '终点打卡'
 })
 
 interface Form {
@@ -57,37 +56,60 @@ const getLastRecordHandle = async () => {
   getLastRecord().then(res => {
     console.log(res.data)
     if (res.data?.data) {
-      if (res.data.data.status === "PENDING") {
+      const lastRecord = res.data.data;
+
+      if (lastRecord.status === "PENDING") {
         console.log("回填未完成的记录")
-        showNotify({type: 'info', message: '您有未完成的挑战，请继续'})
+        showNotify({type: 'success', message: '检测到你有未完成的记录，继续挑战吧！'})
         // 更新当前记录
-        curRecord.value = res.data.data
+        curRecord.value = lastRecord
         // 更新当前步骤
-        currentStep.value = res.data.data.progress
-        // 更新表单的类型
-        if (res.data.data.progress !== 3) {
-          form.value.type = res.data.data.progress + 1
-        } else {
-          form.value.type = 1
-        }
+        currentStep.value = 1 // 引导用户终点打卡
       } else {
-        curRecord.value.progress = 0
-        currentStep.value = 0
+        currentStep.value = 0 // 引导用户起点打卡
+        form.value.type = checkPoints.value.find(point => !point.isEnd)?.id || 1 // 设置为起点打卡
         showNotify({type: 'success', message: '点击发起挑战或者再次挑战！😏'})
       }
     }
   });
 }
 
-const initMap = () => {
+/**
+ * 在地图上画圈
+ */
+const drawCircleHandle = async () => {
+  // 在地图上画圈
+  checkPoints.value.forEach(point => {
+    // wgs84 转 gcj02
+    AMap.convertFrom([point.longitude, point.latitude], 'gps', function (status, result) {
+      if (result.info === 'ok') {
+        const gcj02Point = result.locations[0];
+        new AMap.Circle({
+          center: new AMap.LngLat(gcj02Point.lng, gcj02Point.lat),
+          radius: 50, // 50 米范围
+          strokeColor: "#0038ff", // 线颜色
+          strokeOpacity: 1, // 线透明度
+          strokeWeight: 3, // 线宽
+          fillColor: "#8da4ff", // 填充颜色
+          fillOpacity: 0.35 // 填充透明度
+        }).setMap(map.value);
+      }
+    });
+  });
+}
+
+/**
+ * 初始化地图
+ */
+const initMap = async () => {
   window._AMapSecurityConfig = {
     securityJsCode: "cef01e97e3b8139773127f9e1ed9a134",
   };
   AMapLoader.load({
     key: "70312d47b8803ec59bf0d7b70560cb19",
     version: "2.0",
-    plugins: ["AMap.Scale", "AMap.Geocoder"],
-  }).then((AMap) => {
+    plugins: ["AMap.Scale", "AMap.Geocoder", "Amap.Circle"],
+  }).then(async (AMap) => {
     map.value = new AMap.Map("amap-container", {
       viewMode: "3D",
       zoom: 14,
@@ -95,9 +117,20 @@ const initMap = () => {
     });
     console.log("加载高德地图...");
     isLoading.value = false;
-  }).catch((e) => {
-    console.log(e);
   });
+
+}
+
+/**
+ * 获取打卡点的信息和经纬度
+ */
+const getCheckInPointHandle = async () => {
+  listCheckPoint().then(res => {
+    console.log(res.data)
+    checkPoints.value = res.data.data
+    // // 设置初始打卡点类型
+    // form.value.type = checkPoints.value.find(point => !point.isEnd)?.id || 1
+  })
 }
 
 /**
@@ -138,9 +171,26 @@ const updateLocation = () => {
   console.log('更新位置...')
   wx.getLocation({
     type: 'wgs84',
-    success: function (res) {
+    success: async function (res) {
       currentLocation.value = ` 纬度: ${res.latitude}, 经度: ${res.longitude}`
-      canCheckIn.value = true
+
+      // 匹配用户位置和打卡点信息
+      matchedPoint.value = checkPoints.value.find(point => {
+        const distance = AMap.GeometryUtil.distance([res.longitude, res.latitude], [point.longitude, point.latitude]);
+        return distance <= 50; // 50 米范围内
+      });
+
+      console.log('匹配的打卡点', matchedPoint.value)
+
+
+      if (matchedPoint.value !== undefined) {
+        form.value.type = matchedPoint.value?.id;
+        canCheckIn.value = true;
+      } else {
+        canCheckIn.value = false;
+        showNotify({type: 'danger', message: '不在打卡点范围内，请移动到打卡点附近'});
+      }
+
       // 设置表单的经纬度
       form.value.latitude = res.latitude + ""
       form.value.longitude = res.longitude + ""
@@ -166,6 +216,8 @@ const updateLocation = () => {
           }
         });
       }
+
+      await drawCircleHandle();
     },
     fail: function () {
       currentLocation.value = '获取位置失败，请重试'
@@ -184,7 +236,7 @@ const performCheckIn = async () => {
     if (result.data?.code === 0) {
       showSuccessPopup.value = true
       await getLastRecordHandle();
-      if (currentStep.value === 3) {
+      if (currentStep.value === 1) {
         showNotify({type: 'success', message: '恭喜你完成了全部挑战！'})
       }
     }
@@ -222,12 +274,12 @@ const loginAndGetInfoHandle = () => {
 }
 loginAndGetInfoHandle();
 
-
 onMounted(async () => {
   try {
     await getLastRecordHandle()
     console.log('当前进度', currentStep.value)
-    initMap()
+    await initMap()
+    await getCheckInPointHandle()
     updateLocation()
   } catch (error) {
     console.log(error)
@@ -247,23 +299,21 @@ onMounted(async () => {
       欢迎参加 "FUN 山越岭"登山挑战赛！完成三个检查点的打卡，挑战成功！
     </van-notice-bar>
 
-    <div class="mt-6">
-      <van-steps :active="currentStep" active-icon="success" active-color="#07c160">
-        <van-step> 起点打卡</van-step>
-        <van-step> 中途打卡</van-step>
-        <van-step> 终点打卡</van-step>
-      </van-steps>
-    </div>
-
-    <div class="mt-6 bg-white rounded-lg shadow-md p-4">
-      <div id="amap-container" class="h-64 w-full rounded-lg">
+    <div class="mt-6 bg-white rounded-lg shadow-lg p-2 flex space-x-2">
+      <div id="amap-container" class="h-48 w-3/4 rounded-lg overflow-hidden border border-gray-200">
       </div>
-    </div>
-
-    <div class="mt-6 bg-white rounded-lg shadow-md p-4 relative" @click="updateLocation">
-      <h2 class="text-lg font-semibold mb-2"> 当前位置 </h2>
-      <span class="refresh-text text-gray-500"> 点击即可刷新 </span>
-      <p>{{ currentLocation }}</p>
+      <div class="flex-1 space-y-2">
+        <van-steps :active="currentStep" direction="vertical" active-icon="success" active-color="#07c160">
+          <van-step> 起点打卡</van-step>
+          <van-step> 终点打卡</van-step>
+        </van-steps>
+        <div
+            class="p-1 relative bg-gray-50 rounded-lg shadow-inner cursor-pointer hover:bg-gray-100 transition duration-200"
+            @click="updateLocation">
+          <h2 class="text-base text-center text-[0.5rem] font-semibold border-b border-gray-300"> 点击刷新 </h2>
+          <p class="p-1 text-[0.25rem] text-gray-700">{{ currentLocation }}</p>
+        </div>
+      </div>
     </div>
 
     <div class="mt-6 flex justify-center">
@@ -279,18 +329,10 @@ onMounted(async () => {
     </div>
 
     <van-popup v-model:show="showSuccessPopup" round position="bottom">
-      <div class="p-6 text-center" v-if="curRecord.progress === 1">
+      <div class="p-6 text-center" v-if="currentStep === 0">
         <van-icon name="success" size="48" color="#07c160"/>
         <h2 class="mt-4 text-xl font-bold"> 打卡成功！</h2>
         <p class="mt-2"> 欢迎你加入“FUN 山越岭”登山挑战赛！迈开步子，顶峰相见！ </p>
-        <van-button type="primary" block class="mt-4" @click="closeSuccessPopup">
-          确定
-        </van-button>
-      </div>
-      <div class="p-6 text-center" v-else-if="curRecord.progress === 2">
-        <van-icon name="success" size="48" color="#07c160"/>
-        <h2 class="mt-4 text-xl font-bold"> 打卡成功！</h2>
-        <p class="mt-2"> 遵道而行, 但到半途须努力; 会心不远, 要登绝顶莫辞劳！嗨起来！小团子为你打 call！</p>
         <van-button type="primary" block class="mt-4" @click="closeSuccessPopup">
           确定
         </van-button>
@@ -311,12 +353,5 @@ onMounted(async () => {
 .check-in-container {
   max-width: 600px;
   margin: 0 auto;
-}
-
-.refresh-text {
-  position: absolute;
-  font-size: small;
-  top: 0.5rem;
-  right: 0.5rem;
 }
 </style>

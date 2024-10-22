@@ -6,8 +6,6 @@ import {ref} from "vue";
 
 const {user} = useUserStore();
 
-const {user} = useUserStore();
-
 infoApi().then(res => {
   console.log(res);
 })
