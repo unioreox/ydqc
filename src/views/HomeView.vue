@@ -9,6 +9,41 @@ import md5 from "md5";
 import router from "@/router";
 import {useUserStore} from "@/stores/user";
 import wx from "weixin-js-sdk";
+import io from "socket.io-client";
+
+const socket = io("http://localhost:9092");
+
+const socketMessages = ref<string[]>([]);
+const list = ref<any>([]);
+
+socket.on("connect", () => {
+  console.log("连接成功");
+});
+
+socket.on("chat", (msg) => {
+  // 保留最新的 10 条消息
+  if (socketMessages.value.length >= 10) {
+    socketMessages.value.shift();
+  }
+  if (list.value.length >= 10) {
+    list.value.shift();
+  }
+  console.log(msg);
+  socketMessages.value.push(msg);
+  list.value.push({
+    id: Math.random(),
+    text: msg,
+  }); // Add message to barrage list
+});
+
+setInterval(() => {
+  socket.emit("chat", "checkin");
+}, 1000);
+
+const add = () => {
+  list.value.push("新弹幕消息");
+};
+
 
 // 从 store 中获取用户信息，初始化当前记录
 const userStore = useUserStore();
@@ -299,6 +334,25 @@ onMounted(async () => {
       欢迎参加 "FUN 山越岭"登山挑战赛！完成三个检查点的打卡，挑战成功！
     </van-notice-bar>
 
+    <van-notice-bar left-icon="volume-o" :scrollable="false" class="custom-notice-bar">
+      <van-swipe
+          vertical
+          class="notice-swipe"
+          :autoplay="500"
+          :touchable="false"
+          :show-indicators="false"
+      >
+        <van-swipe-item v-for="(msg, index) in socketMessages" :key="index">{{ msg }}</van-swipe-item>
+      </van-swipe>
+    </van-notice-bar>
+
+    <van-barrage v-model="list">
+      <div class="video" style="width: 100%; height: 150px"></div>
+    </van-barrage>
+    <van-space style="margin-top: 10px">
+      <van-button @click="add" type="primary" size="small"> 弹幕</van-button>
+    </van-space>
+
     <div class="mt-6 bg-white rounded-lg shadow-lg p-2 flex space-x-2">
       <div id="amap-container" class="h-48 w-3/4 rounded-lg overflow-hidden border border-gray-200">
       </div>
@@ -353,5 +407,20 @@ onMounted(async () => {
 .check-in-container {
   max-width: 600px;
   margin: 0 auto;
+}
+
+.custom-notice-bar {
+  background-color: #f0f9ff;
+  color: #333;
+  padding: 10px 15px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.notice-swipe {
+  height: 40px;
+  line-height: 40px;
+  font-size: 16px;
+  font-weight: 500;
 }
 </style>

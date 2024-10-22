@@ -122,6 +122,17 @@ export type LeaderBoardVOCollegeCountLeaderBoardVO = {
     lastUpdateTime?: string;
 };
 
+export type ApiResponseListCollegeVO = {
+    code?: number;
+    msg?: string;
+    data?: Array<CollegeVO>;
+};
+
+export type CollegeVO = {
+    id?: number;
+    name?: string;
+};
+
 export type ApiResponseListCheckPoint = {
     code?: number;
     msg?: string;
@@ -201,6 +212,10 @@ export type GetTop30UsersByBestScoreError = unknown;
 export type GetCollegeLeaderBoardResponse = (ApiResponseLeaderBoardVOCollegeCountLeaderBoardVO);
 
 export type GetCollegeLeaderBoardError = unknown;
+
+export type ListCollegeApiResponse = (ApiResponseListCollegeVO);
+
+export type ListCollegeApiError = unknown;
 
 export type ListCheckPointResponse = (ApiResponseListCheckPoint);
 

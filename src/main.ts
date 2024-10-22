@@ -25,7 +25,13 @@ import {
     Steps,
     Popup,
     CellGroup,
-    Field
+    Field,
+    Picker,
+    Form,
+    Swipe,
+    SwipeItem,
+    Barrage,
+    Space
 } from "vant";
 
 const app = createApp(App)
@@ -51,6 +57,12 @@ app.use(Steps);
 app.use(Popup);
 app.use(CellGroup);
 app.use(Field);
+app.use(Picker);
+app.use(Form);
+app.use(Swipe);
+app.use(SwipeItem);
+app.use(Barrage);
+app.use(Space);
 
 // 请求库配置相关
 import "@/api/config";

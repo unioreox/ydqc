@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import {useUserStore} from "@/stores/user";
-import { roleText, idLabel } from "@/util/user";
 import {
   User as UserIcon,
   Award,
@@ -24,14 +23,13 @@ const {user} = useUserStore();
             </div>
           </div>
           <div class="text-center md:text-left">
-            <div class="uppercase tracking-wide text-sm text-indigo-500 font-semibold">{{ user?.college }}&nbsp;&nbsp;&nbsp;
-              {{ roleText }}
+            <div class="uppercase tracking-wide text-sm text-indigo-500 font-semibold">{{ user?.college }}
             </div>
-            <h1 class="text-xl font-bold text-gray-900 mt-2">{{ user?.name }}</h1>
+            <h1 class="text-xl font-bold text-gray-900 mt-2">{{ user?.nickname }}</h1>
             <div class="mt-2 text-gray-500">
               <p class="flex items-center justify-center md:justify-start">
                 <UserIcon class="w-4 h-4 mr-2"/>
-                <span class="font-semibold mr-2">{{ idLabel }}:</span> {{ user?.idNumber }}
+                <span class="font-semibold mr-2"> 学号 / 工号：</span> {{ user?.idNumber }}
               </p>
               <p class="flex items-center justify-center md:justify-start mt-2">
                 <Award class="w-4 h-4 mr-2"/>
@@ -47,17 +45,17 @@ const {user} = useUserStore();
           <h2 class="text-xl font-semibold mb-4"> 快速操作 </h2>
           <div class="space-y-4">
             <RouterLink to="/user/profile"
-               class="flex items-center p-3 text-base font-bold text-gray-900 bg-gray-50 rounded-lg hover:bg-gray-100 group hover:shadow">
+                        class="flex items-center p-3 text-base font-bold text-gray-900 bg-gray-50 rounded-lg hover:bg-gray-100 group hover:shadow">
               <UserIcon class="w-6 h-6"/>
               <span class="flex-1 ml-3 whitespace-nowrap"> 个人信息 </span>
             </RouterLink>
             <RouterLink to="/user/records"
-               class="flex items-center p-3 text-base font-bold text-gray-900 bg-gray-50 rounded-lg hover:bg-gray-100 group hover:shadow">
+                        class="flex items-center p-3 text-base font-bold text-gray-900 bg-gray-50 rounded-lg hover:bg-gray-100 group hover:shadow">
               <FileText class="w-6 h-6"/>
               <span class="flex-1 ml-3 whitespace-nowrap"> 记录查询 </span>
             </RouterLink>
             <RouterLink to="/finish"
-               class="flex items-center p-3 text-base font-bold text-gray-900 bg-gray-50 rounded-lg hover:bg-gray-100 group hover:shadow">
+                        class="flex items-center p-3 text-base font-bold text-gray-900 bg-gray-50 rounded-lg hover:bg-gray-100 group hover:shadow">
               <Share2 class="w-6 h-6"/>
               <span class="flex-1 ml-3 whitespace-nowrap"> 分享参赛信息 </span>
             </RouterLink>

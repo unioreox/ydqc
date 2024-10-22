@@ -340,6 +340,38 @@ export const LeaderBoardVOCollegeCountLeaderBoardVOSchema = {
     }
 } as const;
 
+export const ApiResponseListCollegeVOSchema = {
+    type: 'object',
+    properties: {
+        code: {
+            type: 'integer',
+            format: 'int32'
+        },
+        msg: {
+            type: 'string'
+        },
+        data: {
+            type: 'array',
+            items: {
+                '$ref': '#/components/schemas/CollegeVO'
+            }
+        }
+    }
+} as const;
+
+export const CollegeVOSchema = {
+    type: 'object',
+    properties: {
+        id: {
+            type: 'integer',
+            format: 'int32'
+        },
+        name: {
+            type: 'string'
+        }
+    }
+} as const;
+
 export const ApiResponseListCheckPointSchema = {
     type: 'object',
     properties: {

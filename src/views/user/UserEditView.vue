@@ -1,44 +1,93 @@
 <script setup lang="ts">
-import {ref} from "vue";
+import {onMounted, ref} from "vue";
+import {listCollegeApi, updateApi, type UserUpdateDTO} from "@/api";
+import {showToast} from "vant";
+import router from "@/router";
 
-const updateProfile = ref({
-    name: "",
-    role: "",
-    idNumber: "",
-    college: "",
-    phone: "",
-    org: ""
+const form = ref<UserUpdateDTO>({
+  nickname: "",
+  idNumber: "",
+  college: "",
+  phone: "",
 });
+
+const collegeOptions = ref<any>([]);
+
+const showCollegePopup = ref(false);
+
+const submitProfileHandle = () => {
+  updateApi({
+    body: form.value
+  }).then(res => {
+    if (res.data?.data) {
+      showToast({
+        type: 'success',
+        message: '修改成功'
+      })
+      router.push({
+        name: '个人信息'
+      })
+    }
+  })
+}
+
+onMounted(() => {
+  listCollegeApi().then(res => {
+    // 转换成需要的格式
+    if (res.data?.data) {
+      collegeOptions.value = res.data.data.map((item: any) => {
+        return {
+          text: item.name,
+          value: item.id
+        }
+      })
+    }
+  })
+})
 
 </script>
 
 <template>
-  <div class="edit-container">
-    <div class="bg-gray-100 min-h-screen p-4">
-
-      <van-field :value="updateProfile.name" label="姓名" placeholder="请输入姓名" />
-      <van-cell title="身份">
-        <van-radio-group slot="value" v-model="updateProfile.role" direction="horizontal">
-          <van-radio name="STUDENT" > 学生 </van-radio>
-          <van-radio name="TEACHER"> 教师 </van-radio>
-        </van-radio-group>
-      </van-cell>
-      <van-field :value="updateProfile.idNumber" label="学号/职工号" placeholder="请输入学号/职工号" />
+  <div class="edit-container bg-gray-100 min-h-screen p-4">
+    <van-form class="" @submit="submitProfileHandle">
+      <van-field v-model="form.nickname"
+                 required
+                 :rules="[{required: true, message: '请输入姓名'}]"
+                 label="姓名" placeholder="请输入姓名"/>
+      <van-field v-model="form.idNumber" label="学号/职工号" placeholder="请输入学号/职工号"/>
       <!-- 需要获取学院列表，实现一个学院的选择 -->
-      <van-field :value="updateProfile.college" label="所属学院" placeholder="请选择学院" is-link readonly @click="" />
-      <van-field :value="updateProfile.org" label="所属单位" placeholder="请输入所属单位" />
-      <van-field :value="updateProfile.phone" label="手机号" placeholder="请输入手机号" />
+      <van-field v-model="form.college" required
+                 :rules="[{required: true, message: '请选择学院'}]"
+                 label="所属学院" placeholder="请选择学院" is-link readonly @click="()=>{
+        showCollegePopup = true
+      }"/>
+      <van-popup v-model:show="showCollegePopup" position="bottom" :style="{height: '50%'}">
+        <van-picker
+            title="选择学院"
+            show-toolbar
+            :columns="collegeOptions"
+            @confirm="(e) => {
+              console.log(e.selectedOptions[0].text)
+              form.college = e.selectedOptions[0].text;
+              showCollegePopup = false;
+            }"
+        />
+      </van-popup>
+      <van-field v-model="form.phone" required
+                 :rules="[{required: true, message: '请输入手机号'}]"
+                 label="手机号" placeholder="请输入手机号"/>
 
       <div class="mt-6 flex justify-center">
         <van-button
             type="primary"
             size="large"
+            native-type="submit"
         >
           提交更改
         </van-button>
 
       </div>
-    </div>
+    </van-form>
   </div>
 </template>
 
