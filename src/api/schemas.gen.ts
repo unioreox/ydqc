@@ -39,8 +39,7 @@ export const UserVOSchema = {
     type: 'object',
     properties: {
         id: {
-            type: 'integer',
-            format: 'int64'
+            type: 'string'
         },
         nickname: {
             type: 'string'
@@ -116,6 +115,9 @@ export const ApiResponseRecordVOSchema = {
 export const RecordVOSchema = {
     type: 'object',
     properties: {
+        id: {
+            type: 'string'
+        },
         status: {
             type: 'string',
             enum: ['PENDING', 'FINISHED', 'CANCELLED']
@@ -417,6 +419,22 @@ export const CheckPointSchema = {
         updatedAt: {
             type: 'string',
             format: 'date-time'
+        }
+    }
+} as const;
+
+export const ApiResponseStringSchema = {
+    type: 'object',
+    properties: {
+        code: {
+            type: 'integer',
+            format: 'int32'
+        },
+        msg: {
+            type: 'string'
+        },
+        data: {
+            type: 'string'
         }
     }
 } as const;

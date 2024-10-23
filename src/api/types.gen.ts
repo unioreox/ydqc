@@ -14,7 +14,7 @@ export type ApiResponseUserVO = {
 };
 
 export type UserVO = {
-    id?: number;
+    id?: string;
     nickname?: string;
     avatar?: string;
     isBanned?: boolean;
@@ -41,6 +41,7 @@ export type ApiResponseRecordVO = {
 };
 
 export type RecordVO = {
+    id?: string;
     status?: 'PENDING' | 'FINISHED' | 'CANCELLED';
     startTime?: string;
     endTime?: string;
@@ -149,6 +150,12 @@ export type CheckPoint = {
     updatedAt?: string;
 };
 
+export type ApiResponseString = {
+    code?: number;
+    msg?: string;
+    data?: string;
+};
+
 export type UpdateApiData = {
     body: UserUpdateDTO;
 };
@@ -220,3 +227,13 @@ export type ListCollegeApiError = unknown;
 export type ListCheckPointResponse = (ApiResponseListCheckPoint);
 
 export type ListCheckPointError = unknown;
+
+export type CancelCheckinData = {
+    path: {
+        recordId: string;
+    };
+};
+
+export type CancelCheckinResponse = (ApiResponseString);
+
+export type CancelCheckinError = unknown;

@@ -31,7 +31,9 @@ import {
     Swipe,
     SwipeItem,
     Barrage,
-    Space
+    Space,
+    FloatingBubble,
+    Toast
 } from "vant";
 
 const app = createApp(App)
@@ -63,6 +65,8 @@ app.use(Swipe);
 app.use(SwipeItem);
 app.use(Barrage);
 app.use(Space);
+app.use(FloatingBubble);
+app.use(Toast)
 
 // 请求库配置相关
 import "@/api/config";

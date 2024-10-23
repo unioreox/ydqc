@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import {onMounted, ref} from "vue";
-import {listCollegeApi, updateApi, type UserUpdateDTO} from "@/api";
+import {infoApi, listCollegeApi, updateApi, type UserUpdateDTO} from "@/api";
 import {showToast} from "vant";
-import router from "@/router";
+import {useUserStore} from "@/stores/user";
+import {useRouter} from "vue-router";
+
+const router = useRouter();
 
 const form = ref<UserUpdateDTO>({
   nickname: "",
@@ -15,6 +18,8 @@ const collegeOptions = ref<any>([]);
 
 const showCollegePopup = ref(false);
 
+const {user} = useUserStore();
+
 const submitProfileHandle = () => {
   updateApi({
     body: form.value
@@ -24,9 +29,7 @@ const submitProfileHandle = () => {
         type: 'success',
         message: '修改成功'
       })
-      router.push({
-        name: '个人信息'
-      })
+      router.push("/user/profile")
     }
   })
 }
@@ -43,6 +46,30 @@ onMounted(() => {
       })
     }
   })
+
+  // 如果仓库中的用户信息为空，调用接口获取用户信息
+  if (!user) {
+    infoApi().then(res => {
+      if (res.data?.data) {
+        useUserStore().setUser(res.data.data);
+        if (res.data.data) {
+          form.value = {
+            nickname: res.data.data.nickname,
+            idNumber: res.data.data.idNumber,
+            college: res.data.data.college,
+            phone: res.data.data.phone
+          }
+        }
+      }
+    })
+  } else {
+    form.value = {
+      nickname: user.nickname,
+      idNumber: user.idNumber,
+      college: user.college,
+      phone: user.phone
+    }
+  }
 })
 
 </script>
