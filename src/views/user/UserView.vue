@@ -66,11 +66,11 @@ const {user} = useUserStore();
       <div class="max-w-md mx-auto mt-6 bg-white rounded-xl shadow-md overflow-hidden md:max-w-2xl">
         <div class="p-6">
           <h2 class="text-xl font-semibold mb-4"> 遇到问题？反馈给我们 ~</h2>
-          <a href="/feedback"
+          <RouterLink to="/feedback"
              class="flex items-center p-3 text-base font-bold text-gray-900 bg-gray-50 rounded-lg hover:bg-gray-100 group hover:shadow">
             <MessageSquare class="w-6 h-6"/>
             <span class="flex-1 ml-3 whitespace-nowrap"> 反馈问题 </span>
-          </a>
+          </RouterLink>
         </div>
       </div>
     </div>

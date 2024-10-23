@@ -147,6 +147,46 @@ export const RecordVOSchema = {
     }
 } as const;
 
+export const ApiResponseFeedbackVOSchema = {
+    type: 'object',
+    properties: {
+        code: {
+            type: 'integer',
+            format: 'int32'
+        },
+        msg: {
+            type: 'string'
+        },
+        data: {
+            '$ref': '#/components/schemas/FeedbackVO'
+        }
+    }
+} as const;
+
+export const FeedbackVOSchema = {
+    type: 'object',
+    properties: {
+        id: {
+            type: 'integer',
+            format: 'int64'
+        },
+        nickname: {
+            type: 'string'
+        },
+        content: {
+            type: 'string'
+        },
+        createTime: {
+            type: 'integer',
+            format: 'int64'
+        },
+        updateTime: {
+            type: 'integer',
+            format: 'int64'
+        }
+    }
+} as const;
+
 export const ApiResponseWxConfigSchema = {
     type: 'object',
     properties: {
@@ -338,6 +378,25 @@ export const LeaderBoardVOCollegeCountLeaderBoardVOSchema = {
         },
         lastUpdateTime: {
             type: 'string'
+        }
+    }
+} as const;
+
+export const ApiResponseFeedbackVO__Schema = {
+    type: 'object',
+    properties: {
+        code: {
+            type: 'integer',
+            format: 'int32'
+        },
+        msg: {
+            type: 'string'
+        },
+        data: {
+            type: 'array',
+            items: {
+                '$ref': '#/components/schemas/FeedbackVO'
+            }
         }
     }
 } as const;

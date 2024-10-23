@@ -95,6 +95,21 @@ const routes = [
                 component: () => import("@/views/finish/FinishView.vue"),
             }
         ]
+    },
+    {
+        path: "/feedback",
+        name: "问题反馈",
+        component: () => import("@/layout/BasicLayout.vue"),
+        meta: {
+            hideInMenu: true
+        },
+        children: [
+            {
+                path: "",
+                name: "问题反馈",
+                component: () => import("@/views/feedback/FeedbackView.vue"),
+            }
+        ],
     }
 ]
 

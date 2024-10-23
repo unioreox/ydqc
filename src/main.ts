@@ -33,7 +33,8 @@ import {
     Barrage,
     Space,
     FloatingBubble,
-    Toast
+    Toast,
+    Area
 } from "vant";
 
 const app = createApp(App)
@@ -66,7 +67,8 @@ app.use(SwipeItem);
 app.use(Barrage);
 app.use(Space);
 app.use(FloatingBubble);
-app.use(Toast)
+app.use(Toast);
+app.use(Area);
 
 // 请求库配置相关
 import "@/api/config";

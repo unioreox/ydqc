@@ -53,6 +53,20 @@ export type RecordVO = {
 
 export type status = 'PENDING' | 'FINISHED' | 'CANCELLED';
 
+export type ApiResponseFeedbackVO = {
+    code?: number;
+    msg?: string;
+    data?: FeedbackVO;
+};
+
+export type FeedbackVO = {
+    id?: number;
+    nickname?: string;
+    content?: string;
+    createTime?: number;
+    updateTime?: number;
+};
+
 export type ApiResponseWxConfig = {
     code?: number;
     msg?: string;
@@ -123,6 +137,12 @@ export type LeaderBoardVOCollegeCountLeaderBoardVO = {
     lastUpdateTime?: string;
 };
 
+export type ApiResponseFeedbackVO__ = {
+    code?: number;
+    msg?: string;
+    data?: Array<FeedbackVO>;
+};
+
 export type ApiResponseListCollegeVO = {
     code?: number;
     msg?: string;
@@ -185,6 +205,25 @@ export type DoCheckinData = {
 export type DoCheckinResponse = (ApiResponseRecordVO);
 
 export type DoCheckinError = unknown;
+
+export type GetFeedbackData = {
+    query: {
+        page: number;
+        size: number;
+    };
+};
+
+export type GetFeedbackResponse = (ApiResponseFeedbackVO);
+
+export type GetFeedbackError = unknown;
+
+export type AddFeedbackData = {
+    body: string;
+};
+
+export type AddFeedbackResponse = (ApiResponseFeedbackVO);
+
+export type AddFeedbackError = unknown;
 
 export type GetWxConfigData = {
     query: {
