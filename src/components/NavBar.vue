@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import routes from "@/router/routes";
-import {useRoute} from "vue-router";
-import {ref, watch} from "vue";
+import { useRoute } from "vue-router";
+import { ref, watch } from "vue";
 
 // 当前路由
 const route = useRoute();
@@ -49,10 +49,10 @@ const updateNavBar = () => {
 
 // 监听路由变化，动态更新
 watch(
-    () => route.path,
-    () => {
-      updateNavBar();
-    }
+  () => route.path,
+  () => {
+    updateNavBar();
+  }
 );
 
 // 初始调用更新函数
@@ -65,12 +65,19 @@ const handleBack = () => {
 </script>
 
 <template>
-  <van-nav-bar
-      :title="curTitle"
-      :left-arrow="showBackArrow"
-      @click-left="handleBack"
-  />
+  <!-- 占位元素, 防止挤压navBar -->
+  <van-nav-bar :title="curTitle" :left-arrow="showBackArrow" @click-left="handleBack" />
+  <div class="nav-bar-container">
+    <van-nav-bar :title="curTitle" :left-arrow="showBackArrow" @click-left="handleBack" />
+  </div>
 </template>
 
 <style scoped>
+/* 置顶navBar */
+.nav-bar-container {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  z-index: 99;
+}
 </style>
