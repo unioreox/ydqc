@@ -170,6 +170,21 @@ export type CheckPoint = {
     updatedAt?: string;
 };
 
+export type ApiResponseCertificateVO = {
+    code?: number;
+    msg?: string;
+    data?: CertificateVO;
+};
+
+export type CertificateVO = {
+    id?: string;
+    userName?: string;
+    totalMilliseconds?: string;
+    ranking?: number;
+    createAt?: string;
+    updateAt?: string;
+};
+
 export type ApiResponseString = {
     code?: number;
     msg?: string;
@@ -266,6 +281,20 @@ export type ListCollegeApiError = unknown;
 export type ListCheckPointResponse = (ApiResponseListCheckPoint);
 
 export type ListCheckPointError = unknown;
+
+export type GetCertificateByUserIdApiResponse = (ApiResponseCertificateVO);
+
+export type GetCertificateByUserIdApiError = unknown;
+
+export type GetCertificateByIdApiData = {
+    path: {
+        id: string;
+    };
+};
+
+export type GetCertificateByIdApiResponse = (ApiResponseCertificateVO);
+
+export type GetCertificateByIdApiError = unknown;
 
 export type CancelCheckinData = {
     path: {

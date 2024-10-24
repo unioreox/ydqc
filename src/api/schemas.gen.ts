@@ -482,6 +482,49 @@ export const CheckPointSchema = {
     }
 } as const;
 
+export const ApiResponseCertificateVOSchema = {
+    type: 'object',
+    properties: {
+        code: {
+            type: 'integer',
+            format: 'int32'
+        },
+        msg: {
+            type: 'string'
+        },
+        data: {
+            '$ref': '#/components/schemas/CertificateVO'
+        }
+    }
+} as const;
+
+export const CertificateVOSchema = {
+    type: 'object',
+    properties: {
+        id: {
+            type: 'string'
+        },
+        userName: {
+            type: 'string'
+        },
+        totalMilliseconds: {
+            type: 'string'
+        },
+        ranking: {
+            type: 'integer',
+            format: 'int32'
+        },
+        createAt: {
+            type: 'string',
+            format: 'date-time'
+        },
+        updateAt: {
+            type: 'string',
+            format: 'date-time'
+        }
+    }
+} as const;
+
 export const ApiResponseStringSchema = {
     type: 'object',
     properties: {

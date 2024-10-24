@@ -93,6 +93,11 @@ const routes = [
                 path: "",
                 name: "恭喜完成",
                 component: () => import("@/views/finish/FinishView.vue"),
+            },
+            {
+                path: ":id",
+                name: "证书分享",
+                component: () => import("@/views/finish/FinishSharedView.vue"),
             }
         ]
     },

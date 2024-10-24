@@ -1,20 +1,15 @@
 <script setup lang="ts">
 import {ref, onMounted, nextTick} from 'vue';
-import html2canvas from 'html2canvas';
 import {Button, ShareSheet, showDialog, showNotify, showToast} from 'vant';
 import 'vant/lib/index.css';
-import {type CertificateVO, getCertificateByUserIdApi} from "@/api";
+import {type CertificateVO, getCertificateByIdApi} from "@/api";
 import {useRouter} from "vue-router";
-import wx from "weixin-js-sdk";
-import useClipboard from 'vue-clipboard3';
 
 const captureArea = ref<HTMLElement | null>(null);
-const generatedImage = ref<string | null>(null);
-const showShare = ref(false);
-const showDom = ref(true);
 
 const router = useRouter();
-const clipboard = useClipboard();
+
+const id = router.currentRoute.value.params.id as string;
 
 const certificateInfo = ref<CertificateVO>({
   id: "",
@@ -25,73 +20,8 @@ const certificateInfo = ref<CertificateVO>({
   updateAt: "",
 });
 
-const options = [
-  {name: '微信', icon: 'wechat'},
-  {name: '复制链接', icon: 'link'},
-];
-
-const captureAndExport = async () => {
-  if (!captureArea.value) return;
-
-  const scale = 4; // 增加分辨率
-  const canvas = await html2canvas(captureArea.value, {
-    scale: scale,
-    useCORS: true,
-    allowTaint: true,
-  });
-
-  generatedImage.value = canvas.toDataURL('image/png');
-
-  showDom.value = false;
-
-  showToast({
-    type: 'success',
-    message: '长按图片保存到相册',
-  });
-};
-
-const onSelect = async (option: { name: string }) => {
-  showShare.value = false;
-  // 在这里处理分享逻辑
-  console.log('选择的分享选项：', option.name);
-  if (option.name === '微信') {
-    wx.ready(() => {
-      wx.updateAppMessageShareData({
-        title: '我完成了中南大学2024首届秋季登山节！', // Share title
-        desc: '快来看看我的证书吧！', // Share description
-        link: 'https://race.54sher.com/finish/' + certificateInfo.value.id, // Share link
-        imgUrl: 'https://race.54sher.com/favicon.ico', // Share icon
-        success: () => {
-          showToast({
-            type: 'success',
-            message: '分享链接已生成，现在，你可以点击右上角分享给好友啦！',
-          });
-        },
-        fail: (err) => {
-          console.error('分享失败', err);
-          showNotify({
-            type: 'danger',
-            message: ` 分享失败: ${err.errMsg}`,
-          });
-        },
-      });
-    });
-    wx.error((err) => {
-      console.error('微信 JS-SDK 出错', err);
-      showNotify({
-        type: 'danger',
-        message: ` 微信 JS-SDK 出错: ${err.errMsg}`,
-      });
-    });
-  } else if (option.name === '复制链接') {
-    try {
-      await clipboard.toClipboard('https://race.54sher.com/finish/' + certificateInfo.value.id);
-      showToast("已复制到剪贴板");
-    } catch (e) {
-      console.log(e)
-      showToast({message: "复制失败", type: "fail"});
-    }
-  }
+const participateHandle = () => {
+  router.push('/login');
 };
 
 onMounted(() => {
@@ -106,16 +36,22 @@ onMounted(() => {
     };
   }
 
-  getCertificateByUserIdApi().then(res => {
+  getCertificateByIdApi(
+      {
+        path: {
+          id: id,
+        },
+      }
+  ).then(res => {
     if (res.data?.data) {
       console.log('获取证书成功：', res.data.data);
       certificateInfo.value = res.data.data;
     } else {
       showDialog({
-        title: '你还没有证书哦',
+        title: '这个证书不存在',
         message: '前面的区域以后再探索吧！',
       }).then(() => {
-        router.push('/user');
+        router.push('/');
       });
     }
   });
@@ -124,7 +60,7 @@ onMounted(() => {
 
 <template>
   <div class="certificate-container">
-    <div ref="captureArea" class="capture-area" v-if="showDom">
+    <div ref="captureArea" class="capture-area">
       <!-- 这里是您可以添加自定义 DOM 元素的区域 -->
       <div class="custom-content">
         <!-- 示例：添加一些文本 -->
@@ -144,19 +80,9 @@ onMounted(() => {
       </div>
     </div>
 
-    <img v-if="generatedImage" :src="generatedImage" alt="导出的图片" class="exported-image"/>
-
     <div class="button-container">
-      <Button @click="captureAndExport" type="primary" block> 导出图片</Button>
-      <Button @click="showShare = true" type="default" block> 分享</Button>
+      <Button @click="participateHandle" type="primary" block> 我也要参与</Button>
     </div>
-
-    <ShareSheet
-        v-model:show="showShare"
-        :options="options"
-        title="立即分享给好友"
-        @select="onSelect"
-    />
   </div>
 </template>
 

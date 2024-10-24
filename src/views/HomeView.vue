@@ -15,14 +15,13 @@ const socketLocation = import.meta.env.MODE === 'development' ? "http://localhos
 
 let socket: any;
 
+const isWSConnected = ref(false);
+
 if (!socket) {
   socket = io(socketLocation);
 
   socket.on("connect", () => {
-    console.log("连接成功");
-    showToast({
-      message: '与服务器的实时连接已建立',
-    });
+    isWSConnected.value = true;
   });
 
   socket.on("race", (msg) => {
@@ -50,10 +49,7 @@ if (!socket) {
   });
 
   socket.on("disconnect", () => {
-    console.log("断开连接");
-    showToast({
-      message: '与服务器的实时连接已断开',
-    });
+    isWSConnected.value = false;
   });
 
   socket.emit("chat", "又一位同学加入了活动！");
@@ -75,7 +71,7 @@ const curRecord = ref<RecordVO>({
   "updatedAt": "",
   "totalMilliseconds": ""
 });
-const isFresh = ref(false);
+const isFresh = ref(true);
 
 const currentStep = ref(0);
 const currentLocation = ref('正在获取位置...');
@@ -144,8 +140,18 @@ const getLastRecordHandle = async () => {
     } else {
       currentStep.value = 0 // 引导用户起点打卡
       form.value.type = checkPoints.value.find(point => !point.isEnd)?.id || 1 // 设置为起点打卡
-      showNotify({type: 'success', message: '点击发起挑战或者再次挑战！😏'})
+      showNotify({type: 'success', message: '点击发起挑战或者再次挑战！😏'});
     }
+  } else {
+    curRecord.value = {
+      "status": "PENDING",
+      "startTime": "",
+      "endTime": "",
+      "isValid": true,
+      "createdAt": "",
+      "updatedAt": "",
+      "totalMilliseconds": ""
+    };
   }
 }
 
@@ -262,6 +268,14 @@ const updateLocation = () => {
         if (currentStep.value === 0 || !matchedPoint.value.isEnd) {
           form.value.type = matchedPoint.value.id
         }
+        // 如果是终点打卡，但是不是终点打卡点，提示用户
+        if (currentStep.value === 1 && !matchedPoint.value.isEnd) {
+          showNotify({type: 'danger', message: '不在终点打卡点范围内，请移动到终点打卡点附近'});
+        }
+        // 如果是起点打卡，但是不是起点打卡点，提示用户
+        if (currentStep.value === 0 && matchedPoint.value.isEnd) {
+          showNotify({type: 'danger', message: '不在起点打卡点范围内，请移动到起点打卡点附近'});
+        }
         canCheckIn.value = true;
       } else {
         canCheckIn.value = false;
@@ -315,6 +329,9 @@ const performCheckIn = async () => {
       await getLastRecordHandle();
       // 打卡完成，成功横幅
       showNotify({type: 'success', message: '打卡成功！'})
+      if (!userStore.user?.count) {
+        await router.push('/finish')
+      }
     }
   } catch (error) {
     alert(error)
@@ -337,10 +354,12 @@ const loginAndGetInfoHandle = () => {
   if (code) {
     loginApi({query: {code}}).then(res => {
       infoApi().then(res => {
-        res.data?.data && userStore.setUser(res.data.data);
+        if (res.data?.data) {
+          userStore.setUser(res.data.data);
+        } else {
+          router.push('/login');
+        }
       });
-    }).catch(() => { // 登录失败，跳转到登录页
-      router.push('/login');
     });
   } else {
     infoApi().then(res => {
@@ -397,7 +416,8 @@ const onOffsetChange = () => {
       <van-barrage v-model="list" :autoplay="300" :loop="true">
         <div class="video" style="width: 100%; height: 200px"></div>
       </van-barrage>
-      <img src="https://54sh.csu.edu.cn/static/compressed-img/1-16-9.jpg" alt="Banner" class="w-full h-auto absolute top-0">
+      <img src="@/assets/background.png" alt="Banner"
+           class="absolute top-0 left-0 w-full h-full object-cover">
     </div>
 
     <div class="mt-6 bg-white rounded-lg shadow-lg p-2 flex space-x-2">
@@ -455,6 +475,11 @@ const onOffsetChange = () => {
     <div class="text-center mt-4 text-sm text-gray-600">
       正在与 {{ onlineCount }} 人一起征服岳麓山
     </div>
+    <div class="text-center mt-4 text-sm text-gray-600">
+      服务器实时连接状态：
+      <van-icon :name="isWSConnected ? 'success' : 'close'" :color="isWSConnected ? 'green' : 'red'"/>
+      {{ isWSConnected ? '已连接' : '未连接' }}
+    </div>
 
     <van-popup v-model:show="showSuccessPopup" round position="bottom">
       <div class="p-6 text-center" v-if="currentStep === 1">
@@ -468,8 +493,8 @@ const onOffsetChange = () => {
       <div class="p-6 text-center" v-else>
         <van-icon name="success" size="48" color="#07c160"/>
         <h2 class="mt-4 text-xl font-bold"> 打卡成功！</h2>
-        <p class="mt-2"> 恭喜你完成挑战 </p>
-        <van-button type="primary" block class="mt-4" @click="closeSuccessPopup">
+        <p class="mt-2"> 恭喜你已经完成挑战 {{ userStore.user?.count ? userStore.user?.count + 1 : 1 }} 次 </p>
+        <van-button to="/finish" type="primary" block class="mt-4" @click="closeSuccessPopup">
           前往统计页面
         </van-button>
       </div>
