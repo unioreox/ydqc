@@ -26,8 +26,9 @@ onMounted(() => {
 
 <template>
   <div class="bottom-bar-container">
-    <van-tabbar v-model="curIndex">
+    <van-tabbar v-model="curIndex" class="bottom-inner">
       <van-tabbar-item
+          class="bottom-item"
           v-for="(route, index) in visibleRoutes"
           replace
           :key="index"
@@ -39,10 +40,19 @@ onMounted(() => {
   </div>
 </template>
 
-<style scoped>
+<style lang="less" scoped>
 .bottom-bar-container {
   position: fixed;
   bottom: 0;
   width: 100%;
+
+  .bottom-inner {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+  }
+
+  .bottom-item{
+    background: transparent;
+  }
 }
 </style>

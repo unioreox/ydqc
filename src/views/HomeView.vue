@@ -9,84 +9,41 @@ import md5 from "md5";
 import router from "@/router";
 import {useUserStore} from "@/stores/user";
 import wx from "weixin-js-sdk";
-import io from "socket.io-client";
+import {io, Socket} from "socket.io-client";
 
 const socketLocation = import.meta.env.MODE === 'development' ? "http://localhost:9092" : "";
 
-let socket: any;
-
+const socket: Socket = io(socketLocation);
 const isWSConnected = ref(false);
-
-if (!socket) {
-  socket = io(socketLocation);
-
-  socket.on("connect", () => {
-    isWSConnected.value = true;
-  });
-
-  socket.on("race", (msg) => {
-    if (socketMessages.value.length >= 1) {
-      socketMessages.value.shift();
-    }
-    console.log(msg);
-    socketMessages.value.push(msg);
-  });
-
-  socket.on("onlineCount", (msg) => {
-    console.log("当前人数：" + msg);
-    onlineCount.value = msg;
-  });
-
-  socket.on("chat", (msg) => {
-    if (list.value.length >= 10) {
-      list.value.shift();
-    }
-    console.log(msg);
-    list.value.push({
-      id: Math.random(),
-      text: msg,
-    });
-  });
-
-  socket.on("disconnect", () => {
-    isWSConnected.value = false;
-  });
-
-  socket.emit("chat", "又一位同学加入了活动！");
-}
-
 const socketMessages = ref<string[]>([]);
-const list = ref<any>([]);
+const list = ref<{ id: number; text: string }[]>([]);
 const messageInput = ref<string>("");
 const inputRef = ref<HTMLInputElement | null>(null);
 const onlineCount = ref(0);
 
 const userStore = useUserStore();
 const curRecord = ref<RecordVO>({
-  "status": "PENDING",
-  "startTime": "",
-  "endTime": "",
-  "isValid": true,
-  "createdAt": "",
-  "updatedAt": "",
-  "totalMilliseconds": ""
+  status: "PENDING",
+  startTime: "",
+  endTime: "",
+  isValid: true,
+  createdAt: "",
+  updatedAt: "",
+  totalMilliseconds: ""
 });
-const isFresh = ref(true);
 
 const currentStep = ref(0);
 const currentLocation = ref('正在获取位置...');
 const canCheckIn = ref(false);
 const showSuccessPopup = ref(false);
-const map = ref(null);
+const map = ref<AMap.Map | null>(null);
 const isLoading = ref(true);
 const isSubmitting = ref(false);
 const checkPoints = ref<CheckPoint[]>([]);
-const matchedPoint = ref<CheckPoint | undefined>({});
+const matchedPoint = ref<CheckPoint | undefined>();
 const showBarrageInput = ref(false);
 
-const checkInButtonText = computed(() => {
-  return currentStep.value === 0 ? '起点打卡' : '终点打卡';
-});
+const checkInButtonText = computed(() => currentStep.value === 0 ? '起点打卡' : '终点打卡');
 
 interface Form {
   latitude: string;
@@ -121,276 +78,284 @@ watch(showBarrageInput, (value) => {
   }
 });
 
-/**
- * 获取最后一条记录，如果有未完成的记录，提示用户继续
- */
 const getLastRecordHandle = async () => {
-  const res = await getLastRecord();
-  console.log(res.data)
-  if (res.data?.data) {
-    const lastRecord = res.data.data;
-
-    if (lastRecord.status === "PENDING") {
-      console.log("回填未完成的记录")
-      showNotify({type: 'success', message: '检测到你有未完成的记录，继续挑战吧！'})
-      // 更新当前记录
-      curRecord.value = lastRecord
-      // 更新当前步骤
-      currentStep.value = 1 // 引导用户终点打卡
+  try {
+    const res = await getLastRecord();
+    if (res.data?.data) {
+      const lastRecord = res.data.data;
+      if (lastRecord.status === "PENDING") {
+        showNotify({type: 'success', message: '检测到你有未完成的记录，继续挑战吧！'});
+        curRecord.value = lastRecord;
+        currentStep.value = 1;
+      } else {
+        currentStep.value = 0;
+        form.value.type = checkPoints.value.find(point => !point.isEnd)?.id || 1;
+        showNotify({type: 'success', message: '点击发起挑战或者再次挑战！😏'});
+      }
     } else {
-      currentStep.value = 0 // 引导用户起点打卡
-      form.value.type = checkPoints.value.find(point => !point.isEnd)?.id || 1 // 设置为起点打卡
-      showNotify({type: 'success', message: '点击发起挑战或者再次挑战！😏'});
+      curRecord.value = {
+        status: "PENDING",
+        startTime: "",
+        endTime: "",
+        isValid: true,
+        createdAt: "",
+        updatedAt: "",
+        totalMilliseconds: ""
+      };
     }
-  } else {
-    curRecord.value = {
-      "status": "PENDING",
-      "startTime": "",
-      "endTime": "",
-      "isValid": true,
-      "createdAt": "",
-      "updatedAt": "",
-      "totalMilliseconds": ""
-    };
+  } catch (error) {
+    console.error('Failed to get last record:', error);
+    showNotify({type: 'danger', message: '获取上次记录失败，请重试'});
   }
-}
+};
 
-/**
- * 在地图上画圈
- */
 const drawCircleHandle = async () => {
-  // 在地图上画圈
+  if (!map.value) return;
+
+  map.value.remove(map.value.getAllOverlays('circle'));
+
   checkPoints.value.forEach(point => {
     // wgs84 转 gcj02
     AMap.convertFrom([point.longitude, point.latitude], 'gps', function (status, result) {
       if (result.info === 'ok') {
+        console.log("添加打卡指示")
         const gcj02Point = result.locations[0];
         new AMap.Circle({
           center: new AMap.LngLat(gcj02Point.lng, gcj02Point.lat),
-          radius: 50, // 50 米范围
-          strokeColor: "#0038ff", // 线颜色
-          strokeOpacity: 1, // 线透明度
-          strokeWeight: 3, // 线宽
-          fillColor: "#8da4ff", // 填充颜色
-          fillOpacity: 0.35 // 填充透明度
+          radius: 50,
+          strokeColor: "#0038ff",
+          strokeOpacity: 1,
+          strokeWeight: 3,
+          fillColor: "#8da4ff",
+          fillOpacity: 0.35
         }).setMap(map.value);
       }
     });
   });
-}
+};
 
-/**
- * 初始化地图
- */
 const initMap = async () => {
   window._AMapSecurityConfig = {
     securityJsCode: "cef01e97e3b8139773127f9e1ed9a134",
   };
-  AMapLoader.load({
-    key: "70312d47b8803ec59bf0d7b70560cb19",
-    version: "2.0",
-    plugins: ["AMap.Scale", "AMap.Geocoder", "Amap.Circle"],
-  }).then(async (AMap) => {
+
+  try {
+    const AMap = await AMapLoader.load({
+      key: "70312d47b8803ec59bf0d7b70560cb19",
+      version: "2.0",
+      plugins: ["AMap.Scale", "AMap.Geocoder", "AMap.Circle"],
+    });
+
     map.value = new AMap.Map("amap-container", {
       viewMode: "3D",
       zoom: 14,
       center: [form.value.longitude, form.value.latitude],
     });
-    console.log("加载高德地图...");
+
+    console.log("加载高德地图成功");
     isLoading.value = false;
-  });
+  } catch (error) {
+    console.error("加载高德地图失败:", error);
+    showNotify({type: 'danger', message: '地图加载失败，请刷新重试'});
+  }
+};
 
-}
-
-/**
- * 获取打卡点的信息和经纬度
- */
 const getCheckInPointHandle = async () => {
-  const res = await listCheckPoint();
-  console.log(res.data)
-  checkPoints.value = res.data.data
-  // // 设置初始打卡点类型
-  // form.value.type = checkPoints.value.find(point => !point.isEnd)?.id || 1
-}
+  try {
+    const res = await listCheckPoint();
+    if (res.data?.data) {
+      checkPoints.value = res.data.data;
+    }
+  } catch (error) {
+    console.error('Failed to get check-in points:', error);
+    showNotify({type: 'danger', message: '获取打卡点失败，请重试'});
+  }
+};
 
-/**
- * 加密数据并发起打卡
- */
-async function encryptDataAndCheckInHandle() {
+const encryptDataAndCheckInHandle = async () => {
   await init();
-
   const encryptor = new RsaEncryptor();
-  const queryParams = Object.keys(form.value)
-      .map(key => `${encodeURIComponent(key)}=${encodeURIComponent((form.value as Form)[key as keyof Form])}`)
+  const queryParams = Object.entries(form.value)
+      .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
       .join('&');
   const data = new TextEncoder().encode(queryParams);
   const encrypted = encryptor.encrypt(data);
 
-  // 获取当前 Unix 时间戳
   const timestamp = Math.floor(Date.now() / 1000);
-
-  // 定义一个盐值
   const salt = "54sher*#^&$)!";
-
-  // 生成 state
   const state = md5(timestamp + salt);
 
   return await doCheckin({
     body: {
       data: encrypted,
       state: state,
-      timestamp: timestamp + "",
+      timestamp: timestamp.toString(),
     }
   });
-}
+};
 
-/**
- * 更新位置信息
- */
 const updateLocation = () => {
-  console.log('更新位置...')
   wx.getLocation({
     type: 'wgs84',
-    success: async function (res) {
-      currentLocation.value = ` 纬度: ${res.latitude}, 经度: ${res.longitude}`
+    success: async (res) => {
+      currentLocation.value = ` 纬度: ${res.latitude}, 经度: ${res.longitude}`;
 
-      // 匹配用户位置和打卡点信息
       matchedPoint.value = checkPoints.value.find(point => {
         const distance = AMap.GeometryUtil.distance([res.longitude, res.latitude], [point.longitude, point.latitude]);
-        return distance <= 50; // 50 米范围内
+        return distance <= 50;
       });
 
-      console.log('匹配的打卡点', matchedPoint.value)
-
-
-      if (matchedPoint.value !== undefined) {
-        // 这里仅在不是终点打卡时才匹配打卡点
+      if (matchedPoint.value) {
         if (currentStep.value === 0 || !matchedPoint.value.isEnd) {
-          form.value.type = matchedPoint.value.id
+          form.value.type = matchedPoint.value.id;
         }
-        // 如果是终点打卡，但是不是终点打卡点，提示用户
         if (currentStep.value === 1 && !matchedPoint.value.isEnd) {
-          showNotify({type: 'danger', message: '不在终点打卡点范围内，请移动到终点打卡点附近'});
+          showNotify({type: 'warning', message: '不在终点打卡点范围内，请移动到终点打卡点附近'});
         }
-        // 如果是起点打卡，但是不是起点打卡点，提示用户
         if (currentStep.value === 0 && matchedPoint.value.isEnd) {
-          showNotify({type: 'danger', message: '不在起点打卡点范围内，请移动到起点打卡点附近'});
+          showNotify({type: 'warning', message: '不在起点打卡点范围内，请移动到起点打卡点附近'});
         }
         canCheckIn.value = true;
       } else {
         canCheckIn.value = false;
-        showNotify({type: 'danger', message: '不在打卡点范围内，请移动到打卡点附近'});
+        showNotify({type: 'warning', message: '不在打卡点范围内，请移动到打卡点附近'});
       }
 
-      // 设置表单的经纬度
-      form.value.latitude = res.latitude + ""
-      form.value.longitude = res.longitude + ""
+      form.value.latitude = res.latitude.toString();
+      form.value.longitude = res.longitude.toString();
 
       if (map.value) {
-
-        // wgs84 转 gcj02
-        AMap.convertFrom([res.longitude, res.latitude], 'gps', function (status, result) {
+        AMap.convertFrom([res.longitude, res.latitude], 'gps', async (status, result) => {
           if (result.info === 'ok') {
             const convertLatLng = result.locations[0];
-            console.log('转换后的经纬度', convertLatLng);
-
-            // 创建并添加标记
             const marker = new AMap.Marker({
               position: new AMap.LngLat(convertLatLng.lng, convertLatLng.lat),
               title: '当前位置'
             });
-            map.value.add(marker);
-
-            // 设置地图中心
-            map.value.setZoom(17);
-            map.value.setCenter([convertLatLng.lng, convertLatLng.lat]);
+            map.value?.remove(map.value.getAllOverlays('marker'));
+            map.value?.add(marker);
+            await drawCircleHandle();
+            map.value?.setZoom(17);
+            map.value?.setCenter([convertLatLng.lng, convertLatLng.lat]);
           }
         });
       }
 
-      await drawCircleHandle();
     },
-    fail: function () {
-      currentLocation.value = '获取位置失败，请重试'
-      canCheckIn.value = false
+    fail: () => {
+      currentLocation.value = '获取位置失败，请重试';
+      canCheckIn.value = false;
+      showNotify({type: 'danger', message: '获取位置失败，请检查定位权限'});
     }
-  })
-}
+  });
+};
 
 const performCheckIn = async () => {
-  if (isSubmitting.value) {
-    return;
-  }
+  if (isSubmitting.value) return;
+
   isSubmitting.value = true;
   try {
     const result = await encryptDataAndCheckInHandle();
     if (result.data?.code === 0) {
-      showSuccessPopup.value = true
+      showSuccessPopup.value = true;
       await getLastRecordHandle();
-      // 打卡完成，成功横幅
-      showNotify({type: 'success', message: '打卡成功！'})
-      if (!userStore.user?.count && curRecord.value.endTime !== "") {
-        await router.push('/finish')
+      showNotify({type: 'success', message: '打卡成功！'});
+      if (!userStore.user?.count && currentStep.value === 0) {
+        await router.push('/finish');
       }
     }
   } catch (error) {
-    alert(error)
-    showNotify({type: 'danger', message: '打卡失败，请重试'})
+    console.error('Check-in failed:', error);
+    showNotify({type: 'danger', message: '打卡失败，请重试'});
   } finally {
     isSubmitting.value = false;
   }
-}
+};
 
 const closeSuccessPopup = () => {
-  showSuccessPopup.value = false
-}
+  showSuccessPopup.value = false;
+};
 
-/**
- * 登录并获取用户信息
- */
 const loginAndGetInfoHandle = () => {
-  // 这里可能是微信跳转回来（有 code）或者登录态还有效
-  const code: string | null = new URLSearchParams(window.location.search).get('code');
+  const code = new URLSearchParams(window.location.search).get('code');
   if (code) {
-    loginApi({query: {code}}).then(res => {
-      infoApi().then(res => {
-        if (res.data?.data) {
-          userStore.setUser(res.data.data);
-        } else {
-          router.push('/login');
-        }
-      });
-    });
+    loginApi({query: {code}})
+        .then(() => infoApi())
+        .then(res => {
+          if (res.data?.data) {
+            userStore.setUser(res.data.data);
+          } else {
+            router.push('/login');
+          }
+        })
+        .catch(error => {
+          console.error('Login or info fetch failed:', error);
+          showNotify({type: 'danger', message: '登录失败，请重试'});
+        });
   } else {
-    infoApi().then(res => {
-      res.data?.data && userStore.setUser(res.data.data);
-    });
+    infoApi()
+        .then(res => {
+          res.data?.data && userStore.setUser(res.data.data);
+        })
+        .catch(error => {
+          console.error('Info fetch failed:', error);
+          showNotify({type: 'danger', message: '获取用户信息失败，请重试'});
+        });
   }
-}
-loginAndGetInfoHandle();
+};
 
 onMounted(async () => {
   try {
-    await getCheckInPointHandle()
-    await getLastRecordHandle()
-    console.log('当前进度', currentStep.value)
-    await initMap()
-    updateLocation()
+    loginAndGetInfoHandle();
+    await getCheckInPointHandle();
+    await getLastRecordHandle();
+    await initMap();
+    updateLocation();
   } catch (error) {
-    console.log(error)
-    showNotify({type: 'danger', message: '获取记录失败，请重试'})
+    console.error('Initialization failed:', error);
+    showNotify({type: 'danger', message: '初始化失败，请刷新重试'});
   }
-})
+});
+
+// WebSocket event handlers
+socket.on("connect", () => {
+  isWSConnected.value = true;
+});
+
+socket.on("race", (msg) => {
+  if (socketMessages.value.length >= 1) {
+    socketMessages.value.shift();
+  }
+  socketMessages.value.push(msg);
+});
+
+socket.on("onlineCount", (msg) => {
+  onlineCount.value = msg;
+});
+
+socket.on("chat", (msg) => {
+  if (list.value.length >= 10) {
+    list.value.shift();
+  }
+  list.value.push({
+    id: Math.random(),
+    text: msg,
+  });
+});
+
+socket.on("disconnect", () => {
+  isWSConnected.value = false;
+});
 
 const onOffsetChange = () => {
   showToast({
     message: '点击发表弹幕，与' + onlineCount.value + '人一起分享叭~',
-  })
-}
+  });
+};
 </script>
 
 <template>
-  <div class="check-in-container bg-gray-100 min-h-screen p-4">
+  <div class="mountain-challenge bg-gradient-to-b from-blue-100 to-green-100 min-h-screen p-4">
     <van-notice-bar
         left-icon="info-o"
         color="#1989fa"
@@ -400,7 +365,7 @@ const onOffsetChange = () => {
       欢迎参加 "FUN 山越岭"登山挑战赛！完成三个检查点的打卡，挑战成功！
     </van-notice-bar>
 
-    <van-notice-bar left-icon="volume-o" :scrollable="false" class="custom-notice-bar">
+    <van-notice-bar left-icon="volume-o" :scrollable="false" class="mt-2">
       <van-swipe
           vertical
           class="notice-swipe"
@@ -412,28 +377,30 @@ const onOffsetChange = () => {
       </van-swipe>
     </van-notice-bar>
 
-    <div class="banner-image mt-4 mb-6 rounded-lg overflow-hidden relative">
+    <div class="mt-4 relative overflow-hidden rounded-lg shadow-lg">
       <van-barrage v-model="list" :autoplay="300" :loop="true">
-        <div class="video" style="width: 100%; height: 200px"></div>
+        <div class="video relative" style="width: 100%; height: 200px">
+          <img src="@/assets/background.png" alt="Banner" class="w-full h-full object-cover">
+        </div>
       </van-barrage>
-      <img src="@/assets/background.png" alt="Banner"
-           class="absolute top-0 left-0 w-full h-full object-cover">
     </div>
 
-    <div class="mt-6 bg-white rounded-lg shadow-lg p-2 flex space-x-2">
-      <div id="amap-container" class="h-48 w-3/4 rounded-lg overflow-hidden border border-gray-200">
-      </div>
-      <div class="flex-1 space-y-2">
-        <van-steps :active="currentStep" direction="vertical" active-icon="success" active-color="#07c160">
-          <van-step> 起点打卡</van-step>
-          <van-step> 终点打卡</van-step>
-        </van-steps>
-        <div
-            class="p-1 relative bg-gray-50 rounded-lg shadow-inner cursor-pointer hover:bg-gray-100 transition duration-200"
-            @click="updateLocation"
-        >
-          <h2 class="text-base text-center text-xs font-semibold border-b border-gray-300"> 点击刷新 </h2>
-          <p class="p-1 text-xs text-gray-700">{{ currentLocation }}</p>
+    <div class="mt-6 rounded-lg shadow-lg p-4 map-card">
+      <div class="flex space-x-4">
+        <div id="amap-container" class="h-48 w-2/3 rounded-lg overflow-hidden border border-gray-200"></div>
+        <div class="flex-1 flex flex-col justify-between">
+          <van-steps :active="currentStep" direction="vertical" active-icon="success" active-color="#07c160">
+            <van-step> 起点打卡</van-step>
+            <van-step> 终点打卡</van-step>
+          </van-steps>
+          <div
+              class="p-2 bg-gray-50 rounded-lg shadow-inner cursor-pointer hover:bg-gray-100 transition duration-200"
+              @click="updateLocation"
+          >
+            <h2 class="text-[0.5em] font-semibold text-center border-b border-gray-300 pb-1 mb-1"> 点击刷新位置 </h2>
+            <!--<p class="text-xs text-gray-700">{{currentLocation}}</p>-->
+            <p class="text-[0.4rem] text-gray-700"> 请在蓝色打卡范围（50m）进行打卡 </p>
+          </div>
         </div>
       </div>
     </div>
@@ -445,6 +412,7 @@ const onOffsetChange = () => {
           :disabled="!canCheckIn"
           @click="performCheckIn"
           :loading="isSubmitting"
+          class="w-full max-w-xs"
       >
         {{ checkInButtonText }}
       </van-button>
@@ -475,7 +443,7 @@ const onOffsetChange = () => {
     <div class="text-center mt-4 text-sm text-gray-600">
       正在与 {{ onlineCount }} 人一起征服岳麓山
     </div>
-    <div class="text-center mt-4 text-sm text-gray-600">
+    <div class="text-center mt-2 text-sm text-gray-600">
       服务器实时连接状态：
       <van-icon :name="isWSConnected ? 'success' : 'close'" :color="isWSConnected ? 'green' : 'red'"/>
       {{ isWSConnected ? '已连接' : '未连接' }}
@@ -503,23 +471,22 @@ const onOffsetChange = () => {
 </template>
 
 <style lang="less" scoped>
-.check-in-container {
+.mountain-challenge {
   max-width: 600px;
   margin: 0 auto;
+}
+
+.map-card {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
 .notice-swipe {
   height: 40px;
   line-height: 40px;
-  font-size: 16px;
-  font-weight: 500;
-}
-
-.banner-image {
-  width: 100%;
-  height: 150px;
-  background-size: cover;
-  background-position: center;
+  font-size: 14px;
 }
 
 :deep(.van-barrage) {

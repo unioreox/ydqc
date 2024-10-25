@@ -17,16 +17,58 @@ ul, ol {
 @tailwind components;
 @tailwind utilities;
 
-/* vant4的 Toast 和 Popup 样式冲突,会导致 Toast 变成白底 */
-.van-popup.van-toast{
+/* vant4 的 Toast 和 Popup 样式冲突, 会导致 Toast 变成白底 */
+.van-popup.van-toast {
     background: var(--van-toast-background) !important;
     box-sizing: content-box !important;
-    /* 下面3条css,影响不大 */
+    /* 下面 3 条 css, 影响不大 */
     transition: all var(--van-duration-fast) !important;
     width: var(--van-toast-default-width) !important;
     max-width: var(--van-toast-max-width) !important;
 }
-.van-popup.van-toast .van-toast__icon{
+
+.van-popup.van-toast .van-toast__icon {
     font-size: var(--van-toast-icon-size) !important;
 }
 
+:root:root {
+    --van-dialog-background: rgba(255, 255, 255, 0.3);
+    --van-dialog-transition: 0.5s;
+    --van-overlay-background: rgba(0, 0, 0, 0.2);
+}
+
+.van-dialog {
+    backdrop-filter: blur(10px); /* 高斯模糊 */
+}
+
+
+/* 设置半透明背景色并应用高斯模糊 */
+.van-dialog__content {
+    background: transparent;
+}
+
+
+/* 可选：标题和内容的字体样式 */
+.van-dialog__header, .van-dialog__message {
+    color: #333;
+    font-weight: 500;
+}
+
+/* 可选：自定义按钮样式 */
+.van-dialog__footer .van-button {
+    background: transparent;
+    color: #007aff;
+    font-weight: bold;
+}
+
+:root:root {
+    --van-notify-primary-background: rgba(0, 122, 255, 0.8);
+    --van-notify-success-background: rgba(0, 128, 0, 0.8);
+    --van-notify-danger-background: rgba(255, 69, 0, 0.8);
+    --van-notify-warning-background: rgba(255, 69, 0, 0.8);
+}
+
+.van-notify {
+    backdrop-filter: blur(2px);
+    padding: 10px;
+}

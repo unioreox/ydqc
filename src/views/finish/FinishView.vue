@@ -60,7 +60,7 @@ const onSelect = async (option: { name: string }) => {
         title: '我完成了中南大学2024首届秋季登山节！', // Share title
         desc: '快来看看我的证书吧！', // Share description
         link: 'https://race.54sher.com/finish/' + certificateInfo.value.id, // Share link
-        imgUrl: 'https://race.54sher.com/favicon.ico', // Share icon
+        imgUrl: 'https://race.54sher.com/share.png', // Share icon
         success: () => {
           showToast({
             type: 'success',

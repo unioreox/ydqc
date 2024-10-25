@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import {onMounted, ref} from "vue";
 import {infoApi, listCollegeApi, updateApi, type UserUpdateDTO} from "@/api";
-import {showToast} from "vant";
+import {showConfirmDialog, showToast} from "vant";
 import {useUserStore} from "@/stores/user";
 import {useRouter} from "vue-router";
 
@@ -29,10 +29,10 @@ const submitProfileHandle = () => {
     })
     return
   }
-  if (form.value.idNumber && form.value.idNumber.length > 12) {
+  if (form.value.idNumber && form.value.idNumber.length > 12 || form.value.idNumber?.length === 0) {
     showToast({
       type: 'fail',
-      message: '学号/工号不超过12位'
+      message: '学号/工号未填写或者格式错误'
     })
     return
   }
@@ -43,21 +43,26 @@ const submitProfileHandle = () => {
     })
     return
   }
-  updateApi({
-    body: form.value
-  }).then(res => {
-    if (res.data?.data) {
-      showToast({
-        type: 'success',
-        message: '修改成功'
-      })
-      infoApi().then(res => {
-        if (res.data?.data) {
-          useUserStore().setUser(res.data.data);
-        }
-        router.push("/user/profile")
-      })
-    }
+  showConfirmDialog({
+    title: '确认修改',
+    message: '本次活动涉及到计入课外体育分数哦~，请务必确认姓名和学号正确',
+  }).then(() => {
+    updateApi({
+      body: form.value
+    }).then(res => {
+      if (res.data?.data) {
+        showToast({
+          type: 'success',
+          message: '修改成功'
+        })
+        infoApi().then(res => {
+          if (res.data?.data) {
+            useUserStore().setUser(res.data.data);
+          }
+          router.push("/user/profile")
+        })
+      }
+    })
   })
 }
 
@@ -108,7 +113,9 @@ onMounted(() => {
                  required
                  :rules="[{required: true, message: '请输入姓名'}]"
                  label="姓名" placeholder="请输入姓名"/>
-      <van-field v-model="form.idNumber" label="学号/职工号" placeholder="请输入学号/职工号"/>
+      <van-field v-model="form.idNumber" label="学号/职工号" required
+                 :rules="[{required: true, message: '请输入学号/职工号'}]"
+                 placeholder="请输入学号/职工号"/>
       <!-- 需要获取学院列表，实现一个学院的选择 -->
       <van-field v-model="form.college" required
                  :rules="[{required: true, message: '请选择学院'}]"

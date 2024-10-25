@@ -1,20 +1,20 @@
 <script setup lang="ts">
-import { RouterLink, RouterView } from 'vue-router'
+import {RouterLink, RouterView} from 'vue-router'
 
 // 全局挂载完成后，配置微信 js-sdk
-import { onMounted } from 'vue'
+import {onMounted} from 'vue'
 import wx from "weixin-js-sdk";
-import { getWxConfig } from "@/api";
-import { showNotify } from "vant";
+import {getWxConfig} from "@/api";
+import {showNotify} from "vant";
 
 onMounted(() => {
   console.log('全局挂载完成，配置微信 js-sdk')
   getWxConfig(
-    {
-      query: {
-        url: window.location.href.split('#')[0]
+      {
+        query: {
+          url: window.location.href.split('#')[0]
+        }
       }
-    }
   ).then(res => {
     if (res.data) {
       wx.config({
@@ -26,10 +26,13 @@ onMounted(() => {
         jsApiList: ['getLocation', 'onMenuShareAppMessage', 'onMenuShareTimeline', 'updateAppMessageShareData']
       });
       wx.ready(() => {
-        showNotify("微信 js-sdk 配置成功")
+        console.log('微信 js-sdk 配置成功')
       })
       wx.error((res) => {
-        showNotify("微信 js-sdk 配置失败:" + res.errMsg, { type: 'danger' })
+        showNotify({
+          type: 'danger',
+          message: '微信 js-sdk 配置失败'
+        })
       })
     }
   });
@@ -37,7 +40,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <RouterView />
+  <RouterView/>
 </template>
 
 <style>
@@ -54,7 +57,7 @@ html {
   touch-action: none;
 }
 */
-/* 隐藏scrollbar */
+/* 隐藏 scrollbar */
 html::-webkit-scrollbar {
   width: 0;
 }

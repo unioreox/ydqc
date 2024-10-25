@@ -18,6 +18,7 @@ export type UserVO = {
     nickname?: string;
     avatar?: string;
     isBanned?: boolean;
+    isAdmin?: boolean;
     idNumber?: string;
     college?: string;
     phone?: string;
@@ -84,6 +85,26 @@ export type ApiResponseListRecordVO = {
     code?: number;
     msg?: string;
     data?: Array<RecordVO>;
+};
+
+export type ApiResponseRecordExportVO = {
+    code?: number;
+    msg?: string;
+    data?: RecordExportVO;
+};
+
+export type RecordExportVO = {
+    id?: string;
+    userName?: string;
+    status?: 'PENDING' | 'FINISHED' | 'CANCELLED';
+    idNumber?: string;
+    phone?: string;
+    startTime?: string;
+    endTime?: string;
+    isValid?: boolean;
+    createdAt?: string;
+    updatedAt?: string;
+    totalMilliseconds?: string;
 };
 
 export type ApiResponseLeaderBoardVOUserCountLeaderBoardVO = {
@@ -254,6 +275,14 @@ export type GetWxConfigError = unknown;
 export type InfoApiResponse = (ApiResponseUserVO);
 
 export type InfoApiError = unknown;
+
+export type ListTodayValidRecordApiResponse = (Array<(string)>);
+
+export type ListTodayValidRecordApiError = unknown;
+
+export type GetLuckyGuyResponse = (ApiResponseRecordExportVO);
+
+export type GetLuckyGuyError = unknown;
 
 export type GetLastRecordResponse = (ApiResponseRecordVO);
 

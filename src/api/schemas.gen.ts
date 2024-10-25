@@ -50,6 +50,9 @@ export const UserVOSchema = {
         isBanned: {
             type: 'boolean'
         },
+        isAdmin: {
+            type: 'boolean'
+        },
         idNumber: {
             type: 'string'
         },
@@ -236,6 +239,66 @@ export const ApiResponseListRecordVOSchema = {
             items: {
                 '$ref': '#/components/schemas/RecordVO'
             }
+        }
+    }
+} as const;
+
+export const ApiResponseRecordExportVOSchema = {
+    type: 'object',
+    properties: {
+        code: {
+            type: 'integer',
+            format: 'int32'
+        },
+        msg: {
+            type: 'string'
+        },
+        data: {
+            '$ref': '#/components/schemas/RecordExportVO'
+        }
+    }
+} as const;
+
+export const RecordExportVOSchema = {
+    type: 'object',
+    properties: {
+        id: {
+            type: 'string'
+        },
+        userName: {
+            type: 'string'
+        },
+        status: {
+            type: 'string',
+            enum: ['PENDING', 'FINISHED', 'CANCELLED']
+        },
+        idNumber: {
+            type: 'string'
+        },
+        phone: {
+            type: 'string'
+        },
+        startTime: {
+            type: 'string',
+            format: 'date-time'
+        },
+        endTime: {
+            type: 'string',
+            format: 'date-time'
+        },
+        isValid: {
+            type: 'boolean'
+        },
+        createdAt: {
+            type: 'string',
+            format: 'date-time'
+        },
+        updatedAt: {
+            type: 'string',
+            format: 'date-time'
+        },
+        totalMilliseconds: {
+            type: 'string'
         }
     }
 } as const;
