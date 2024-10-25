@@ -132,7 +132,7 @@ const fetchCollegeUsers = async () => {
           <div class="px-4 py-2 bg-gray-100 text-gray-700 font-semibold flex">
             <span class="w-1/6 text-center"> 排名 </span>
             <span class="w-2/6 pl-14"> 学院 </span>
-            <span class="w-3/6 text-right"> 参与人次 </span>
+            <span class="w-3/6 text-right"> 参与率 </span>
           </div>
           <ul v-if="collegeUser.length > 0" class="divide-y divide-gray-200">
             <li v-for="(college, index) in collegeUser" :key="index"
@@ -143,11 +143,11 @@ const fetchCollegeUsers = async () => {
                 <Medal v-else-if="index === 2" class="w-6 h-6 text-yellow-700"/>
                 <span v-else class="text-gray-500 font-medium">{{ index + 1 }}</span>
               </div>
-              <div class="w-2/6 flex-1 items-center">
+              <div class="w-3/6 flex-1 items-center">
                 <span class="font-medium text-gray-900 pl-4">{{ college.collegeName }}</span>
               </div>
-              <div class="w-3/6 text-right">
-                <span class="font-bold text-blue-600">{{ college.collegeCount }}</span>
+              <div class="w-2/6 text-right">
+                <span class="font-bold text-blue-600">{{ college.collegePercent }} %</span>
               </div>
             </li>
           </ul>

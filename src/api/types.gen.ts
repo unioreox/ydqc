@@ -130,6 +130,7 @@ export type ApiResponseLeaderBoardVOCollegeCountLeaderBoardVO = {
 export type CollegeCountLeaderBoardVO = {
     collegeName?: string;
     collegeCount?: number;
+    collegePercent?: string;
 };
 
 export type LeaderBoardVOCollegeCountLeaderBoardVO = {

@@ -363,6 +363,9 @@ export const CollegeCountLeaderBoardVOSchema = {
         collegeCount: {
             type: 'integer',
             format: 'int32'
+        },
+        collegePercent: {
+            type: 'string'
         }
     }
 } as const;
