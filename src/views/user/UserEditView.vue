@@ -21,6 +21,28 @@ const showCollegePopup = ref(false);
 const {user} = useUserStore();
 
 const submitProfileHandle = () => {
+  // 校验手机号 11 位，学号不超过 12 位，姓名不超过 20 位
+  if (!form.value.phone || form.value.phone.length !== 11) {
+    showToast({
+      type: 'fail',
+      message: '请输入正确的手机号'
+    })
+    return
+  }
+  if (form.value.idNumber && form.value.idNumber.length > 12) {
+    showToast({
+      type: 'fail',
+      message: '学号/工号不超过12位'
+    })
+    return
+  }
+  if (form.value.nickname && form.value.nickname.length > 20) {
+    showToast({
+      type: 'fail',
+      message: '姓名不超过20位'
+    })
+    return
+  }
   updateApi({
     body: form.value
   }).then(res => {
@@ -29,7 +51,12 @@ const submitProfileHandle = () => {
         type: 'success',
         message: '修改成功'
       })
-      router.push("/user/profile")
+      infoApi().then(res => {
+        if (res.data?.data) {
+          useUserStore().setUser(res.data.data);
+        }
+        router.push("/user/profile")
+      })
     }
   })
 }

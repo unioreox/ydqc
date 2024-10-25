@@ -7,13 +7,11 @@ const {user} = useUserStore();
 
 // 如果仓库中的用户信息为空，调用接口获取用户信息
 onMounted(() => {
-  if (!user) {
-    infoApi().then(res => {
-      if (res.data?.data) {
-        useUserStore().setUser(res.data.data);
-      }
-    })
-  }
+  infoApi().then(res => {
+    if (res.data?.data) {
+      useUserStore().setUser(res.data.data);
+    }
+  })
 })
 
 </script>

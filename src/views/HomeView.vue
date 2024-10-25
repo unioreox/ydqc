@@ -329,7 +329,7 @@ const performCheckIn = async () => {
       await getLastRecordHandle();
       // 打卡完成，成功横幅
       showNotify({type: 'success', message: '打卡成功！'})
-      if (!userStore.user?.count) {
+      if (!userStore.user?.count && curRecord.value.endTime !== "") {
         await router.push('/finish')
       }
     }

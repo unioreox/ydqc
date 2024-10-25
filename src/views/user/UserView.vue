@@ -8,8 +8,19 @@ import {
   MessageSquare
 } from 'lucide-vue-next';
 import {infoApi} from "@/api";
+import {onMounted} from "vue";
 
 const {user} = useUserStore();
+
+onMounted(() => {
+  if (!user) {
+    infoApi().then(res => {
+      if (res.data?.data) {
+        useUserStore().setUser(res.data.data);
+      }
+    })
+  }
+})
 </script>
 
 <template>
@@ -67,7 +78,7 @@ const {user} = useUserStore();
         <div class="p-6">
           <h2 class="text-xl font-semibold mb-4"> 遇到问题？反馈给我们 ~</h2>
           <RouterLink to="/feedback"
-             class="flex items-center p-3 text-base font-bold text-gray-900 bg-gray-50 rounded-lg hover:bg-gray-100 group hover:shadow">
+                      class="flex items-center p-3 text-base font-bold text-gray-900 bg-gray-50 rounded-lg hover:bg-gray-100 group hover:shadow">
             <MessageSquare class="w-6 h-6"/>
             <span class="flex-1 ml-3 whitespace-nowrap"> 反馈问题 </span>
           </RouterLink>

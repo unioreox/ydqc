@@ -191,7 +191,7 @@ onMounted(() => {
 }
 
 .certificate-title {
-  margin-top: 6vh;
+  margin-top: 4vh;
   font-size: 24px;
   margin-bottom: 20px;
 }
@@ -206,7 +206,7 @@ onMounted(() => {
 }
 
 .recipient-name, .achievement, .wishes {
-  font-size: 18px;
+  font-size: 15px;
   margin-bottom: 10px;
 }
 

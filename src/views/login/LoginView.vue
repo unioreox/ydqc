@@ -8,7 +8,7 @@ const loginHandle = () => {
 #wechat_redirect`;
   } else {
     console.log("测试环境直接登录");
-    window.location.href = `http://192.168.1.140:5173/?code=grtsinry43`;
+    window.location.href = `http://localhost:5173/?code=grtsinry43`;
   }
 }
 </script>
