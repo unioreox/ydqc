@@ -49,9 +49,11 @@ onMounted(() => {
 https://developer.mozilla.org/zh-CN/docs/Web/CSS/touch-action
 
 */
+/*
 html {
   touch-action: none;
 }
+*/
 /* 隐藏scrollbar */
 html::-webkit-scrollbar {
   width: 0;
