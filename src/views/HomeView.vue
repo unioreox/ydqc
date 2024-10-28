@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {ref, computed, nextTick, onMounted, watch} from 'vue';
-import {showNotify, showToast} from 'vant';
+import {showImagePreview, showNotify, showToast} from 'vant';
 import AMapLoader from "@amap/amap-jsapi-loader";
 import 'vant/es/notify/style';
 import init, {RsaEncryptor} from "@/util/rsa_wasm";
@@ -20,6 +20,8 @@ const list = ref<{ id: number; text: string }[]>([]);
 const messageInput = ref<string>("");
 const inputRef = ref<HTMLInputElement | null>(null);
 const onlineCount = ref(0);
+
+import simpleMapImgUrl from "@/assets/simpleMap.png";
 
 const userStore = useUserStore();
 const curRecord = ref<RecordVO>({
@@ -123,10 +125,10 @@ const drawCircleHandle = async () => {
         new AMap.Circle({
           center: new AMap.LngLat(gcj02Point.lng, gcj02Point.lat),
           radius: 50,
-          strokeColor: "#0038ff",
+          strokeColor: "#ff0000",
           strokeOpacity: 1,
           strokeWeight: 3,
-          fillColor: "#8da4ff",
+          fillColor: "#ff8b51",
           fillOpacity: 0.35
         }).setMap(map.value);
       }
@@ -276,7 +278,7 @@ const closeSuccessPopup = () => {
   showSuccessPopup.value = false;
 };
 
-const loginAndGetInfoHandle = () => {
+const loginAndGetInfoHandle = async () => {
   const code = new URLSearchParams(window.location.search).get('code');
   if (code) {
     loginApi({query: {code}})
@@ -284,6 +286,7 @@ const loginAndGetInfoHandle = () => {
         .then(res => {
           if (res.data?.data) {
             userStore.setUser(res.data.data);
+            return;
           } else {
             router.push('/login');
           }
@@ -296,6 +299,7 @@ const loginAndGetInfoHandle = () => {
     infoApi()
         .then(res => {
           res.data?.data && userStore.setUser(res.data.data);
+          return;
         })
         .catch(error => {
           console.error('Info fetch failed:', error);
@@ -306,11 +310,13 @@ const loginAndGetInfoHandle = () => {
 
 onMounted(async () => {
   try {
-    loginAndGetInfoHandle();
-    await getCheckInPointHandle();
-    await getLastRecordHandle();
-    await initMap();
-    updateLocation();
+    loginAndGetInfoHandle().then(async () => {
+          await getCheckInPointHandle();
+          await getLastRecordHandle();
+          await initMap();
+          updateLocation();
+        }
+    );
   } catch (error) {
     console.error('Initialization failed:', error);
     showNotify({type: 'danger', message: '初始化失败，请刷新重试'});
@@ -362,10 +368,10 @@ const onOffsetChange = () => {
         background="#ecf9ff"
         scrollable
     >
-      欢迎参加 "FUN 山越岭"登山挑战赛！完成三个检查点的打卡，挑战成功！
+      欢迎参加中南大学 2024 首届秋季登山节！完成起点和终点的打卡，挑战成功！
     </van-notice-bar>
 
-    <van-notice-bar left-icon="volume-o" :scrollable="false" class="mt-2">
+    <van-notice-bar left-icon="volume-o" :scrollable="false" class="mt-2" v-if="socketMessages.length > 0">
       <van-swipe
           vertical
           class="notice-swipe"
@@ -379,7 +385,7 @@ const onOffsetChange = () => {
 
     <div class="mt-4 relative overflow-hidden rounded-lg shadow-lg">
       <van-barrage v-model="list" :autoplay="300" :loop="true">
-        <div class="video relative" style="width: 100%; height: 200px">
+        <div class="video relative" style="width: 100%; height: 160px">
           <img src="@/assets/background.png" alt="Banner" class="w-full h-full object-cover">
         </div>
       </van-barrage>
@@ -387,19 +393,27 @@ const onOffsetChange = () => {
 
     <div class="mt-6 rounded-lg shadow-lg p-4 map-card">
       <div class="flex space-x-4">
-        <div id="amap-container" class="h-48 w-2/3 rounded-lg overflow-hidden border border-gray-200"></div>
+        <div id="amap-container" class="h-56 w-2/3 rounded-lg overflow-hidden border border-gray-200"></div>
         <div class="flex-1 flex flex-col justify-between">
-          <van-steps :active="currentStep" direction="vertical" active-icon="success" active-color="#07c160">
+          <van-steps :active="currentStep" class="w-32 h-16"
+                     direction="vertical" active-icon="success" active-color="#07c160">
             <van-step> 起点打卡</van-step>
             <van-step> 终点打卡</van-step>
           </van-steps>
+          <van-image
+              :src="simpleMapImgUrl"
+              fit="cover"
+              style="background: #fff"
+              class="h-28 rounded-lg p-1"
+              @click="showImagePreview([simpleMapImgUrl])"
+          />
           <div
               class="p-2 bg-gray-50 rounded-lg shadow-inner cursor-pointer hover:bg-gray-100 transition duration-200"
               @click="updateLocation"
           >
             <h2 class="text-[0.5em] font-semibold text-center border-b border-gray-300 pb-1 mb-1"> 点击刷新位置 </h2>
             <!--<p class="text-xs text-gray-700">{{currentLocation}}</p>-->
-            <p class="text-[0.4rem] text-gray-700"> 请在蓝色打卡范围（50m）进行打卡 </p>
+            <p class="text-[0.4rem] text-gray-700"> 请在红色打卡范围（50m）进行打卡 </p>
           </div>
         </div>
       </div>

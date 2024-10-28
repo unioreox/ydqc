@@ -24,7 +24,6 @@ client.instance.interceptors.response.use(
             console.log(response.headers);
             if (response.headers.authorization) {
                 const token = response.headers.authorization;
-                console.log(token);
                 setToken(token);
             }
             return response;

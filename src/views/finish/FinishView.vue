@@ -97,7 +97,7 @@ const onSelect = async (option: { name: string }) => {
 onMounted(() => {
   if (captureArea.value) {
     const img = new Image();
-    img.src = new URL('@/assets/certificate.jpg', import.meta.url).href;
+    img.src = new URL('@/assets/certificate.png', import.meta.url).href;
     img.onload = () => {
       const viewportWidth = Math.min(document.documentElement.clientWidth, 414); // 限制最大宽度为 414px
       const scale = viewportWidth / img.width;
@@ -169,7 +169,7 @@ onMounted(() => {
 }
 
 .capture-area {
-  background: url('@/assets/certificate.jpg') no-repeat center center;
+  background: url('@/assets/certificate.png') no-repeat center center;
   background-size: contain;
   width: 100%;
   max-width: 414px;

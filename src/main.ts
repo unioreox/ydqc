@@ -34,7 +34,8 @@ import {
     Space,
     FloatingBubble,
     Toast,
-    Area
+    Area,
+    FloatingPanel
 } from "vant";
 
 const app = createApp(App)
@@ -69,6 +70,7 @@ app.use(Space);
 app.use(FloatingBubble);
 app.use(Toast);
 app.use(Area);
+app.use(FloatingPanel);
 
 // 请求库配置相关
 import "@/api/config";
