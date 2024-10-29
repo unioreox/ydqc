@@ -537,6 +537,12 @@ export const CheckPointSchema = {
         longitude: {
             type: 'number'
         },
+        secret1: {
+            type: 'string'
+        },
+        secret2: {
+            type: 'string'
+        },
         createdAt: {
             type: 'string',
             format: 'date-time'

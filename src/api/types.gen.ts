@@ -188,6 +188,8 @@ export type CheckPoint = {
     name?: string;
     latitude?: number;
     longitude?: number;
+    secret1?: string;
+    secret2?: string;
     createdAt?: string;
     updatedAt?: string;
 };

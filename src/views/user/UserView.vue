@@ -7,11 +7,12 @@ import {
   Share2,
   MessageSquare,
   Settings,
-  ChevronRight
+  ChevronRight, ScanQrCode
 } from 'lucide-vue-next';
 import {getLuckyGuy, infoApi} from "@/api";
 import {onMounted, ref} from "vue";
 import {showDialog} from "vant";
+import wx from "weixin-js-sdk";
 
 const version = import.meta.env.VITE_APP_VERSION;
 const {user} = useUserStore();
@@ -79,6 +80,86 @@ const selectLuckUser = () => {
           closeOnClickOverlay: true,
         });
       }
+    });
+  });
+}
+
+const blueToothTest = () => {
+  showDialog({
+    title: '蓝牙功能测试',
+    message: '请确保您的设备支持蓝牙功能，并且已经打开蓝牙功能。\n' +
+        '点击确定开始测试',
+    confirmButtonText: '确定',
+    closeOnClickOverlay: true,
+  }).then(() => {
+    wx.startSearchBeacons({
+      ticket: "",
+      fail: (err) => {
+        showDialog({
+          title: '蓝牙功能测试',
+          message: ` 测试失败: ${err.errMsg}`,
+          confirmButtonText: '确定',
+          closeOnClickOverlay: true,
+        });
+      },
+      complete: (argv) => {
+        showDialog({
+          title: '蓝牙功能测试',
+          message: ` 测试完成: ${JSON.stringify(argv)}`,
+          confirmButtonText: '确定',
+          closeOnClickOverlay: true,
+        });
+        console.log(argv);
+      },
+    });
+  });
+  wx.onSearchBeacons({
+    complete: (res) => {
+      showDialog({
+        title: '蓝牙功能测试',
+        message: ` 搜索到的蓝牙设备: ${JSON.stringify(res)}`,
+        confirmButtonText: '确定',
+        closeOnClickOverlay: true,
+      });
+    },
+    fail(...args) {
+      showDialog({
+        title: '蓝牙功能测试',
+        message: ` 测试失败: ${JSON.stringify(args)}`,
+        confirmButtonText: '确定',
+        closeOnClickOverlay: true,
+      });
+    }
+  });
+}
+
+const ScanQrCodeTest = () => {
+  showDialog({
+    title: '扫码功能测试',
+    message: '请确保您的设备支持扫码功能，并且已经打开扫码功能。\n' +
+        '点击确定开始测试',
+    confirmButtonText: '确定',
+    closeOnClickOverlay: true,
+  }).then(() => {
+    wx.scanQRCode({
+      needResult: 1,
+      scanType: ["qrCode"],
+      success: (res) => {
+        showDialog({
+          title: '扫码功能测试',
+          message: ` 扫码成功: ${JSON.stringify(res)}`,
+          confirmButtonText: '确定',
+          closeOnClickOverlay: true,
+        });
+      },
+      fail: (err) => {
+        showDialog({
+          title: '扫码功能测试',
+          message: ` 扫码失败: ${err.errMsg}`,
+          confirmButtonText: '确定',
+          closeOnClickOverlay: true,
+        });
+      },
     });
   });
 }
@@ -161,6 +242,18 @@ const selectLuckUser = () => {
                  class="flex items-center p-4 text-gray-700 bg-gray-50 rounded-xl hover:bg-gray-100 transition-all duration-300 group hover:shadow-md cursor-pointer">
               <Settings class="w-6 h-6 text-indigo-500 group-hover:text-indigo-600 transition-colors duration-300"/>
               <span class="flex-1 ml-4 font-medium"> 抽取今天的幸运儿 </span>
+              <ChevronRight class="w-5 h-5 text-gray-400 group-hover:text-gray-600 transition-colors duration-300"/>
+            </div>
+            <div @click="blueToothTest"
+                 class="flex items-center p-4 text-gray-700 bg-gray-50 rounded-xl hover:bg-gray-100 transition-all duration-300 group hover:shadow-md cursor-pointer">
+              <Settings class="w-6 h-6 text-indigo-500 group-hover:text-indigo-600 transition-colors duration-300"/>
+              <span class="flex-1 ml-4 font-medium"> 测试蓝牙功能 </span>
+              <ChevronRight class="w-5 h-5 text-gray-400 group-hover:text-gray-600 transition-colors duration-300"/>
+            </div>
+            <div @click="ScanQrCodeTest"
+                 class="flex items-center p-4 text-gray-700 bg-gray-50 rounded-xl hover:bg-gray-100 transition-all duration-300 group hover:shadow-md cursor-pointer">
+              <Settings class="w-6 h-6 text-indigo-500 group-hover:text-indigo-600 transition-colors duration-300"/>
+              <span class="flex-1 ml-4 font-medium"> 测试扫码功能 </span>
               <ChevronRight class="w-5 h-5 text-gray-400 group-hover:text-gray-600 transition-colors duration-300"/>
             </div>
           </div>

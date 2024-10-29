@@ -23,7 +23,7 @@ onMounted(() => {
         timestamp: +res.data.data?.timestamp!,
         nonceStr: res.data.data?.nonceStr!,
         signature: res.data.data?.signature!,
-        jsApiList: ['getLocation', 'onMenuShareAppMessage', 'onMenuShareTimeline', 'updateAppMessageShareData']
+        jsApiList: ['getLocation', 'onMenuShareAppMessage', 'onMenuShareTimeline', 'updateAppMessageShareData', 'scanQRCode']
       });
       wx.ready(() => {
         console.log('微信 js-sdk 配置成功')

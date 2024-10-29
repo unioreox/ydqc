@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {ref, computed, nextTick, onMounted, watch} from 'vue';
-import {showImagePreview, showNotify, showToast} from 'vant';
+import {showDialog, showImagePreview, showNotify, showToast} from 'vant';
 import AMapLoader from "@amap/amap-jsapi-loader";
 import 'vant/es/notify/style';
 import init, {RsaEncryptor} from "@/util/rsa_wasm";
@@ -255,68 +255,107 @@ const updateLocation = () => {
 const performCheckIn = async () => {
   if (isSubmitting.value) return;
 
-  isSubmitting.value = true;
-  try {
-    const result = await encryptDataAndCheckInHandle();
-    if (result.data?.code === 0) {
-      showSuccessPopup.value = true;
-      await getLastRecordHandle();
-      showNotify({type: 'success', message: '打卡成功！'});
-      if (!userStore.user?.count && currentStep.value === 0) {
-        await router.push('/finish');
+  const random = Math.random() > 0.5 ? 1 : 2;
+
+  showDialog({
+    title: '请扫描二维码',
+    message: ` 请扫描 ${random === 1 ? '左' : '右'} 侧二维码 `,
+    showCancelButton: true,
+    confirmButtonText: '扫码',
+    cancelButtonText: '取消',
+  }).then(() => {
+    return new Promise((resolve, reject) => {
+      wx.scanQRCode({
+        needResult: 1,
+        scanType: ["qrCode"],
+        success: (res) => {
+          const result = res.resultStr;
+          const expectedSecret = random === 1 ? matchedPoint.value?.secret1 : matchedPoint.value?.secret2;
+          if (result === expectedSecret) {
+            resolve("success"); // 验证成功，继续执行打卡操作
+          } else {
+            showNotify({type: 'danger', message: '二维码不匹配，请重试'});
+            reject(new Error('二维码不匹配'));
+          }
+        },
+        fail: () => {
+          showNotify({type: 'danger', message: '扫码失败，请重试'});
+          reject(new Error('扫码失败'));
+        }
+      });
+    });
+  }).then(async () => {
+    isSubmitting.value = true;
+    try {
+      const result = await encryptDataAndCheckInHandle();
+      if (result.data?.code === 0) {
+        showSuccessPopup.value = true;
+        await getLastRecordHandle();
+        showNotify({type: 'success', message: '打卡成功！'});
+        if (!userStore.user?.count && currentStep.value === 0) {
+          await router.push('/finish');
+        }
+      } else {
+        showNotify({type: 'danger', message: '打卡失败，请重试'});
       }
+    } catch (error) {
+      console.error('Check-in failed:', error);
+      showNotify({type: 'danger', message: '打卡失败，请重试'});
+    } finally {
+      isSubmitting.value = false;
     }
-  } catch (error) {
-    console.error('Check-in failed:', error);
-    showNotify({type: 'danger', message: '打卡失败，请重试'});
-  } finally {
-    isSubmitting.value = false;
-  }
+  }).catch((error) => {
+    console.warn('扫码或验证失败:', error);
+  });
 };
+
 
 const closeSuccessPopup = () => {
   showSuccessPopup.value = false;
 };
 
+let isLoginHandled = false;
+
 const loginAndGetInfoHandle = async () => {
+  if (isLoginHandled) return;
+  isLoginHandled = true;
+
   const code = new URLSearchParams(window.location.search).get('code');
   if (code) {
-    loginApi({query: {code}})
-        .then(() => infoApi())
-        .then(res => {
-          if (res.data?.data) {
-            userStore.setUser(res.data.data);
-            return;
-          } else {
-            router.push('/login');
-          }
-        })
-        .catch(error => {
-          console.error('Login or info fetch failed:', error);
-          showNotify({type: 'danger', message: '登录失败，请重试'});
-        });
+    try {
+      await loginApi({query: {code}});
+      const res = await infoApi();
+      if (res.data?.data) {
+        userStore.setUser(res.data.data);
+        // 删掉 code 参数，防止刷新页面时再次登录
+        window.history.replaceState({}, document.title, window.location.pathname);
+      } else {
+        router.push('/login');
+      }
+    } catch (error) {
+      console.error('Login or info fetch failed:', error);
+      showNotify({type: 'danger', message: '登录失败，请重试'});
+    }
   } else {
-    infoApi()
-        .then(res => {
-          res.data?.data && userStore.setUser(res.data.data);
-          return;
-        })
-        .catch(error => {
-          console.error('Info fetch failed:', error);
-          showNotify({type: 'danger', message: '获取用户信息失败，请重试'});
-        });
+    try {
+      const res = await infoApi();
+      if (res.data?.data) {
+        userStore.setUser(res.data.data);
+      }
+    } catch (error) {
+      console.error('Info fetch failed:', error);
+      showNotify({type: 'danger', message: '获取用户信息失败，请重试'});
+    }
   }
 };
 
 onMounted(async () => {
   try {
-    loginAndGetInfoHandle().then(async () => {
-          await getCheckInPointHandle();
-          await getLastRecordHandle();
-          await initMap();
-          updateLocation();
-        }
-    );
+    await loginAndGetInfoHandle();
+    await getCheckInPointHandle();
+    await getLastRecordHandle();
+    await initMap();
+    updateLocation();
   } catch (error) {
     console.error('Initialization failed:', error);
     showNotify({type: 'danger', message: '初始化失败，请刷新重试'});

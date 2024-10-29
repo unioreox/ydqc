@@ -131,7 +131,7 @@ const fetchCollegeUsers = async () => {
             </li>
           </ul>
         </van-tab>
-        <van-tab title="学院人次 Top 10">
+        <van-tab title="学院参与率 Top 10">
           <div class="px-4 py-2 bg-gray-100 bg-opacity-50 text-gray-700 font-semibold flex">
             <span class="w-1/6 text-center"> 排名 </span>
             <span class="w-4/6 pl-14"> 学院 </span>

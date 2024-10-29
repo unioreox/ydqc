@@ -5,6 +5,9 @@ export function setToken(token: string) {
     Cookies.set('token', token, {expires: 1});
 }
 
-export function getToken() {
-    return Cookies.get('token');
+export async function getToken() {
+    return new Promise<string | undefined>((resolve) => {
+        const token = Cookies.get('token');
+        resolve(token);
+    });
 }

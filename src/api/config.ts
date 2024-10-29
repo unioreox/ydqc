@@ -7,8 +7,11 @@ client.setConfig({
     baseURL: "/api/v1",
 });
 
-client.instance.interceptors.request.use((config) => {
-    getToken() && (config.headers.Authorization = `Bearer ${getToken()}`);
+client.instance.interceptors.request.use(async (config) => {
+    const token = await getToken();
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
     return config;
 });
 
