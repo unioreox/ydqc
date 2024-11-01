@@ -82,6 +82,14 @@ const routes = [
         }
     },
     {
+        path: "/banned",
+        name: "封禁",
+        component: () => import("@/views/banned/BannedView.vue"),
+        meta: {
+            hideInMenu: true
+        }
+    },
+    {
         path: "/finish",
         name: "恭喜完成",
         component: () => import("@/layout/BasicLayout.vue"),
