@@ -138,7 +138,7 @@ onMounted(() => {
 
           <div class="tuanwei-info">
             <p> 共青团中南大学委员会 </p>
-            <p> 二〇二四年十月 </p>
+            <p> 二〇二四年十一月 </p>
           </div>
         </div>
       </div>

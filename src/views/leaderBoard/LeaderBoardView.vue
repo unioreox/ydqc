@@ -79,7 +79,7 @@ const fetchCollegeUsers = async () => {
 
       <van-tabs v-model:active="current" :before-change="beforeChange"
                 sticky animated swipeable class="custom-tabs">
-        <van-tab title="最佳成绩 Top 30">
+        <van-tab title="最佳成绩前 30">
           <div class="px-4 py-2 bg-gray-100 bg-opacity-50 text-gray-700 font-semibold flex">
             <span class="w-1/6 text-center"> 排名 </span>
             <span class="w-2/6 pl-14"> 姓名 </span>
@@ -105,7 +105,7 @@ const fetchCollegeUsers = async () => {
             </li>
           </ul>
         </van-tab>
-        <van-tab title="完成次数 Top 30">
+        <van-tab title="完成次数前 30">
           <div class="px-4 py-2 bg-gray-100 bg-opacity-50 text-gray-700 font-semibold flex">
             <span class="w-1/6 text-center"> 排名 </span>
             <span class="w-2/6 pl-14"> 姓名 </span>
@@ -131,12 +131,14 @@ const fetchCollegeUsers = async () => {
             </li>
           </ul>
         </van-tab>
-        <van-tab title="学院参与率 Top 10">
+        <van-tab title="学院参与率前 10">
           <div class="px-4 py-2 bg-gray-100 bg-opacity-50 text-gray-700 font-semibold flex">
             <span class="w-1/6 text-center"> 排名 </span>
             <span class="w-4/6 pl-14"> 学院 </span>
-            <span class="w-2/6 text-right"> 参与率 </span>
+            <span class="w-2/6 text-right"> 人次占比 </span>
           </div>
+          <div class="text-gray-500 text-sm p-4 text-center w-full"
+          > 这里是所有打卡次数与学院总人数的比例 </div>
           <ul v-if="collegeUser.length > 0" class="divide-y divide-gray-200 divide-opacity-50">
             <li v-for="(college, index) in collegeUser" :key="index"
                 class="flex items-center py-3 px-4 hover:bg-white hover:bg-opacity-30 transition-colors duration-150">

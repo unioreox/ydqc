@@ -10,6 +10,7 @@ import router from "@/router";
 import {useUserStore} from "@/stores/user";
 import wx from "weixin-js-sdk";
 import {io, Socket} from "socket.io-client";
+import {wgs84ToGcj02} from "@/util/convertLocation";
 
 const socketLocation = import.meta.env.MODE === 'development' ? "http://localhost:9092" : "";
 
@@ -118,21 +119,18 @@ const drawCircleHandle = async () => {
 
   checkPoints.value.forEach(point => {
     // wgs84 转 gcj02
-    AMap.convertFrom([point.longitude, point.latitude], 'gps', function (status, result) {
-      if (result.info === 'ok') {
-        console.log("添加打卡指示")
-        const gcj02Point = result.locations[0];
-        new AMap.Circle({
-          center: new AMap.LngLat(gcj02Point.lng, gcj02Point.lat),
-          radius: 50,
-          strokeColor: "#ff0000",
-          strokeOpacity: 1,
-          strokeWeight: 3,
-          fillColor: "#ff8b51",
-          fillOpacity: 0.35
-        }).setMap(map.value);
-      }
-    });
+    // wgs84 转 gcj02
+    const [gcj02Lng, gcj02Lat] = wgs84ToGcj02(point.longitude, point.latitude);
+    console.log("添加打卡指示");
+    new AMap.Circle({
+      center: new AMap.LngLat(gcj02Lng, gcj02Lat),
+      radius: 50,
+      strokeColor: "#ff0000",
+      strokeOpacity: 1,
+      strokeWeight: 3,
+      fillColor: "#ff8b51",
+      fillOpacity: 0.35
+    }).setMap(map.value);
   });
 };
 
@@ -254,59 +252,25 @@ const updateLocation = () => {
 
 const performCheckIn = async () => {
   if (isSubmitting.value) return;
-
-  const random = Math.random() > 0.5 ? 1 : 2;
-
-  showDialog({
-    title: '请扫描二维码',
-    message: ` 请扫描 ${random === 1 ? '左' : '右'} 侧二维码 `,
-    showCancelButton: true,
-    confirmButtonText: '扫码',
-    cancelButtonText: '取消',
-  }).then(() => {
-    return new Promise((resolve, reject) => {
-      wx.scanQRCode({
-        needResult: 1,
-        scanType: ["qrCode"],
-        success: (res) => {
-          const result = res.resultStr;
-          const expectedSecret = random === 1 ? matchedPoint.value?.secret1 : matchedPoint.value?.secret2;
-          if (result === expectedSecret) {
-            resolve("success"); // 验证成功，继续执行打卡操作
-          } else {
-            showNotify({type: 'danger', message: '二维码不匹配，请重试'});
-            reject(new Error('二维码不匹配'));
-          }
-        },
-        fail: () => {
-          showNotify({type: 'danger', message: '扫码失败，请重试'});
-          reject(new Error('扫码失败'));
-        }
-      });
-    });
-  }).then(async () => {
-    isSubmitting.value = true;
-    try {
-      const result = await encryptDataAndCheckInHandle();
-      if (result.data?.code === 0) {
-        showSuccessPopup.value = true;
-        await getLastRecordHandle();
-        showNotify({type: 'success', message: '打卡成功！'});
-        if (!userStore.user?.count && currentStep.value === 0) {
-          await router.push('/finish');
-        }
-      } else {
-        showNotify({type: 'danger', message: '打卡失败，请重试'});
+  isSubmitting.value = true;
+  try {
+    const result = await encryptDataAndCheckInHandle();
+    if (result.data?.code === 0) {
+      showSuccessPopup.value = true;
+      await getLastRecordHandle();
+      showNotify({type: 'success', message: '打卡成功！'});
+      if (!userStore.user?.count && currentStep.value === 0) {
+        await router.push('/finish');
       }
-    } catch (error) {
-      console.error('Check-in failed:', error);
+    } else {
       showNotify({type: 'danger', message: '打卡失败，请重试'});
-    } finally {
-      isSubmitting.value = false;
     }
-  }).catch((error) => {
-    console.warn('扫码或验证失败:', error);
-  });
+  } catch (error) {
+    console.error('Check-in failed:', error);
+    showNotify({type: 'danger', message: '打卡失败，请重试'});
+  } finally {
+    isSubmitting.value = false;
+  }
 };
 
 
@@ -365,6 +329,7 @@ onMounted(async () => {
 // WebSocket event handlers
 socket.on("connect", () => {
   isWSConnected.value = true;
+  // socket.emit("chat", "又有一位同学加入了比赛！🎉");
 });
 
 socket.on("race", (msg) => {
@@ -501,6 +466,33 @@ const onOffsetChange = () => {
       <van-icon :name="isWSConnected ? 'success' : 'close'" :color="isWSConnected ? 'green' : 'red'"/>
       {{ isWSConnected ? '已连接' : '未连接' }}
     </div>
+
+    <van-divider class="mt-4"/>
+
+    <!--<div class="lucky-container p-4">-->
+    <!--  <div class="text-center"> 昨日获奖名单</div>-->
+    <!--  <van-swipe-->
+    <!--      height="2em"-->
+    <!--      class="text-center"-->
+    <!--      :autoplay="3000"-->
+    <!--      :touchable="false"-->
+    <!--      :show-indicators="false"-->
+    <!--  >-->
+    <!--    <van-swipe-item>-->
+    <!--      <div> 一等奖：小明 <br/>-->
+    <!--        奖品：iPhone 13-->
+    <!--      </div>-->
+    <!--    </van-swipe-item>-->
+    <!--    <van-swipe-item>-->
+    <!--      <div> 二等奖：小红</div>-->
+    <!--      <div> 奖品：iPad Pro</div>-->
+    <!--    </van-swipe-item>-->
+    <!--    <van-swipe-item>-->
+    <!--      <div> 三等奖：小刚</div>-->
+    <!--      <div> 奖品：AirPods Pro</div>-->
+    <!--    </van-swipe-item>-->
+    <!--  </van-swipe>-->
+    <!--</div>-->
 
     <van-popup v-model:show="showSuccessPopup" round position="bottom">
       <div class="p-6 text-center" v-if="currentStep === 1">
