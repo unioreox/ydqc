@@ -1,5 +1,12 @@
 <script setup lang="ts">
-console.log("检测到作弊者");
+import { showNotify } from 'vant';
+
+showNotify({
+  type: 'warning',
+  message: '用户被封禁',
+  duration: 0,
+});
+
 </script>
 
 <template>
@@ -22,6 +29,22 @@ console.log("检测到作弊者");
     <div class="footer-copyright text-center py-4 text-[0.75rem]">
       <span class="text-600 text-white">版权所有 © 2001-2024 升华工作室</span>
     </div>
+    <van-floating-panel :content-draggable="false">
+      <div style="text-align: center; padding: 15px">
+        <p class="text-xl">封禁提示</p>
+      </div>
+      <div style="padding: 15px;">
+        <p>根据你的各项数据，我们认为你存在以下行为</p>
+        <br />
+        <p>1.使用违规软件伪造位置信息</p>
+        <p>2.对本程序进行逆向工程、调试与篡改</p>
+        <p>3.利用异常方法进行打卡</p>
+        <p>4.其他造成打卡记录严重失实或对本系统存在危害的行为</p>
+        <br />
+        <p>如对处理有异议，请联系校团委网络信息部</p>
+        <br />
+      </div>
+    </van-floating-panel>
   </div>
 </template>
 
@@ -29,6 +52,7 @@ console.log("检测到作弊者");
 .banned-container {
   height: 100vh;
   background-color: rgb(207, 42, 50);
+
   .banned-inner {
     display: flex;
     flex-direction: column;
