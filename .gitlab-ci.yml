@@ -18,11 +18,23 @@
 
 stages:          # List of stages for jobs, and their order of execution
   - install
+  - build
+  - release
 
-install-job:       # This job runs in the build stage, which runs first.
+install-job:       
   stage: install
   script:
-    - echo "安装依赖"
     - npm config set registry https://registry.npmmirror.com
     - npm install
+
+build-job:
+  stage: build
+  script:
     - npm run build-only
+    - tar -zcvf release.tar.gz dist/
+
+release-job:
+   artifacts:
+    name: release-artifacts
+    paths:
+      - release.tar.gz
