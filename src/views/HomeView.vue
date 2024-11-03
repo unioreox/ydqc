@@ -191,7 +191,7 @@ function getCanvasFingerPrint() {
 
   // 获取canvas指纹
   const calcFingerPrint = sha256(canvas.toDataURL());
-  console.log("initCanvasFingerPrint " + calcFingerPring);
+  console.log("initCanvasFingerPrint " + calcFingerPrint);
   return calcFingerPrint;
 }
 
