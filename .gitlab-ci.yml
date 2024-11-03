@@ -47,9 +47,9 @@ release-gitlab:
       curl --header "PRIVATE-TOKEN: $GITLAB_TOKEN" \
            --data "name=Release for $(date +'%Y-%m-%d')" \
            --data "tag_name=v$(date +'%Y.%m.%d')" \
-           --data "description=自动发布的 Release" \
+           --data "description=自动发布的 Release， PROJECT_ID $CI_PROJECT_ID" \
            --data "ref=main" \
-           "https://gitlab.54sher.com/api/v4/projects/$CI_PROJECT_ID/releases"
+           "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/releases"
   dependencies:
     - build
   only:
