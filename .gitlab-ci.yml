@@ -31,10 +31,10 @@ build-job:
   stage: build
   script:
     - npm run build-only
-    - tar -zcvf release.tar.gz dist/
 
 release-job:
-   artifacts:
+  script: tar -zcvf release.tar.gz dist/
+  artifacts:
     name: release-artifacts
     paths:
       - release.tar.gz
