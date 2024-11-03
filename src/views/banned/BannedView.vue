@@ -156,7 +156,7 @@ async function generateQRCode(data: string) {
 const identifyCode = ref("");
 const qrCodeDataUrl = ref("");
 
-async function init(){
+async function init() {
   identifyCode.value = getCanvasFingerPrint();
   qrCodeDataUrl.value = await generateQRCode(identifyCode.value);
   // document.getElementById('identifyCode').src = qrCodeDataUrl;
