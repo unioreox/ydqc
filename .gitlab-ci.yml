@@ -26,23 +26,21 @@ build:
       - dist.tar.gz # 保存压缩包为 GitLab 产物供后续步骤使用
 
 # 第三阶段：发布
-release-server:
-  stage: release
-  image: alpine:latest
-  before_script:
-    - apk add --no-cache openssh sshpass # 安装 ssh 和 sshpass
-  script:
-    - sshpass -p "$SERVER_PASSWORD" scp dist.tar.gz root@127.0.0.1:/home/project # 使用密码上传
-  dependencies:
-    - build
-  only:
-    - main
+# release-server:
+#   stage: release
+#   image: alpine:latest
+#   before_script:
+#     - apk add --no-cache openssh sshpass # 安装 ssh 和 sshpass
+#   script:
+#     - sshpass -p "$SERVER_PASSWORD" scp dist.tar.gz root@127.0.0.1:/home/project # 使用密码上传
+#   dependencies:
+#     - build
+#   only:
+#     - main
 
 release-gitlab:
   stage: release
   image: node:20
-  before_script:
-    - apk add --no-cache openssh sshpass curl
   script:
     # 在 GitLab 上发布 Release
     - |
