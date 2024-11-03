@@ -259,9 +259,21 @@ const performCheckIn = async () => {
       showSuccessPopup.value = true;
       await getLastRecordHandle();
       showNotify({type: 'success', message: '打卡成功！'});
+
+      // 起点打卡
       if (!userStore.user?.count && currentStep.value === 0) {
         await router.push('/finish');
       }
+
+      // PENDING 终点打卡
+      if (currentStep.value === 1) {
+          // PENDING状态, 完成第二次打卡
+          currentStep.value === 2;
+          // 给爬山的同学显示一下进度条全满, 3s
+          setTimeout(() => {
+            currentStep.value === 0;
+          }, 3000);
+        }
     } else {
       showNotify({type: 'danger', message: '打卡失败，请重试'});
     }
@@ -397,10 +409,10 @@ const onOffsetChange = () => {
 
     <div class="mt-6 rounded-lg shadow-lg p-4 map-card">
       <div class="flex space-x-4">
-        <div id="amap-container" class="h-56 w-2/3 rounded-lg overflow-hidden border border-gray-200"></div>
+        <div id="amap-container" class="h-58 w-2/3 rounded-lg overflow-hidden border border-gray-200"></div>
         <div class="flex-1 flex flex-col justify-between">
-          <van-steps :active="currentStep" class="w-32 h-16"
-                     direction="vertical" active-icon="success" active-color="#07c160">
+          <van-steps :active="currentStep - 1" class="w-32 h-26"
+                     direction="vertical" active-color="#07c160">
             <van-step> 起点打卡</van-step>
             <van-step> 终点打卡</van-step>
           </van-steps>

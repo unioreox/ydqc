@@ -39,11 +39,11 @@ const showAboutHandle = (e: MouseEvent) => {
   e.preventDefault();
   showDialog({
     title: '关于 ｜ Powered by 升华工作室',
-    message: '这里是 CSU 升华工作室！\n' +
-        'Developers: grtsinry43, Steamfinder, mufenqwq, Kyliancc\n' +
-        '前端采用 Vite + Vue3 + Vant\n' +
-        '后端采用 SpringBoot + MyBatis\n\n' +
-        `=====================\n` +
+    message: '这里是 CSU 升华工作室！\n\n' +
+        '程序开发\ngrtsinry43, SteamFinder, mufenqwq, Kyliancc\n\n' +
+        '技术栈\n' +
+        '前端 Vite + Vue3 + Vant\n' +
+        '后端 SpringBoot + MyBatis\n\n' +
         `Version: ${version}\n` +
         '盛世升华 服务中南',
   }).then(() => {
