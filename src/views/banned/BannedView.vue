@@ -1,11 +1,167 @@
 <script setup lang="ts">
 import { showNotify } from 'vant';
+import { ref } from 'vue';
+import QRCode from 'qrcode';
 
 showNotify({
   type: 'warning',
   message: '用户被封禁',
   duration: 0,
 });
+
+function getCanvasFingerPrint() {
+  // 挂载完成后进行canvas指纹计算
+  var canvas = document.getElementById("initCanvasFingerPrint");
+  var ctx = canvas.getContext('2d');
+  canvas.height = 200;
+  canvas.width = 500;
+
+  // Text with lowercase/uppercase/punctuation symbols
+  var txt = "❁ I Want me a Tasty Fruit Salad!\n\r <🍏🍎🍐🍊🍋🍌🍉🍇🍓🍈🍒🍑🍍🥝>";
+  ctx.textBaseline = "top";
+  // The most common type
+  ctx.font = "14px 'Arial'";
+  ctx.textBaseline = "alphabetic";
+  ctx.fillStyle = "#f60";
+  ctx.fillRect(125, 1, 62, 20);
+  // Some tricks for color mixing to increase the difference in rendering
+  ctx.fillStyle = "#069";
+  ctx.fillText(txt, 2, 15);
+  ctx.fillStyle = "rgba(102, 204, 0, 0.7)";
+  ctx.fillText(txt, 4, 17);
+
+  // canvas blending
+  // http://blogs.adobe.com/webplatform/2013/01/28/blending-features-in-canvas/
+  // http://jsfiddle.net/NDYV8/16/
+  ctx.globalCompositeOperation = "multiply";
+  ctx.fillStyle = "rgb(255,0,255)";
+  ctx.beginPath();
+  ctx.arc(50, 50, 50, 0, Math.PI * 2, true);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = "rgb(0,255,255)";
+  ctx.beginPath();
+  ctx.arc(100, 50, 50, 0, Math.PI * 2, true);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = "rgb(255,255,0)";
+  ctx.beginPath();
+  ctx.arc(75, 100, 50, 0, Math.PI * 2, true);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = "rgb(255,0,255)";
+  // canvas winding
+  // http://blogs.adobe.com/webplatform/2013/01/30/winding-rules-in-canvas/
+  // http://jsfiddle.net/NDYV8/19/
+  ctx.arc(75, 75, 75, 0, Math.PI * 2, true);
+  ctx.arc(75, 75, 25, 0, Math.PI * 2, true);
+  ctx.fill("evenodd");
+
+
+  var sha256 = (function () {
+
+    // Eratosthenes seive to find primes up to 311 for magic constants. This is why SHA256 is better than SHA1
+    var i = 1,
+      j,
+      K = [],
+      H = [];
+
+    while (++i < 18) {
+      for (j = i * i; j < 312; j += i) {
+        K[j] = 1;
+      }
+    }
+
+    function x(num, root) {
+      return (Math.pow(num, 1 / root) % 1) * 4294967296 | 0;
+    }
+
+    for (i = 1, j = 0; i < 313;) {
+      if (!K[++i]) {
+        H[j] = x(i, 2);
+        K[j++] = x(i, 3);
+      }
+    }
+
+    function S(X, n) { return (X >>> n) | (X << (32 - n)); }
+
+    function SHA256(b) {
+      var HASH = H.slice(i = 0),
+        s = unescape(encodeURI(b)), /* encode as utf8 */
+        W = [],
+        l = s.length,
+        m = [],
+        a, y, z;
+      for (; i < l;) m[i >> 2] |= (s.charCodeAt(i) & 0xff) << 8 * (3 - i++ % 4);
+
+      l *= 8;
+
+      m[l >> 5] |= 0x80 << (24 - l % 32);
+      m[z = (l + 64 >> 5) | 15] = l;
+
+      for (i = 0; i < z; i += 16) {
+        a = HASH.slice(j = 0, 8);
+
+        for (; j < 64; a[4] += y) {
+          if (j < 16) {
+            W[j] = m[j + i];
+          } else {
+            W[j] =
+              (S(y = W[j - 2], 17) ^ S(y, 19) ^ (y >>> 10)) +
+              (W[j - 7] | 0) +
+              (S(y = W[j - 15], 7) ^ S(y, 18) ^ (y >>> 3)) +
+              (W[j - 16] | 0);
+          }
+
+          a.unshift(
+            (
+              y = (
+                a.pop() +
+                (S(b = a[4], 6) ^ S(b, 11) ^ S(b, 25)) +
+                (((b & a[5]) ^ ((~b) & a[6])) + K[j]) | 0
+              ) +
+              (W[j++] | 0)
+            ) +
+            (S(l = a[0], 2) ^ S(l, 13) ^ S(l, 22)) +
+            ((l & a[1]) ^ (a[1] & a[2]) ^ (a[2] & l))
+          );
+        }
+
+        for (j = 8; j--;) HASH[j] = a[j] + HASH[j];
+      }
+
+      for (s = ''; j < 63;) s += ((HASH[++j >> 3] >> 4 * (7 - j % 8)) & 15).toString(16);
+
+      return s;
+    }
+
+    return SHA256;
+  })();
+
+  // 获取canvas指纹
+  const calcFingerPrint = sha256(canvas.toDataURL());
+  console.log("initCanvasFingerPrint " + calcFingerPrint);
+  return calcFingerPrint;
+}
+
+async function generateQRCode(data: string) {
+  try {
+    return await QRCode.toDataURL(data);
+  } catch (err) {
+    console.error(err);
+    return '';
+  }
+}
+
+const identifyCode = ref("");
+const qrCodeDataUrl = ref("");
+
+async function init(){
+  identifyCode.value = getCanvasFingerPrint();
+  qrCodeDataUrl.value = await generateQRCode(identifyCode.value);
+  // document.getElementById('identifyCode').src = qrCodeDataUrl;
+}
+init();
 
 </script>
 
@@ -24,6 +180,8 @@ showNotify({
       <p class="text-lg">相关数据被记录</p>
       <div class="divideSpace-2"></div>
       <div class="divideLine"></div>
+      <div class="divideSpace-2"></div>
+      <img id="identifyCode" :src="qrCodeDataUrl" class="text-center" width="80vw" alt="识别码">
     </div>
     <!-- Footer -->
     <div class="footer-copyright text-center py-4 text-[0.75rem]">
@@ -43,6 +201,7 @@ showNotify({
         <br />
         <p>如对处理有异议，请联系校团委网络信息部</p>
         <br />
+        <van-text-ellipsis :content="identifyCode" expand-text="展开" collapse-text="收起" />
       </div>
     </van-floating-panel>
   </div>
