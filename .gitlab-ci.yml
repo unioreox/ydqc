@@ -49,7 +49,7 @@ release-gitlab:
            --data "tag_name=v$(date +'%Y.%m.%d')" \
            --data "description=自动发布的 Release" \
            --data "ref=main" \
-           "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/releases"
+           "https://gitlab.54sher.com/api/v4/projects/$CI_PROJECT_ID/releases"
   dependencies:
     - build
   only:
