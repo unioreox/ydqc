@@ -26,14 +26,33 @@ build:
       - dist.tar.gz # 保存压缩包为 GitLab 产物供后续步骤使用
 
 # 第三阶段：发布
-release:
+release-server:
   stage: release
-  # image: alpine:latest # 使用轻量的 Alpine Linux 环境镜像
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache openssh sshpass # 安装 ssh 和 sshpass
   script:
-    - echo "done"
-    # - apk add --no-cache openssh # 安装 SSH 客户端用于上传
-    # - scp dist.tar.gz root@101.1.23.1:/home/project # 将压缩包上传到服务器指定目录
+    - sshpass -p "$SERVER_PASSWORD" scp dist.tar.gz root@127.0.0.1:/home/project # 使用密码上传
   dependencies:
-    - build # 依赖 build 步骤中的产物
+    - build
   only:
-    - main # 只在 main 分支上运行
+    - main
+
+release-gitlab:
+  stage: release
+  image: node:20
+  before_script:
+    - apk add --no-cache openssh sshpass curl
+  script:
+    # 在 GitLab 上发布 Release
+    - |
+      curl --header "PRIVATE-TOKEN: $GITLAB_TOKEN" \
+           --data "name=Release for $(date +'%Y-%m-%d')" \
+           --data "tag_name=v$(date +'%Y.%m.%d')" \
+           --data "description=自动发布的 Release" \
+           --data "ref=main" \
+           "https://gitlab.com/api/v4/projects/$CI_PROJECT_ID/releases"
+  dependencies:
+    - build
+  only:
+    - main
