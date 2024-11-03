@@ -24,6 +24,7 @@ install-job:       # This job runs in the build stage, which runs first.
   stage: install
   script:
     - echo "安装依赖"
+    - npm config set registry https://registry.npmmirror.com
     - npm install
     - echo "安装依赖完成"
 
