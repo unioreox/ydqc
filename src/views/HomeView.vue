@@ -11,6 +11,7 @@ import { useUserStore } from "@/stores/user";
 import wx from "weixin-js-sdk";
 import { io, Socket } from "socket.io-client";
 import { wgs84ToGcj02 } from "@/util/convertLocation";
+import getCanvasFingerPrint from "@/util/canvasFingerPrint"
 
 const socketLocation = import.meta.env.MODE === 'development' ? "http://localhost:9092" : "";
 

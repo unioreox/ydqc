@@ -30,7 +30,7 @@ const loginHandle = () => {
 
 <style scoped lang="less">
 .login-container {
-  height: 100vh;
+  height: 100%;
 
   .login-inner {
     display: flex;
