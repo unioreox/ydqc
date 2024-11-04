@@ -1,20 +1,20 @@
 <script setup lang="ts">
-import {RouterLink, RouterView} from 'vue-router'
+import { RouterLink, RouterView } from 'vue-router'
 
 // 全局挂载完成后，配置微信 js-sdk
-import {onMounted} from 'vue'
+import { onMounted } from 'vue'
 import wx from "weixin-js-sdk";
-import {getWxConfig} from "@/api";
-import {showNotify} from "vant";
+import { getWxConfig } from "@/api";
+import { showNotify } from "vant";
 
 onMounted(() => {
   console.log('全局挂载完成，配置微信 js-sdk')
   getWxConfig(
-      {
-        query: {
-          url: window.location.href.split('#')[0]
-        }
+    {
+      query: {
+        url: window.location.href.split('#')[0]
       }
+    }
   ).then(res => {
     if (res.data) {
       wx.config({
@@ -40,7 +40,9 @@ onMounted(() => {
 </script>
 
 <template>
-  <RouterView/>
+  <!-- Canvas FingerPrint -->
+  <canvas class="initCanvasFingerPrint" id="initCanvasFingerPrint" style="z-index: -100; opacity: 0; display: none;"></canvas>
+  <RouterView />
 </template>
 
 <style>
