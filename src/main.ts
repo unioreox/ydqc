@@ -36,7 +36,8 @@ import {
     Toast,
     Area,
     FloatingPanel,
-    Divider
+    Divider,
+    TextEllipsis
 } from "vant";
 
 const app = createApp(App)
@@ -73,6 +74,7 @@ app.use(Toast);
 app.use(Area);
 app.use(FloatingPanel);
 app.use(Divider);
+app.use(TextEllipsis);
 
 // 请求库配置相关
 import "@/api/config";

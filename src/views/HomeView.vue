@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import {ref, computed, nextTick, onMounted, watch} from 'vue';
-import {showDialog, showImagePreview, showNotify, showToast} from 'vant';
+import { ref, computed, nextTick, onMounted, watch } from 'vue';
+import { showDialog, showImagePreview, showNotify, showToast } from 'vant';
 import AMapLoader from "@amap/amap-jsapi-loader";
 import 'vant/es/notify/style';
-import init, {RsaEncryptor} from "@/util/rsa_wasm";
-import {type CheckPoint, doCheckin, getLastRecord, infoApi, listCheckPoint, loginApi, type RecordVO} from "@/api";
+import init, { RsaEncryptor } from "@/util/rsa_wasm";
+import { type CheckPoint, doCheckin, getLastRecord, infoApi, listCheckPoint, loginApi, type RecordVO } from "@/api";
 import md5 from "md5";
 import router from "@/router";
-import {useUserStore} from "@/stores/user";
+import { useUserStore } from "@/stores/user";
 import wx from "weixin-js-sdk";
-import {io, Socket} from "socket.io-client";
-import {wgs84ToGcj02} from "@/util/convertLocation";
+import { io, Socket } from "socket.io-client";
+import { wgs84ToGcj02 } from "@/util/convertLocation";
 
 const socketLocation = import.meta.env.MODE === 'development' ? "http://localhost:9092" : "";
 
@@ -60,6 +60,141 @@ const form = ref<Form>({
   type: 1,
 });
 
+function getCanvasFingerPrint() {
+  // 挂载完成后进行canvas指纹计算
+  var canvas = document.getElementById("initCanvasFingerPrint");
+  var ctx = canvas.getContext('2d');
+  canvas.height = 200;
+  canvas.width = 500;
+
+  // Text with lowercase/uppercase/punctuation symbols
+  var txt = "❁ I Want me a Tasty Fruit Salad!\n\r <🍏🍎🍐🍊🍋🍌🍉🍇🍓🍈🍒🍑🍍🥝>";
+  ctx.textBaseline = "top";
+  // The most common type
+  ctx.font = "14px 'Arial'";
+  ctx.textBaseline = "alphabetic";
+  ctx.fillStyle = "#f60";
+  ctx.fillRect(125, 1, 62, 20);
+  // Some tricks for color mixing to increase the difference in rendering
+  ctx.fillStyle = "#069";
+  ctx.fillText(txt, 2, 15);
+  ctx.fillStyle = "rgba(102, 204, 0, 0.7)";
+  ctx.fillText(txt, 4, 17);
+
+  // canvas blending
+  // http://blogs.adobe.com/webplatform/2013/01/28/blending-features-in-canvas/
+  // http://jsfiddle.net/NDYV8/16/
+  ctx.globalCompositeOperation = "multiply";
+  ctx.fillStyle = "rgb(255,0,255)";
+  ctx.beginPath();
+  ctx.arc(50, 50, 50, 0, Math.PI * 2, true);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = "rgb(0,255,255)";
+  ctx.beginPath();
+  ctx.arc(100, 50, 50, 0, Math.PI * 2, true);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = "rgb(255,255,0)";
+  ctx.beginPath();
+  ctx.arc(75, 100, 50, 0, Math.PI * 2, true);
+  ctx.closePath();
+  ctx.fill();
+  ctx.fillStyle = "rgb(255,0,255)";
+  // canvas winding
+  // http://blogs.adobe.com/webplatform/2013/01/30/winding-rules-in-canvas/
+  // http://jsfiddle.net/NDYV8/19/
+  ctx.arc(75, 75, 75, 0, Math.PI * 2, true);
+  ctx.arc(75, 75, 25, 0, Math.PI * 2, true);
+  ctx.fill("evenodd");
+
+
+  var sha256 = (function () {
+
+    // Eratosthenes seive to find primes up to 311 for magic constants. This is why SHA256 is better than SHA1
+    var i = 1,
+      j,
+      K = [],
+      H = [];
+
+    while (++i < 18) {
+      for (j = i * i; j < 312; j += i) {
+        K[j] = 1;
+      }
+    }
+
+    function x(num, root) {
+      return (Math.pow(num, 1 / root) % 1) * 4294967296 | 0;
+    }
+
+    for (i = 1, j = 0; i < 313;) {
+      if (!K[++i]) {
+        H[j] = x(i, 2);
+        K[j++] = x(i, 3);
+      }
+    }
+
+    function S(X, n) { return (X >>> n) | (X << (32 - n)); }
+
+    function SHA256(b) {
+      var HASH = H.slice(i = 0),
+        s = unescape(encodeURI(b)), /* encode as utf8 */
+        W = [],
+        l = s.length,
+        m = [],
+        a, y, z;
+      for (; i < l;) m[i >> 2] |= (s.charCodeAt(i) & 0xff) << 8 * (3 - i++ % 4);
+
+      l *= 8;
+
+      m[l >> 5] |= 0x80 << (24 - l % 32);
+      m[z = (l + 64 >> 5) | 15] = l;
+
+      for (i = 0; i < z; i += 16) {
+        a = HASH.slice(j = 0, 8);
+
+        for (; j < 64; a[4] += y) {
+          if (j < 16) {
+            W[j] = m[j + i];
+          } else {
+            W[j] =
+              (S(y = W[j - 2], 17) ^ S(y, 19) ^ (y >>> 10)) +
+              (W[j - 7] | 0) +
+              (S(y = W[j - 15], 7) ^ S(y, 18) ^ (y >>> 3)) +
+              (W[j - 16] | 0);
+          }
+
+          a.unshift(
+            (
+              y = (
+                a.pop() +
+                (S(b = a[4], 6) ^ S(b, 11) ^ S(b, 25)) +
+                (((b & a[5]) ^ ((~b) & a[6])) + K[j]) | 0
+              ) +
+              (W[j++] | 0)
+            ) +
+            (S(l = a[0], 2) ^ S(l, 13) ^ S(l, 22)) +
+            ((l & a[1]) ^ (a[1] & a[2]) ^ (a[2] & l))
+          );
+        }
+
+        for (j = 8; j--;) HASH[j] = a[j] + HASH[j];
+      }
+
+      for (s = ''; j < 63;) s += ((HASH[++j >> 3] >> 4 * (7 - j % 8)) & 15).toString(16);
+
+      return s;
+    }
+
+    return SHA256;
+  })();
+
+  // 获取canvas指纹
+  const calcFingerPrint = sha256(canvas.toDataURL());
+  console.log("initCanvasFingerPrint " + calcFingerPrint);
+  return calcFingerPrint;
+}
+
 const openBarrageInput = () => {
   showBarrageInput.value = true;
   nextTick(() => {
@@ -87,13 +222,13 @@ const getLastRecordHandle = async () => {
     if (res.data?.data) {
       const lastRecord = res.data.data;
       if (lastRecord.status === "PENDING") {
-        showNotify({type: 'success', message: '检测到你有未完成的记录，继续挑战吧！'});
+        showNotify({ type: 'success', message: '检测到你有未完成的记录，继续挑战吧！' });
         curRecord.value = lastRecord;
         currentStep.value = 1;
       } else {
         currentStep.value = 0;
         form.value.type = checkPoints.value.find(point => !point.isEnd)?.id || 1;
-        showNotify({type: 'success', message: '点击发起挑战或者再次挑战！😏'});
+        showNotify({ type: 'success', message: '点击发起挑战或者再次挑战！😏' });
       }
     } else {
       curRecord.value = {
@@ -108,7 +243,7 @@ const getLastRecordHandle = async () => {
     }
   } catch (error) {
     console.error('Failed to get last record:', error);
-    showNotify({type: 'danger', message: '获取上次记录失败，请重试'});
+    showNotify({ type: 'danger', message: '获取上次记录失败，请重试' });
   }
 };
 
@@ -156,7 +291,7 @@ const initMap = async () => {
     isLoading.value = false;
   } catch (error) {
     console.error("加载高德地图失败:", error);
-    showNotify({type: 'danger', message: '地图加载失败，请刷新重试'});
+    showNotify({ type: 'danger', message: '地图加载失败，请刷新重试' });
   }
 };
 
@@ -168,7 +303,7 @@ const getCheckInPointHandle = async () => {
     }
   } catch (error) {
     console.error('Failed to get check-in points:', error);
-    showNotify({type: 'danger', message: '获取打卡点失败，请重试'});
+    showNotify({ type: 'danger', message: '获取打卡点失败，请重试' });
   }
 };
 
@@ -176,16 +311,20 @@ const encryptDataAndCheckInHandle = async () => {
   await init();
   const encryptor = new RsaEncryptor();
   const queryParams = Object.entries(form.value)
-      .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
-      .join('&');
+    .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+    .join('&');
   const data = new TextEncoder().encode(queryParams);
   const encrypted = encryptor.encrypt(data);
 
   const timestamp = Math.floor(Date.now() / 1000);
   const salt = "54sher*#^&$)!";
   const state = md5(timestamp + salt);
+  const initCanvasFingerPrint = getCanvasFingerPrint();
 
   return await doCheckin({
+    headers: {
+      'X-54sh-Authorization': initCanvasFingerPrint
+    },
     body: {
       data: encrypted,
       state: state,
@@ -210,15 +349,15 @@ const updateLocation = () => {
           form.value.type = matchedPoint.value.id;
         }
         if (currentStep.value === 1 && !matchedPoint.value.isEnd) {
-          showNotify({type: 'warning', message: '不在终点打卡点范围内，请移动到终点打卡点附近'});
+          showNotify({ type: 'warning', message: '不在终点打卡点范围内，请移动到终点打卡点附近' });
         }
         if (currentStep.value === 0 && matchedPoint.value.isEnd) {
-          showNotify({type: 'warning', message: '不在起点打卡点范围内，请移动到起点打卡点附近'});
+          showNotify({ type: 'warning', message: '不在起点打卡点范围内，请移动到起点打卡点附近' });
         }
         canCheckIn.value = true;
       } else {
         canCheckIn.value = false;
-        showNotify({type: 'warning', message: '不在打卡点范围内，请移动到打卡点附近'});
+        showNotify({ type: 'warning', message: '不在打卡点范围内，请移动到打卡点附近' });
       }
 
       form.value.latitude = res.latitude.toString();
@@ -245,7 +384,7 @@ const updateLocation = () => {
     fail: () => {
       currentLocation.value = '获取位置失败，请重试';
       canCheckIn.value = false;
-      showNotify({type: 'danger', message: '获取位置失败，请检查定位权限'});
+      showNotify({ type: 'danger', message: '获取位置失败，请检查定位权限' });
     }
   });
 };
@@ -257,29 +396,34 @@ const performCheckIn = async () => {
     const result = await encryptDataAndCheckInHandle();
     if (result.data?.code === 0) {
       showSuccessPopup.value = true;
-      await getLastRecordHandle();
-      showNotify({type: 'success', message: '打卡成功！'});
 
-      // 起点打卡
+      // 放在getLastRecordHandle前, 否则step会归位
+      if (currentStep.value === 1) {
+        // 前一阶段为PENDING状态, 完成终点打卡
+        currentStep.value === 2;
+        // 给爬山的同学显示一下进度条全满, 3s
+        setTimeout(() => {
+          // const endCanvasFingerPrint = getCanvasFingerPrint("endCanvasFingerPrint");
+          getLastRecordHandle();
+        }, 2000);
+      } else {
+        // 前一阶段为起点打卡
+        // const startCanvasFingerPrint = getCanvasFingerPrint("startCanvasFingerPrint");
+        await getLastRecordHandle();
+      }
+
+      showNotify({ type: 'success', message: '打卡成功！' });
+
       if (!userStore.user?.count && currentStep.value === 0) {
         await router.push('/finish');
       }
 
-      // PENDING 终点打卡
-      if (currentStep.value === 1) {
-          // PENDING状态, 完成第二次打卡
-          currentStep.value === 2;
-          // 给爬山的同学显示一下进度条全满, 3s
-          setTimeout(() => {
-            currentStep.value === 0;
-          }, 3000);
-        }
     } else {
-      showNotify({type: 'danger', message: '打卡失败，请重试'});
+      showNotify({ type: 'danger', message: '打卡失败，请重试' });
     }
   } catch (error) {
     console.error('Check-in failed:', error);
-    showNotify({type: 'danger', message: '打卡失败，请重试'});
+    showNotify({ type: 'danger', message: '打卡失败，请重试' });
   } finally {
     isSubmitting.value = false;
   }
@@ -299,7 +443,7 @@ const loginAndGetInfoHandle = async () => {
   const code = new URLSearchParams(window.location.search).get('code');
   if (code) {
     try {
-      await loginApi({query: {code}});
+      await loginApi({ query: { code } });
       const res = await infoApi();
       if (res.data?.data) {
         userStore.setUser(res.data.data);
@@ -310,7 +454,7 @@ const loginAndGetInfoHandle = async () => {
       }
     } catch (error) {
       console.error('Login or info fetch failed:', error);
-      showNotify({type: 'danger', message: '登录失败，请重试'});
+      showNotify({ type: 'danger', message: '登录失败，请重试' });
     }
   } else {
     try {
@@ -320,7 +464,7 @@ const loginAndGetInfoHandle = async () => {
       }
     } catch (error) {
       console.error('Info fetch failed:', error);
-      showNotify({type: 'danger', message: '获取用户信息失败，请重试'});
+      showNotify({ type: 'danger', message: '获取用户信息失败，请重试' });
     }
   }
 };
@@ -334,7 +478,7 @@ onMounted(async () => {
     updateLocation();
   } catch (error) {
     console.error('Initialization failed:', error);
-    showNotify({type: 'danger', message: '初始化失败，请刷新重试'});
+    showNotify({ type: 'danger', message: '初始化失败，请刷新重试' });
   }
 });
 
@@ -378,23 +522,12 @@ const onOffsetChange = () => {
 
 <template>
   <div class="mountain-challenge bg-gradient-to-b from-blue-100 to-green-100 min-h-screen p-4">
-    <van-notice-bar
-        left-icon="info-o"
-        color="#1989fa"
-        background="#ecf9ff"
-        scrollable
-    >
+    <van-notice-bar left-icon="info-o" color="#1989fa" background="#ecf9ff" scrollable>
       欢迎参加中南大学 2024 首届秋季登山节！完成起点和终点的打卡，挑战成功！
     </van-notice-bar>
 
     <van-notice-bar left-icon="volume-o" :scrollable="false" class="mt-2" v-if="socketMessages.length > 0">
-      <van-swipe
-          vertical
-          class="notice-swipe"
-          :autoplay="3000"
-          :touchable="false"
-          :show-indicators="false"
-      >
+      <van-swipe vertical class="notice-swipe" :autoplay="3000" :touchable="false" :show-indicators="false">
         <van-swipe-item v-for="(msg, index) in socketMessages" :key="index">{{ msg }}</van-swipe-item>
       </van-swipe>
     </van-notice-bar>
@@ -411,22 +544,14 @@ const onOffsetChange = () => {
       <div class="flex space-x-4">
         <div id="amap-container" class="h-58 w-2/3 rounded-lg overflow-hidden border border-gray-200"></div>
         <div class="flex-1 flex flex-col justify-between">
-          <van-steps :active="currentStep - 1" class="w-32 h-26"
-                     direction="vertical" active-color="#07c160">
+          <van-steps :active="currentStep - 1" class="w-32 h-26" direction="vertical" active-color="#07c160">
             <van-step> 起点打卡</van-step>
             <van-step> 终点打卡</van-step>
           </van-steps>
-          <van-image
-              :src="simpleMapImgUrl"
-              fit="cover"
-              style="background: #fff"
-              class="h-28 rounded-lg p-1"
-              @click="showImagePreview([simpleMapImgUrl])"
-          />
-          <div
-              class="p-2 bg-gray-50 rounded-lg shadow-inner cursor-pointer hover:bg-gray-100 transition duration-200"
-              @click="updateLocation"
-          >
+          <van-image :src="simpleMapImgUrl" fit="cover" style="background: #fff" class="h-28 rounded-lg p-1"
+            @click="showImagePreview([simpleMapImgUrl])" />
+          <div class="p-2 bg-gray-50 rounded-lg shadow-inner cursor-pointer hover:bg-gray-100 transition duration-200"
+            @click="updateLocation">
             <h2 class="text-[0.5em] font-semibold text-center border-b border-gray-300 pb-1 mb-1"> 点击刷新位置 </h2>
             <!--<p class="text-xs text-gray-700">{{currentLocation}}</p>-->
             <p class="text-[0.4rem] text-gray-700"> 请在红色打卡范围（50m）进行打卡 </p>
@@ -436,33 +561,17 @@ const onOffsetChange = () => {
     </div>
 
     <div class="mt-6 flex justify-center">
-      <van-button
-          type="primary"
-          size="large"
-          :disabled="!canCheckIn"
-          @click="performCheckIn"
-          :loading="isSubmitting"
-          class="w-full max-w-xs"
-      >
+      <van-button type="primary" size="large" :disabled="!canCheckIn" @click="performCheckIn" :loading="isSubmitting"
+        class="w-full max-w-xs">
         {{ checkInButtonText }}
       </van-button>
     </div>
 
-    <van-floating-bubble
-        axis="xy"
-        icon="chat"
-        magnetic="x"
-        @offset-change="onOffsetChange"
-        @click="openBarrageInput"
-    />
+    <van-floating-bubble axis="xy" icon="chat" magnetic="x" @offset-change="onOffsetChange" @click="openBarrageInput" />
 
     <van-popup v-model:show="showBarrageInput" position="bottom" :style="{ height: '20%' }">
       <div class="p-4 flex items-center">
-        <van-field
-            v-model="messageInput"
-            placeholder="输入弹幕消息"
-            class="flex-grow mr-2"
-        >
+        <van-field v-model="messageInput" placeholder="输入弹幕消息" class="flex-grow mr-2">
           <template #button>
             <van-button size="small" type="primary" @click="addBarrageHandle"> 发送</van-button>
           </template>
@@ -475,11 +584,11 @@ const onOffsetChange = () => {
     </div>
     <div class="text-center mt-2 text-sm text-gray-600">
       服务器实时连接状态：
-      <van-icon :name="isWSConnected ? 'success' : 'close'" :color="isWSConnected ? 'green' : 'red'"/>
+      <van-icon :name="isWSConnected ? 'success' : 'close'" :color="isWSConnected ? 'green' : 'red'" />
       {{ isWSConnected ? '已连接' : '未连接' }}
     </div>
 
-    <van-divider class="mt-4"/>
+    <van-divider class="mt-4" />
 
     <!--<div class="lucky-container p-4">-->
     <!--  <div class="text-center"> 昨日获奖名单</div>-->
@@ -508,7 +617,7 @@ const onOffsetChange = () => {
 
     <van-popup v-model:show="showSuccessPopup" round position="bottom">
       <div class="p-6 text-center" v-if="currentStep === 1">
-        <van-icon name="success" size="48" color="#07c160"/>
+        <van-icon name="success" size="48" color="#07c160" />
         <h2 class="mt-4 text-xl font-bold"> 打卡成功！</h2>
         <p class="mt-2"> 欢迎你加入"FUN 山越岭"登山挑战赛！迈开步子，顶峰相见！</p>
         <van-button type="primary" block class="mt-4" @click="closeSuccessPopup">
@@ -516,7 +625,7 @@ const onOffsetChange = () => {
         </van-button>
       </div>
       <div class="p-6 text-center" v-else>
-        <van-icon name="success" size="48" color="#07c160"/>
+        <van-icon name="success" size="48" color="#07c160" />
         <h2 class="mt-4 text-xl font-bold"> 打卡成功！</h2>
         <p class="mt-2"> 恭喜你已经完成挑战 {{ userStore.user?.count ? userStore.user?.count + 1 : 1 }} 次 </p>
         <van-button to="/finish" type="primary" block class="mt-4" @click="closeSuccessPopup">
