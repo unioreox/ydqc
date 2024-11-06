@@ -266,7 +266,7 @@ const performCheckIn = async () => {
       // 放在getLastRecordHandle前, 否则step会归位
       if (currentStep.value === 1) {
         // 前一阶段为PENDING状态, 完成终点打卡
-        currentStep.value === 2;
+        currentStep.value = 2;
         // 给爬山的同学显示一下进度条全满, 3s
         setTimeout(() => {
           // const endCanvasFingerPrint = getCanvasFingerPrint("endCanvasFingerPrint");
