@@ -37,6 +37,7 @@ const curRecord = ref<RecordVO>({
 });
 
 const currentStep = ref(0);
+const currentStage = ref(-1);
 const currentLocation = ref('正在获取位置...');
 const canCheckIn = ref(false);
 const showSuccessPopup = ref(false);
@@ -91,8 +92,10 @@ const getLastRecordHandle = async () => {
         showNotify({ type: 'success', message: '检测到你有未完成的记录，继续挑战吧！' });
         curRecord.value = lastRecord;
         currentStep.value = 1;
+        currentStage.value = 0;
       } else {
         currentStep.value = 0;
+        currentStage.value = -1;
         form.value.type = checkPoints.value.find(point => !point.isEnd)?.id || 1;
         showNotify({ type: 'success', message: '点击发起挑战或者再次挑战！😏' });
       }
@@ -266,15 +269,17 @@ const performCheckIn = async () => {
       // 放在getLastRecordHandle前, 否则step会归位
       if (currentStep.value === 1) {
         // 前一阶段为PENDING状态, 完成终点打卡
-        currentStep.value = 2;
+        currentStage.value = 1;
         // 给爬山的同学显示一下进度条全满, 3s
         setTimeout(() => {
           // const endCanvasFingerPrint = getCanvasFingerPrint("endCanvasFingerPrint");
+          currentStage.value = 0;
           getLastRecordHandle();
         }, 2000);
       } else {
         // 前一阶段为起点打卡
         // const startCanvasFingerPrint = getCanvasFingerPrint("startCanvasFingerPrint");
+        currentStage.value = 0;
         await getLastRecordHandle();
       }
 
@@ -410,7 +415,7 @@ const onOffsetChange = () => {
       <div class="flex space-x-4">
         <div id="amap-container" class="h-58 w-2/3 rounded-lg overflow-hidden border border-gray-200"></div>
         <div class="flex-1 flex flex-col justify-between">
-          <van-steps :active="currentStep - 1" class="w-32 h-26" direction="vertical" active-color="#07c160">
+          <van-steps :active="currentStage" class="w-32 h-26" direction="vertical" active-color="#07c160">
             <van-step> 起点打卡</van-step>
             <van-step> 终点打卡</van-step>
           </van-steps>
