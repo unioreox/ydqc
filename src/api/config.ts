@@ -20,7 +20,7 @@ client.instance.interceptors.response.use(
         if (response.data?.code !== 0) {
             if (response.data?.code === 401) {
                 router.push("/login");
-            }else if(response.data?.code === 403){
+            }else if(response.data?.code === 40301){
                 // 用户被封禁的情形
                 router.push("/banned");
             }else{

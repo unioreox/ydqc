@@ -22,6 +22,15 @@ const loginHandle = () => {
 
 }
 // }
+const loginHandle2 = () => {
+  // TODO : 仅在测试环境
+  showDialog({
+    title: '测试环境登录',
+    message: '将直接完成登录，无需微信授权',
+  }).then(() => {
+    window.location.href = `/?code=justfortest2`;
+  })
+}
 </script>
 
 <template>
@@ -34,6 +43,13 @@ const loginHandle = () => {
                   icon="wechat"
                   @click="loginHandle">
         &nbsp;&nbsp; 测试登录
+      </van-button>
+      <van-button type="success"
+                  class="login-btn"
+                  style="border-radius: 10px;width: 10em;box-shadow: #06C05F 0 0 3px;"
+                  icon="wechat"
+                  @click="loginHandle2">
+        &nbsp;&nbsp; 测试登录2
       </van-button>
     </div>
   </div>

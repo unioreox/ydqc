@@ -8,6 +8,7 @@ export type ApiResponseTeamInfo = {
 
 export type TeamInfo = {
     id?: string;
+    name?: string;
     members?: Array<TeamMemberInfo>;
 };
 
@@ -653,7 +654,7 @@ export type ListAllUserResponse = ListAllUserResponses[keyof ListAllUserResponse
 export type GetTeamInfoData = {
     body?: never;
     path: {
-        teamId: number;
+        teamId: string;
     };
     query?: never;
     url: '/team/{teamId}';

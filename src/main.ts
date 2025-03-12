@@ -38,6 +38,11 @@ import {
     FloatingPanel,
     Divider,
     TextEllipsis,
+    Empty,
+    NumberKeyboard,
+    Card,
+    Tag,
+    PullRefresh
 } from "vant";
 
 const app = createApp(App)
@@ -75,6 +80,11 @@ app.use(Area);
 app.use(FloatingPanel);
 app.use(Divider);
 app.use(TextEllipsis);
+app.use(Empty);
+app.use(NumberKeyboard);
+app.use(Card);
+app.use(Tag);
+app.use(PullRefresh);
 
 // 请求库配置相关
 import "@/api/config";
