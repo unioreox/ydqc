@@ -12,7 +12,7 @@
 const routes = [
     {
         path: '/',
-        name: '首页',
+        name: '首页 ',
         component: () => import('../layout/BasicLayout.vue'),
         meta: {
             icon: 'guide-o',
@@ -28,7 +28,7 @@ const routes = [
     },
     {
         path: '/leaderboard',
-        name: '排行榜',
+        name: '排行榜 ',
         component: () => import('../layout/BasicLayout.vue'),
         meta: {
             icon: 'bar-chart-o',
@@ -44,7 +44,7 @@ const routes = [
     },
     {
         path: '/user',
-        name: '我的',
+        name: '我的 ',
         component: () => import( '../layout/BasicLayout.vue'),
         meta: {
             icon: 'user-o',
@@ -75,7 +75,7 @@ const routes = [
     },
     {
         path: "/login",
-        name: "登录",
+        name: "登录 ",
         component: () => import("@/views/login/LoginView.vue"),
         meta: {
             hideInMenu: true
@@ -83,7 +83,7 @@ const routes = [
     },
     {
         path: "/banned",
-        name: "封禁",
+        name: "封禁 ",
         component: () => import("@/views/banned/BannedView.vue"),
         meta: {
             hideInMenu: true
@@ -91,7 +91,7 @@ const routes = [
     },
     {
         path: "/finish",
-        name: "恭喜完成",
+        name: "恭喜完成 ",
         component: () => import("@/layout/BasicLayout.vue"),
         meta: {
             hideInMenu: true
@@ -111,7 +111,7 @@ const routes = [
     },
     {
         path: "/feedback",
-        name: "问题反馈",
+        name: "问题反馈 ",
         component: () => import("@/layout/BasicLayout.vue"),
         meta: {
             hideInMenu: true
@@ -121,6 +121,21 @@ const routes = [
                 path: "",
                 name: "问题反馈",
                 component: () => import("@/views/feedback/FeedbackView.vue"),
+            }
+        ],
+    },
+    {
+        path: "/team",
+        name: "加入团队",
+        component: () => import("@/layout/BasicLayout.vue"),
+        meta: {
+            hideInMenu: true,
+        },
+        children: [
+            {
+                path: "",
+                name: "加入团队",
+                component: () => import("@/views/team/TeamView.vue"),
             }
         ],
     }

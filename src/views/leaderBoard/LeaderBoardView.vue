@@ -157,6 +157,32 @@ const fetchCollegeUsers = async () => {
             </li>
           </ul>
         </van-tab>
+        <van-tab title="登山队活跃度">
+          <div class="px-4 py-2 bg-gray-100 bg-opacity-50 text-gray-700 font-semibold flex">
+            <span class="w-1/6 text-center"> 排名 </span>
+            <span class="w-2/6 pl-14"> 学院&nbsp;/&nbsp;队名 </span>
+            <span class="w-3/6 text-right"> 用时 </span>
+          </div>
+          <ul v-if="top30User.length > 0" class="divide-y divide-gray-200 divide-opacity-50">
+            <li v-for="(user, index) in top30User" :key="index"
+                class="flex items-center py-3 px-4 hover:bg-white hover:bg-opacity-30 transition-colors duration-150">
+              <div class="w-1/6 flex justify-center items-center">
+                <Trophy v-if="index === 0" class="w-6 h-6 text-yellow-400"/>
+                <Medal v-else-if="index === 1" class="w-6 h-6 text-gray-400"/>
+                <Medal v-else-if="index === 2" class="w-6 h-6 text-yellow-700"/>
+                <span v-else class="text-gray-500 font-medium">{{ index + 1 }}</span>
+              </div>
+              <div class="w-2/6 flex items-center">
+                <img :src="user.userAvatar" :alt="user.userName"
+                     class="w-8 h-8 rounded-full mr-3 border-2 border-white shadow">
+                <span class="font-medium text-gray-900 pl-4">{{ user.userName }}</span>
+              </div>
+              <div class="w-3/6 text-right">
+                <span class="font-bold text-blue-600">{{ user.userBestScoreFormatted }}</span>
+              </div>
+            </li>
+          </ul>
+        </van-tab>
       </van-tabs>
     </div>
     <div class="text-center mt-6 space-y-2">

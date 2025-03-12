@@ -163,6 +163,37 @@ const ScanQrCodeTest = () => {
     });
   });
 }
+
+const locationTest = () => {
+  showDialog({
+    title: '定位功能测试',
+    message: '请确保您的设备支持定位功能，并且已经打开定位功能。\n' +
+        '点击确定开始测试',
+    confirmButtonText: '确定',
+    closeOnClickOverlay: true,
+  }).then(() => {
+    wx.getLocation({
+      type: 'wgs84',
+      success: (res) => {
+        showDialog({
+          title: '定位功能测试',
+          message: ` 定位成功: ${JSON.stringify(res)}`,
+          confirmButtonText: '确定',
+          closeOnClickOverlay: true,
+        });
+      },
+      fail: (err) => {
+        showDialog({
+          title: '定位功能测试',
+          message: ` 定位失败: ${err.errMsg}`,
+          confirmButtonText: '确定',
+          closeOnClickOverlay: true,
+        });
+      },
+    });
+  });
+}
+
 </script>
 
 <template>
@@ -254,6 +285,12 @@ const ScanQrCodeTest = () => {
                  class="flex items-center p-4 text-gray-700 bg-gray-50 rounded-xl hover:bg-gray-100 transition-all duration-300 group hover:shadow-md cursor-pointer">
               <Settings class="w-6 h-6 text-indigo-500 group-hover:text-indigo-600 transition-colors duration-300"/>
               <span class="flex-1 ml-4 font-medium"> 测试扫码功能 </span>
+              <ChevronRight class="w-5 h-5 text-gray-400 group-hover:text-gray-600 transition-colors duration-300"/>
+            </div>
+            <div @click="locationTest"
+                 class="flex items-center p-4 text-gray-700 bg-gray-50 rounded-xl hover:bg-gray-100 transition-all duration-300 group hover:shadow-md cursor-pointer">
+              <Settings class="w-6 h-6 text-indigo-500 group-hover:text-indigo-600 transition-colors duration-300"/>
+              <span class="flex-1 ml-4 font-medium"> 测试定位功能 </span>
               <ChevronRight class="w-5 h-5 text-gray-400 group-hover:text-gray-600 transition-colors duration-300"/>
             </div>
           </div>

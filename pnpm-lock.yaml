@@ -12,8 +12,8 @@ importers:
         specifier: ^1.0.1
         version: 1.0.1
       '@hey-api/client-axios':
-        specifier: ^0.2.9
-        version: 0.2.9(axios@1.7.7)
+        specifier: ^0.6.2
+        version: 0.6.2(axios@1.7.7)
       '@originjs/crypto-js-wasm':
         specifier: ^1.1.1
         version: 1.1.1
@@ -404,8 +404,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@hey-api/client-axios@0.2.9':
-    resolution: {integrity: sha512-K4T0KdBKl4LKbAVtfL1E9y9l2Q79NskptPBQcV1+RayjADCJctOtwdjwJitkpxj31UfQ79TSKHH96mMs9HrSsQ==}
+  '@hey-api/client-axios@0.6.2':
+    resolution: {integrity: sha512-DwaOJ+LROSMJgYWXpqBeLquf2/aJXPpXkVfrnOj3gBaaxSZ71x1uwVGuujVkRhJpImbP4Gt58Fl9ECNPdDLTSw==}
     peerDependencies:
       axios: '>= 1.0.0 < 2'
 
@@ -2070,7 +2070,7 @@ snapshots:
   '@esbuild/win32-x64@0.21.5':
     optional: true
 
-  '@hey-api/client-axios@0.2.9(axios@1.7.7)':
+  '@hey-api/client-axios@0.6.2(axios@1.7.7)':
     dependencies:
       axios: 1.7.7
 

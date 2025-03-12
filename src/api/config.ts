@@ -1,4 +1,4 @@
-import {client} from "@/api/services.gen";
+import {client} from "@/api/client.gen";
 import {getToken, setToken} from "@/util/token";
 import {showDialog} from "vant";
 import router from "@/router";

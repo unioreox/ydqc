@@ -14,7 +14,9 @@ const submitFeedbackHandle = () => {
     return
   }
   addFeedback({
-    body: form.value
+    query: {
+      content: form.value
+    }
   }).then(res => {
     if (res.data?.data) {
       showToast({
