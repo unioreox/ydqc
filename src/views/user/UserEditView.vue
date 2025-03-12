@@ -29,7 +29,7 @@ const submitProfileHandle = () => {
     })
     return
   }
-  if (form.value.idNumber && form.value.idNumber.length > 12 || form.value.idNumber?.length === 0) {
+  if (form.value.idNumber && form.value.idNumber.length > 15 || form.value.idNumber?.length === 0) {
     showToast({
       type: 'fail',
       message: '学号/工号未填写或者格式错误'

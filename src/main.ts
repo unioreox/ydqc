@@ -37,7 +37,7 @@ import {
     Area,
     FloatingPanel,
     Divider,
-    TextEllipsis
+    TextEllipsis,
 } from "vant";
 
 const app = createApp(App)
