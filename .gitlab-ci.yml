@@ -13,7 +13,7 @@ stages:
 install:
   stage: install
   script:
-    - echo "第一阶段：安装依赖"
+    - echo "安装依赖"
     - npm config set registry https://registry.npmmirror.com
     - npm install
 
@@ -21,7 +21,7 @@ install:
 build:
   stage: build
   script:
-    - echo "第二阶段：开始构建产物"
+    - echo "开始构建产物"
     - npm run build-only
     - tar -czvf dist.tar.gz -C dist . # 打包 dist 文件夹内容
   artifacts:
@@ -32,7 +32,7 @@ release:
   stage: release
   script:
     # 在 GitLab 上发布 Release
-    - echo "第三阶段：发布"
+    - echo "发布产物"
     - |
       curl --header "PRIVATE-TOKEN: $GITLAB_TOKEN" \
            --data "name=Release for $(date +'%Y-%m-%d')" \
