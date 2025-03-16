@@ -1,3 +1,6 @@
+#使用node.js 20版本
+image: node:20
+
 # 设置缓存，避免每次都重新拉取node_modules
 cache:
   paths:
@@ -12,7 +15,6 @@ stages:
 # 第一阶段：安装依赖
 install:
   stage: install
-  image: node:20
   script:
     - echo "Stage 1 - 安装依赖"
     - echo "设置npm镜像源"
@@ -23,37 +25,27 @@ install:
 # 第二阶段：构建
 build:
   stage: build
-  image: node:20
   script:
     - echo "Stage 2 - 构建产物"
     - npm run build-only
     - echo "打包 dist 文件夹内容"
-    - tar -czvf dist.tar.gz -C dist .
+    # - tar -czvf dist.tar.gz -C dist .
   artifacts:
     paths:
-      - dist.tar.gz # 保存压缩包为 GitLab 产物供后续步骤使用
+      - /dist # 保存压缩包为 GitLab 产物供后续步骤使用
 
 release:
   stage: release
-  image: registry.gitlab.com/gitlab-org/release-cli:latest
   script:
     # 在 GitLab 上发布 Release
     - echo "Stage 3 - 发布产物"
-    #- |
-    #  curl --header "PRIVATE-TOKEN: $GITLAB_TOKEN" \
-    #       --data "name=自动构建, 版本 v$(date +'%Y-%m-%d')" \
-    #       --data "tag_name=v$(date +'%Y.%m.%d')" \
-    #      --data "description=由Gitlab流水线自动发布的 Release， 构建产物请前往流水线下载" \
-    #      --data "ref=main" \
-    #      "https://gitlab.54sher.com/api/v4/projects/$CI_PROJECT_ID/releases"
-    #- echo "所有操作成功完成"
-  release:
-    tag_name: v$(date +'%Y.%m.%d')
-    name: '自动构建Release'
-    description: '由Gitlab流水线自动发布的 Release'
-    assets:
-      links:
-        - name: '构建产物'
-        - url: '/dist.tar.gz'
+    - |
+      curl --header "PRIVATE-TOKEN: $GITLAB_TOKEN" \
+           --data "name=自动构建, 版本 v$(date +'%Y-%m-%d')" \
+           --data "tag_name=v$(date +'%Y.%m.%d')" \
+           --data "description=由Gitlab流水线自动发布的 Release， 构建产物请前往流水线下载" \
+           --data "ref=main" \
+           "https://gitlab.54sher.com/api/v4/projects/$CI_PROJECT_ID/releases"
+    - echo "所有操作成功完成"
   dependencies:
     - build
