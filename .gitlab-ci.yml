@@ -41,8 +41,8 @@ release:
     - echo "Stage 3 - 发布产物"
     - |
       curl --header "PRIVATE-TOKEN: $GITLAB_TOKEN" \
-           --data "name=自动构建, 版本 v$(date +'%Y-%m-%d')" \
-           --data "tag_name=v$(date +'%Y.%m.%d')" \
+           --data "name=自动构建, 版本 v$(date +'%Y-%m-%d')_$CI_COMMIT_SHORT_SHA" \
+           --data "tag_name=v$(date +'%Y.%m.%d')_$CI_COMMIT_SHORT_SHA" \
            --data "description=由Gitlab流水线自动发布的 Release， 构建产物请前往流水线下载" \
            --data "ref=main" \
            "https://gitlab.54sher.com/api/v4/projects/$CI_PROJECT_ID/releases"
