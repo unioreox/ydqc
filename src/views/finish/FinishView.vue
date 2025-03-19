@@ -3,7 +3,7 @@ import {ref, onMounted, nextTick} from 'vue';
 import html2canvas from 'html2canvas';
 import {Button, ShareSheet, showDialog, showNotify, showToast} from 'vant';
 import 'vant/lib/index.css';
-import {type CertificateVO, getCertificateByUserIdApi} from "@/api";
+import {type CertificateVo, getCertificateByUserIdApi} from "@/api";
 import {useRouter} from "vue-router";
 import wx from "weixin-js-sdk";
 import useClipboard from 'vue-clipboard3';
@@ -16,7 +16,7 @@ const showDom = ref(true);
 const router = useRouter();
 const clipboard = useClipboard();
 
-const certificateInfo = ref<CertificateVO>({
+const certificateInfo = ref<CertificateVo>({
   id: "",
   userName: "",
   totalMilliseconds: "",
@@ -85,7 +85,7 @@ const onSelect = async (option: { name: string }) => {
     });
   } else if (option.name === '复制链接') {
     try {
-      await clipboard.toClipboard('https://race.54sher.com/finish/' + certificateInfo.value.id);
+      await clipboard.toClipboard('https://ydqc.csu.edu.cn/finish/' + certificateInfo.value.id);
       showToast("已复制到剪贴板");
     } catch (e) {
       console.log(e)
@@ -120,6 +120,14 @@ onMounted(() => {
     }
   });
 });
+
+const formatDate = (dateString: string) => {
+  const date = new Date(dateString === "" ? Date.now() : dateString);
+  const year = date.getFullYear().toString().split('').map(num => '〇一二三四五六七八九'[parseInt(num)]).join('');
+  const month = date.getMonth() + 1;
+  const monthChinese = ['一月', '二月', '三月', '四月', '五月', '六月', '七月', '八月', '九月', '十月', '十一月', '十二月'][month - 1];
+  return `${year}年${monthChinese}`;
+};
 </script>
 
 <template>
@@ -138,7 +146,7 @@ onMounted(() => {
 
           <div class="tuanwei-info">
             <p> 共青团中南大学委员会 </p>
-            <p> 二〇二四年十一月 </p>
+            <p> {{ formatDate(certificateInfo.createAt || "") }} </p>
           </div>
         </div>
       </div>

@@ -42,7 +42,12 @@ import {
     NumberKeyboard,
     Card,
     Tag,
-    PullRefresh
+    PullRefresh,
+    Collapse,
+    CollapseItem,
+    CountDown,
+    Progress,
+    Uploader
 } from "vant";
 
 const app = createApp(App)
@@ -85,6 +90,11 @@ app.use(NumberKeyboard);
 app.use(Card);
 app.use(Tag);
 app.use(PullRefresh);
+app.use(Collapse);
+app.use(CollapseItem);
+app.use(CountDown);
+app.use(Progress);
+app.use(Uploader);
 
 // 请求库配置相关
 import "@/api/config";

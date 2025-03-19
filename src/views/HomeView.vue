@@ -283,7 +283,7 @@ const performCheckIn = async () => {
 
       // 放在 getLastRecordHandle 前, 否则 step 会归位
       if (currentStep.value === 1) {
-        // 前一阶段为PENDING状态, 完成终点打卡
+        // 前一阶段为 PENDING 状态, 完成终点打卡
         currentStage.value = 1;
         // 给爬山的同学显示一下进度条全满, 3s
         setTimeout(() => {
@@ -407,114 +407,160 @@ const onOffsetChange = () => {
 </script>
 
 <template>
-  <div class="mountain-challenge bg-gradient-to-b from-blue-100 to-green-100 min-h-screen p-4">
-    <van-notice-bar left-icon="info-o" color="#1989fa" background="#ecf9ff" wrapable :scrollable="false">
-      秋季登山节相关排名的参考数据以 11 月 20 日晚 24：00 截止的数据为准，本系统将一直开放供师生使用，相应数据暂不清零。
+  <div class="mountain-challenge">
+    <!-- 通知栏 -->
+    <van-notice-bar
+        left-icon="info-o"
+        color="#1989fa"
+        background="#ecf9ff"
+        wrapable
+        :scrollable="false"
+        class="notice-primary rounded-lg shadow-sm"
+    >
+      <!--秋季登山节相关排名的参考数据以 11 月 20 日晚 24：00 截止的数据为准，本系统将一直开放供师生使用，相应数据暂不清零。-->
     </van-notice-bar>
 
-    <van-notice-bar left-icon="volume-o" :scrollable="false" class="mt-2" v-if="socketMessages.length > 0">
+    <!-- 滚动通知 -->
+    <van-notice-bar
+        left-icon="volume-o"
+        :scrollable="false"
+        class="mt-3 notice-secondary rounded-lg shadow-sm"
+        v-if="socketMessages.length > 0"
+    >
       <van-swipe vertical class="notice-swipe" :autoplay="3000" :touchable="false" :show-indicators="false">
-        <van-swipe-item v-for="(msg, index) in socketMessages" :key="index">{{ msg }}</van-swipe-item>
+        <van-swipe-item v-for="(msg, index) in socketMessages" :key="index" class="font-medium">
+          {{ msg }}
+        </van-swipe-item>
       </van-swipe>
     </van-notice-bar>
 
-    <div class="mt-4 relative overflow-hidden rounded-lg shadow-lg">
+    <!-- 横幅区域 -->
+    <div class="mt-4 relative overflow-hidden rounded-xl shadow-lg banner-container">
       <van-barrage v-model="list" :autoplay="300" :loop="true">
-        <div class="video relative" style="width: 100%; height: 160px">
+        <div class="video relative" style="width: 100%; height: 220px">
           <img src="@/assets/background.png" alt="Banner" class="w-full h-full object-cover">
+          <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+          <div class="absolute bottom-4 left-4 text-white">
+            <h1 class="text-2xl font-bold text-shadow">FUN 山越岭</h1>
+            <p class="text-sm opacity-90">挑战自我，征服高峰</p>
+          </div>
         </div>
       </van-barrage>
     </div>
 
-    <div class="mt-6 rounded-lg shadow-lg p-4 map-card">
+    <!-- 地图卡片 -->
+    <div class="mt-6 rounded-xl shadow-lg p-4 map-card">
       <div class="flex space-x-4">
-        <div id="amap-container" class="h-58 w-2/3 rounded-lg overflow-hidden border border-gray-200"></div>
+        <div id="amap-container"
+             class="h-58 w-2/3 rounded-lg overflow-hidden border border-gray-200 shadow-inner"></div>
         <div class="flex-1 flex flex-col justify-between">
           <van-steps :active="currentStage" class="w-32 h-26" direction="vertical" active-color="#07c160">
-            <van-step> 起点打卡</van-step>
-            <van-step> 终点打卡</van-step>
+            <van-step>
+              <div class="font-medium">起点打卡</div>
+            </van-step>
+            <van-step>
+              <div class="font-medium">终点打卡</div>
+            </van-step>
           </van-steps>
-          <van-image :src="simpleMapImgUrl" fit="cover" style="background: #fff" class="h-28 rounded-lg p-1"
-                     @click="showImagePreview([simpleMapImgUrl])"/>
-          <div class="p-2 bg-gray-50 rounded-lg shadow-inner cursor-pointer hover:bg-gray-100 transition duration-200"
-               @click="updateLocation">
-            <h2 class="text-[0.5em] font-semibold text-center border-b border-gray-300 pb-1 mb-1"> 点击刷新位置 </h2>
-            <!--<p class="text-xs text-gray-700">{{currentLocation}}</p>-->
-            <p class="text-[0.4rem] text-gray-700"> 请在红色打卡范围（50m）进行打卡 </p>
+
+          <van-image
+              :src="simpleMapImgUrl"
+              fit="cover"
+              class="h-28 rounded-lg p-1 shadow-sm transition-transform duration-300 hover:scale-105"
+              @click="showImagePreview([simpleMapImgUrl])"
+          />
+
+          <div
+              class="p-3 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg shadow-inner cursor-pointer hover:bg-gray-100 transition duration-200 border border-gray-200"
+              @click="updateLocation">
+            <h2 class="text-sm font-semibold text-center border-b border-gray-300 pb-1 mb-1">点击刷新位置</h2>
+            <p class="text-xs text-gray-700">请在红色打卡范围（50m）进行打卡</p>
           </div>
         </div>
       </div>
     </div>
 
+    <!-- 打卡按钮 -->
     <div class="mt-6 flex justify-center">
-      <van-button type="primary" size="large" :disabled="!canCheckIn" @click="performCheckIn" :loading="isSubmitting"
-                  class="w-full max-w-xs">
+      <van-button
+          type="primary"
+          size="large"
+          :disabled="!canCheckIn"
+          @click="performCheckIn"
+          :loading="isSubmitting"
+          class="w-full max-w-xs rounded-lg shadow-md check-in-button"
+      >
         {{ checkInButtonText }}
       </van-button>
     </div>
 
-    <van-floating-bubble axis="xy" icon="chat" magnetic="x" @offset-change="onOffsetChange" @click="openBarrageInput"/>
+    <!--&lt;!&ndash; 组队打卡链接 &ndash;&gt;-->
+    <!--<div class="mt-5 text-center">-->
+    <!--  <span-->
+    <!--      class="inline-block text-sm font-medium text-blue-600 cursor-pointer transition-colors duration-200 hover:text-blue-800"-->
+    <!--      @click="()=>router.push('/team')"-->
+    <!--  >-->
+    <!--    组队打卡 <van-icon name="arrow"/>-->
+    <!--  </span>-->
+    <!--</div>-->
 
-    <van-popup v-model:show="showBarrageInput" position="bottom" :style="{ height: '20%' }">
+    <!-- 浮动按钮 -->
+    <van-floating-bubble
+        axis="xy"
+        icon="chat"
+        magnetic="x"
+        @offset-change="onOffsetChange"
+        @click="openBarrageInput"
+        class="bubble-animation"
+    />
+
+    <!-- 弹幕输入弹窗 -->
+    <van-popup v-model:show="showBarrageInput" position="bottom" round :style="{ height: '20%' }" class="barrage-popup">
       <div class="p-4 flex items-center">
-        <van-field v-model="messageInput" placeholder="输入弹幕消息" class="flex-grow mr-2">
+        <van-field v-model="messageInput" placeholder="输入弹幕消息" class="flex-grow mr-2 rounded-lg">
           <template #button>
-            <van-button size="small" type="primary" @click="addBarrageHandle"> 发送</van-button>
+            <van-button size="small" type="primary" @click="addBarrageHandle" class="rounded-lg">发送</van-button>
           </template>
         </van-field>
       </div>
     </van-popup>
 
-    <div class="text-center mt-4 text-sm text-gray-600">
-      正在与 {{ onlineCount }} 人一起征服岳麓山
+    <!-- 在线人数和连接状态 -->
+    <div class="mt-6 p-3 bg-white/80 rounded-lg shadow-sm">
+      <div class="text-center text-sm text-gray-700 font-medium">
+        正在与 <span class="text-green-600 font-bold">{{ onlineCount }}</span> 人一起征服岳麓山
+      </div>
+      <div class="text-center mt-2 text-sm text-gray-600">
+        服务器实时连接状态：
+        <van-icon :name="isWSConnected ? 'success' : 'close'" :color="isWSConnected ? 'green' : 'red'"/>
+        <span :class="isWSConnected ? 'text-green-600' : 'text-red-600'">
+          {{ isWSConnected ? '已连接' : '未连接' }}
+        </span>
+      </div>
     </div>
-    <div class="text-center mt-2 text-sm text-gray-600">
-      服务器实时连接状态：
-      <van-icon :name="isWSConnected ? 'success' : 'close'" :color="isWSConnected ? 'green' : 'red'"/>
-      {{ isWSConnected ? '已连接' : '未连接' }}
-    </div>
 
-    <van-divider class="mt-4"/>
+    <van-divider class="my-4" dashed/>
 
-    <!--<div class="lucky-container p-4">-->
-    <!--  <div class="text-center"> 昨日获奖名单 </div>-->
-    <!--  <van-swipe-->
-    <!--      height="2em"-->
-    <!--      class="text-center"-->
-    <!--      :autoplay="3000"-->
-    <!--      :touchable="false"-->
-    <!--      :show-indicators="false"-->
-    <!--  >-->
-    <!--    <van-swipe-item>-->
-    <!--      <div> 一等奖：小明 <br/>-->
-    <!--        奖品：iPhone 13-->
-    <!--      </div>-->
-    <!--    </van-swipe-item>-->
-    <!--    <van-swipe-item>-->
-    <!--      <div> 二等奖：小红 </div>-->
-    <!--      <div> 奖品：iPad Pro</div>-->
-    <!--    </van-swipe-item>-->
-    <!--    <van-swipe-item>-->
-    <!--      <div> 三等奖：小刚 </div>-->
-    <!--      <div> 奖品：AirPods Pro</div>-->
-    <!--    </van-swipe-item>-->
-    <!--  </van-swipe>-->
-    <!--</div>-->
-
-    <van-popup v-model:show="showSuccessPopup" round position="bottom">
+    <!-- 打卡成功弹窗 -->
+    <van-popup v-model:show="showSuccessPopup" round position="bottom" class="success-popup">
       <div class="p-6 text-center" v-if="currentStep === 1">
-        <van-icon name="success" size="48" color="#07c160"/>
-        <h2 class="mt-4 text-xl font-bold"> 打卡成功！</h2>
-        <p class="mt-2"> 欢迎你加入"FUN 山越岭"登山挑战赛！迈开步子，顶峰相见！</p>
-        <van-button type="primary" block class="mt-4" @click="closeSuccessPopup">
+        <div class="success-icon-container">
+          <van-icon name="success" size="48" color="#07c160"/>
+        </div>
+        <h2 class="mt-4 text-xl font-bold text-green-700">打卡成功！</h2>
+        <p class="mt-2 text-gray-700">欢迎你加入"FUN 山越岭"登山挑战赛！迈开步子，顶峰相见！</p>
+        <van-button type="primary" block class="mt-4 rounded-lg" @click="closeSuccessPopup">
           确定
         </van-button>
       </div>
       <div class="p-6 text-center" v-else>
-        <van-icon name="success" size="48" color="#07c160"/>
-        <h2 class="mt-4 text-xl font-bold"> 打卡成功！</h2>
-        <p class="mt-2"> 恭喜你已经完成挑战 {{ userStore.user?.count ? userStore.user?.count + 1 : 1 }} 次 </p>
-        <van-button to="/finish" type="primary" block class="mt-4" @click="closeSuccessPopup">
+        <div class="success-icon-container">
+          <van-icon name="success" size="48" color="#07c160"/>
+        </div>
+        <h2 class="mt-4 text-xl font-bold text-green-700">打卡成功！</h2>
+        <p class="mt-2 text-gray-700">恭喜你已经完成挑战 {{ userStore.user?.count ? userStore.user?.count + 1 : 1 }}
+          次</p>
+        <van-button to="/finish" type="primary" block class="mt-4 rounded-lg" @click="closeSuccessPopup">
           前往统计页面
         </van-button>
       </div>
@@ -526,13 +572,18 @@ const onOffsetChange = () => {
 .mountain-challenge {
   max-width: 600px;
   margin: 0 auto;
+  min-height: 100vh;
+  padding: 1rem;
+  background: linear-gradient(135deg, #e0f7fa 0%, #e8f5e9 50%, #f1f8e9 100%);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
 }
 
-.map-card {
-  background: rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(10px);
-  border-radius: 10px;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+.notice-primary {
+  border-left: 4px solid #1989fa;
+}
+
+.notice-secondary {
+  border-left: 4px solid #ff9800;
 }
 
 .notice-swipe {
@@ -541,12 +592,84 @@ const onOffsetChange = () => {
   font-size: 14px;
 }
 
+.map-card {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  transition: transform 0.3s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+  }
+}
+
+.banner-container {
+  overflow: hidden;
+  transition: transform 0.3s ease;
+
+  &:hover {
+    transform: scale(1.01);
+  }
+}
+
+.text-shadow {
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.check-in-button {
+  transition: all 0.3s ease;
+
+  &:not(:disabled):hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+}
+
+.bubble-animation {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(0, 123, 255, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(0, 123, 255, 0);
+  }
+}
+
+.success-icon-container {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 80px;
+  height: 80px;
+  background-color: rgba(7, 193, 96, 0.1);
+  border-radius: 50%;
+  margin-bottom: 1rem;
+}
+
+.success-popup {
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+}
+
+.barrage-popup {
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+}
+
 :deep(.van-barrage) {
-  --van-barrage-item-height: 30px;
+  --van-barrage-item-height: 32px;
   --van-barrage-item-font-size: 14px;
   --van-barrage-item-color: #fff;
   --van-barrage-item-background: rgba(0, 0, 0, 0.7);
-  --van-barrage-item-border-radius: 15px;
-  --van-barrage-item-padding: 0 10px;
+  --van-barrage-item-border-radius: 16px;
+  --van-barrage-item-padding: 0 12px;
+  --van-barrage-item-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 </style>
+

@@ -1,22 +1,25 @@
 <script setup lang="ts">
-import {onMounted, ref} from "vue";
-import {infoApi, listCollegeApi, updateApi, type UserUpdateDTO} from "@/api";
+import {onMounted, ref, useTemplateRef} from "vue";
+import {infoApi, listCollegeApi, updateApi, type UserUpdateDto} from "@/api";
 import {showConfirmDialog, showToast} from "vant";
 import {useUserStore} from "@/stores/user";
 import {useRouter} from "vue-router";
+import {getToken} from "@/util/token";
 
 const router = useRouter();
 
-const form = ref<UserUpdateDTO>({
+const form = ref<UserUpdateDto>({
   nickname: "",
-  idNumber: "",
   college: "",
+  avatar: "",
   phone: "",
 });
 
 const collegeOptions = ref<any>([]);
 
 const showCollegePopup = ref(false);
+
+const idNumber = ref("");
 
 const {user} = useUserStore();
 
@@ -29,13 +32,13 @@ const submitProfileHandle = () => {
     })
     return
   }
-  if (form.value.idNumber && form.value.idNumber.length > 15 || form.value.idNumber?.length === 0) {
-    showToast({
-      type: 'fail',
-      message: '学号/工号未填写或者格式错误'
-    })
-    return
-  }
+  // if (form.value.idNumber && form.value.idNumber.length > 15 || form.value.idNumber?.length === 0) {
+  //   showToast({
+  //     type: 'fail',
+  //     message: '学号/工号未填写或者格式错误'
+  //   })
+  //   return
+  // }
   if (form.value.nickname && form.value.nickname.length > 20) {
     showToast({
       type: 'fail',
@@ -86,36 +89,82 @@ onMounted(() => {
         useUserStore().setUser(res.data.data);
         if (res.data.data) {
           form.value = {
-            nickname: res.data.data.nickname,
-            idNumber: res.data.data.idNumber,
-            college: res.data.data.college,
+            nickname: res.data.data.nickname || "",
+            avatar: res.data.data.avatar || "",
+            college: res.data.data.college || "",
             phone: res.data.data.phone
           }
+          idNumber.value = res.data.data.idNumber || ""
         }
       }
     })
   } else {
     form.value = {
       nickname: user.nickname,
-      idNumber: user.idNumber,
+      avatar: user.avatar,
       college: user.college,
       phone: user.phone
     }
+    idNumber.value = user.idNumber || ""
   }
 })
+
+// @ts-ignore
+const afterRead = async (file) => {
+  const token = await getToken();
+  const formData = new FormData();
+  formData.append('file', file.file);
+
+  fetch('/api/v1/upload/avatar', {
+    method: 'POST',
+    body: formData,
+    headers: {
+      "Authorization": `Bearer ${token}`
+    }
+  })
+      .then(response => response.json())
+      .then(data => {
+        console.log('File uploaded successfully:', data);
+        form.value.avatar = data.data;
+        showToast({
+          type: 'success',
+          message: '图片上传成功'
+        });
+      })
+      .catch(error => {
+        console.error('Error uploading file:', error);
+        showToast({
+          type: 'fail',
+          message: '图片上传过程中出现错误'
+        });
+      });
+};
+
+const uploader = useTemplateRef("uploader");
+
+const triggerUploader = () => {
+  if (uploader.value) {
+    uploader.value.$el.querySelector('input[type="file"]').click();
+  }
+};
 
 </script>
 
 <template>
   <div class="edit-container bg-gray-100 min-h-screen p-4">
     <van-form class="" @submit="submitProfileHandle">
+      <van-field label="头像" @click="triggerUploader">
+        <template #input>
+          <van-image round width="40" height="40" :src="form.avatar" />
+        </template>
+      </van-field>
+      <van-uploader ref="uploader" :after-read="afterRead" style="display: none;"/>
       <van-field v-model="form.nickname"
                  required
                  :rules="[{required: true, message: '请输入姓名'}]"
                  label="姓名" placeholder="请输入姓名"/>
-      <van-field v-model="form.idNumber" label="学号/职工号" required
-                 :rules="[{required: true, message: '请输入学号/职工号'}]"
-                 placeholder="请输入学号/职工号"/>
+      <van-field v-model="idNumber" label="学号/职工号" disabled
+                 placeholder="学号/职工号，校外人员无需填写"/>
       <!-- 需要获取学院列表，实现一个学院的选择 -->
       <van-field v-model="form.college" required
                  :rules="[{required: true, message: '请选择学院'}]"

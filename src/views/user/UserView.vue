@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import {useUserStore} from "@/stores/user";
+import AboutDialog from "@/components/AboutDialog.vue";
 import {
   User as UserIcon,
   Award,
@@ -35,21 +36,21 @@ onMounted(async () => {
   }
 });
 
-const showAboutHandle = (e: MouseEvent) => {
-  e.preventDefault();
-  showDialog({
-    title: '关于 ｜ Powered by 升华工作室',
-    message: '这里是 CSU 升华工作室！\n\n' +
-        '程序开发\ngrtsinry43, SteamFinder, mufenqwq, Kyliancc\n\n' +
-        '技术栈\n' +
-        '前端 Vite + Vue3 + Vant\n' +
-        '后端 SpringBoot + MyBatis\n\n' +
-        `Version: ${version}\n` +
-        '盛世升华 服务中南',
-  }).then(() => {
-    console.log("应该不会有人发现log吧（）");
-  });
-}
+// const showAboutHandle = (e: MouseEvent) => {
+//   e.preventDefault();
+//   showDialog({
+//     title: '关于 ｜ Powered by 升华工作室',
+//     message: '这里是 CSU 升华工作室！\n\n' +
+//         '程序开发\ngrtsinry43, SteamFinder, mufenqwq, Kyliancc\n\n' +
+//         '技术栈\n' +
+//         '前端 Vite + Vue3 + Vant\n' +
+//         '后端 SpringBoot + MyBatis\n\n' +
+//         `Version: ${version}\n` +
+//         '盛世升华 服务中南',
+//   }).then(() => {
+//     console.log("应该不会有人发现log吧（）");
+//   });
+// }
 
 const selectLuckUser = () => {
   showDialog({
@@ -194,6 +195,15 @@ const locationTest = () => {
   });
 }
 
+// 创建对话框组件的引用
+const aboutDialogRef = ref();
+
+// 显示关于对话框的方法
+const showAboutDialog = (e: MouseEvent) => {
+  e.preventDefault();
+  aboutDialogRef.value.open();
+};
+
 </script>
 
 <template>
@@ -300,8 +310,10 @@ const locationTest = () => {
         <div class="footer-copyright text-center py-4 text-[0.75rem]">
           <span class="text-gray-600">copyright © 2001-2024 升华工作室 </span>
           <img src="@/assets/logo.png" alt="Logo" class="inline-block mx-2 w-6 h-6">
-          <a @click="showAboutHandle"
+          <a @click="showAboutDialog"
              class="text-indigo-600 hover:text-indigo-800 transition-colors duration-300 cursor-pointer"> 关于 ></a>
+          <!-- 引入关于弹窗组件 -->
+          <AboutDialog ref="aboutDialogRef"/>
         </div>
       </template>
     </div>

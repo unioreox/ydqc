@@ -27,6 +27,21 @@ const routes = [
         ]
     },
     {
+        path: "/activity",
+        name: "活动 ",
+        component: () => import("@/layout/BasicLayout.vue"),
+        meta: {
+            icon: "flag-o",
+        },
+        children: [
+            {
+                path: '',
+                name: "活动",
+                component: () => import("@/views/activity/ActivityView.vue"),
+            }
+        ],
+    },
+    {
         path: '/leaderboard',
         name: '排行榜 ',
         component: () => import('../layout/BasicLayout.vue'),
@@ -126,7 +141,7 @@ const routes = [
     },
     {
         path: "/team",
-        name: "加入团队",
+        name: "加入团队 ",
         component: () => import("@/layout/BasicLayout.vue"),
         meta: {
             hideInMenu: true,

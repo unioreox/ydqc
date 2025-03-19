@@ -389,7 +389,7 @@ const handleDeleteTeam = async () => {
 </script>
 
 <template>
-  <div class="team-container">
+  <div class="team-container bg-gradient-to-b from-blue-100 to-green-100 min-h-screen">
     <!-- Team Management Tabs -->
     <van-tabs v-model:active="active" animated swipeable @change="onTabChange" class="custom-tabs">
       <!-- Create Team Tab -->
