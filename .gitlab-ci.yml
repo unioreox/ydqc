@@ -30,6 +30,8 @@ build:
     - npm run build-only
     - echo "打包 dist 文件夹内容"
     # - tar -czvf dist.tar.gz -C dist .
+  dependencies:
+    - build
   artifacts:
     paths:
       - dist/ # 保存压缩包为 GitLab 产物供后续步骤使用
@@ -41,9 +43,9 @@ release:
     - echo "Stage 3 - 发布产物"
     - |
       curl --header "PRIVATE-TOKEN: $GITLAB_TOKEN" \
-           --data "name=自动构建, 版本 v$(date +'%Y-%m-%d')_$CI_COMMIT_SHORT_SHA" \
+           --data "name=$CI_COMMIT_TITLE" \
            --data "tag_name=v$(date +'%Y.%m.%d')_$CI_COMMIT_SHORT_SHA" \
-           --data "description=由 Gitlab 流水线自动发布的 Release, 构建产物请前往流水线下载" \
+           --data "description=Gitlab流水线自动构建, 版本 v$(date +'%Y-%m-%d')_$CI_COMMIT_SHORT_SHA, 构建产物请前往流水线下载" \
            --data "ref=main" \
            "https://gitlab.54sher.com/api/v4/projects/$CI_PROJECT_ID/releases"
     - echo "所有操作成功完成"
