@@ -18,6 +18,8 @@ import wx from "weixin-js-sdk";
 const version = import.meta.env.VITE_APP_VERSION;
 const {user} = useUserStore();
 const isLoading = ref(true);
+// 我勒个素材复用啊
+const userAvatar = ref("https://54sh.csu.edu.cn/assets/icons/tuanzi_footer.png")
 
 onMounted(async () => {
   if (!user) {
@@ -29,6 +31,13 @@ onMounted(async () => {
     } catch (error) {
       console.error("Failed to fetch user info:", error);
     } finally {
+      // 检测用户头像, 自动替换为缺省值
+      console.log("User Avatar Url " + user?.avatar);
+      if(!user?.avatar){
+        console.log("未设置用户头像");
+      }else{
+        userAvatar.value = user?.avatar;
+      }
       isLoading.value = false;
     }
   } else {
@@ -220,7 +229,7 @@ const showAboutDialog = (e: MouseEvent) => {
           <div class="p-8 flex flex-col items-center md:flex-row md:items-start">
             <div class="flex-shrink-0 mb-4 md:mb-0 md:mr-6">
               <div class="w-32 h-32 rounded-full overflow-hidden bg-gradient-to-r from-blue-400 to-teal-300 p-1">
-                <img class="w-full h-full object-cover rounded-full" :src="user?.avatar" alt="User avatar">
+                <img class="w-full h-full object-cover rounded-full" :src="userAvatar" alt="User avatar">
               </div>
             </div>
             <div class="text-center md:text-left flex-grow">

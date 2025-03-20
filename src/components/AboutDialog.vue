@@ -37,7 +37,10 @@
               :key="index"
               class="team-member"
           >
-            <div class="member-avatar">{{ member.name.charAt(0).toUpperCase() }}</div>
+            <div class="member-avatar">
+              <!-- member.name.charAt(0).toUpperCase() -->
+              <img :src=member.avatar alt="Avatar" style="border-radius: 50%;"></img>
+            </div>
             <div class="member-info">
               <div class="member-name">{{ member.name }}</div>
               <div class="member-role">{{ member.role }}</div>
@@ -75,6 +78,7 @@
       <!-- 页脚 -->
       <div class="about-footer">
         <div class="slogan">盛世升华 服务中南</div>
+        <div class="copyright">构建时间: {{ buildTime }}</div>
         <div class="copyright">© 2001-2024 升华工作室</div>
       </div>
     </div>
@@ -105,9 +109,23 @@
 </template>
 
 <script setup lang="ts">
-import {ref} from 'vue';
 import {Popup, Icon, Button} from 'vant';
 import logoSrc from '@/assets/logo.png';
+import { ref, onMounted } from 'vue';
+
+const buildTime = ref('');
+
+onMounted(async () => {
+  try {
+    const response = await fetch('/build-time.json');
+    if (!response.ok) throw new Error('Fetch Build Time Error');
+    const { time } = await response.json();
+    buildTime.value = new Date(time).toLocaleString(); // 转换为本地时间格式
+  } catch (error) {
+    console.error('Fetch Build Time Error:', error);
+    buildTime.value = '未知';
+  }
+});
 
 // 控制弹窗显示
 const showPopup = ref(false);
@@ -118,16 +136,17 @@ const version = ref('1.0.0');
 
 // 团队成员数据
 const teamMembers = ref([
-  {name: 'grtsinry43', role: '全栈开发'},
-  {name: 'SteamFinder', role: '全栈开发'},
-  {name: 'mufenqwq', role: '全栈开发'},
-  {name: 'Kyliancc', role: '全栈开发'}
+  {name: 'grtsinry43', role: '全栈开发', avatar: '/src/assets/avatar/1.jpg'},
+  {name: 'SteamFinder', role: '全栈开发', avatar: '/src/assets/avatar/2.jpg'},
+  {name: 'mufenqwq', role: '全栈开发', avatar: '/src/assets/avatar/3.jpg'},
+  {name: 'Kyliancc', role: '全栈开发', avatar: '/src/assets/avatar/4.jpg'}
 ]);
 
 // 技术栈数据
 const techStack = ref([
   {category: '前端', items: ['Vite', 'Vue3', 'Vant', 'TypeScript']},
-  {category: '后端', items: ['SpringBoot', 'MyBatis', 'MySQL']}
+  {category: '后端', items: ['SpringBoot', 'MyBatis', 'MySQL']},
+  {category: '核心技术', items: ['为人民服务']}
 ]);
 
 // 了解更多
