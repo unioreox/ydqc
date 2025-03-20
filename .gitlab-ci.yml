@@ -31,7 +31,7 @@ build:
     - echo "打包 dist 文件夹内容"
     # - tar -czvf dist.tar.gz -C dist .
   dependencies:
-    - build
+    - install
   artifacts:
     paths:
       - dist/ # 保存压缩包为 GitLab 产物供后续步骤使用
