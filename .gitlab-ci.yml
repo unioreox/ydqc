@@ -27,7 +27,7 @@ build:
   stage: build
   script:
     - echo "Stage 2 - 构建产物"
-    - npm build-only
+    - npm run build-only
     - echo "打包 dist 文件夹内容"
     # - tar -czvf dist.tar.gz -C dist .
   artifacts:
