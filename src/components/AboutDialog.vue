@@ -111,6 +111,10 @@
 <script setup lang="ts">
 import {Popup, Icon, Button} from 'vant';
 import logoSrc from '@/assets/logo.png';
+import AvatarSrc1 from '@/assets/avatar/1.jpg';
+import AvatarSrc2 from '@/assets/avatar/2.jpg';
+import AvatarSrc3 from '@/assets/avatar/3.jpg';
+import AvatarSrc4 from '@/assets/avatar/4.jpg';
 import { ref, onMounted } from 'vue';
 
 const buildTime = ref('');
@@ -131,15 +135,15 @@ onMounted(async () => {
 const showPopup = ref(false);
 
 // 版本信息
-const version = ref('1.0.0');
+const version = ref('2.0_main');
 
 
 // 团队成员数据
 const teamMembers = ref([
-  {name: 'grtsinry43', role: '全栈开发', avatar: '/src/assets/avatar/1.jpg'},
-  {name: 'SteamFinder', role: '全栈开发', avatar: '/src/assets/avatar/2.jpg'},
-  {name: 'mufenqwq', role: '全栈开发', avatar: '/src/assets/avatar/3.jpg'},
-  {name: 'Kyliancc', role: '全栈开发', avatar: '/src/assets/avatar/4.jpg'}
+  {name: 'grtsinry43', role: '全栈开发', avatar: AvatarSrc1},
+  {name: 'SteamFinder', role: '全栈开发', avatar: AvatarSrc2},
+  {name: 'mufenqwq', role: '全栈开发', avatar: AvatarSrc3},
+  {name: 'Kyliancc', role: '全栈开发', avatar: AvatarSrc4}
 ]);
 
 // 技术栈数据
@@ -151,7 +155,7 @@ const techStack = ref([
 
 // 了解更多
 const learnMore = () => {
-  window.open('https://your-studio-website.com', '_blank');
+  window.open('https://54sh.csu.edu.cn', '_blank');
   console.log("应该不会有人发现log吧（）");
 };
 
