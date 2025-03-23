@@ -103,6 +103,7 @@ export type TeamTempInfo = {
 export type CheckInRequest = {
     data: string;
     state: string;
+    fingerprint: string;
     timestamp: string;
 };
 

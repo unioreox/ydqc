@@ -37,3 +37,5 @@ export function wgs84ToGcj02(lng: number, lat: number): [number, number] {
     const mgLng = lng + dLng;
     return [mgLng, mgLat];
 }
+
+console.log(wgs84ToGcj02(112.926155,28.176188))

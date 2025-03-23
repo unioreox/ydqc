@@ -53,12 +53,14 @@ const checkInButtonText = computed(() => currentStep.value === 0 ? '起点打卡
 interface Form {
   latitude: string;
   longitude: string;
+  accuracy: string;
   type: number;
 }
 
 const form = ref<Form>({
   longitude: "112.93388",
   latitude: "28.195522",
+  accuracy: "1",
   type: 1,
 });
 
@@ -191,26 +193,39 @@ const encryptDataAndCheckInHandle = async () => {
   const initCanvasFingerPrint = getCanvasFingerPrint();
 
   return await doCheckin({
-    headers: {
-      'X-54sh-Authorization': initCanvasFingerPrint
-    },
+    // headers: {
+    //   'X-54sh-Authorization': initCanvasFingerPrint
+    // },
     body: {
       data: encrypted,
       state: state,
+      fingerprint: initCanvasFingerPrint,
       timestamp: timestamp.toString(),
     }
   });
 };
 
 const updateLocation = () => {
+  wx.getNetworkType({
+    success: function (res) {
+      if (res.networkType === "wifi") {
+        showNotify({
+          type: 'warning',
+          message: '同学你好！请到室外完成打卡哦！😨'
+        })
+      }
+    }
+  });
+
   wx.getLocation({
     type: 'wgs84',
     success: async (res) => {
+      // alert("微信获取wgs84的经纬度为：" + res.longitude + " " + res.latitude);
       currentLocation.value = ` 纬度: ${res.latitude}, 经度: ${res.longitude}`;
 
       const numbers = wgs84ToGcj02(res.longitude, res.latitude);
 
-      alert("计算得到的经纬度为：" + numbers[0] + " " + numbers[1]);
+      // alert("计算得到的经纬度为：" + numbers[0].toFixed(6) + " " + numbers[1].toFixed(6));
 
       // alert(res.accuracy);
       // alert(res.speed);
@@ -238,6 +253,8 @@ const updateLocation = () => {
 
       form.value.latitude = res.latitude.toString();
       form.value.longitude = res.longitude.toString();
+
+      form.value.accuracy = res.accuracy.toString();
 
       // if (map.value) {
       //   const numbers = wgs84ToGcj02(res.longitude, res.latitude);
@@ -276,7 +293,7 @@ const updateLocation = () => {
   wx.getLocation({
     type: 'gcj02',
     success: async (res) => {
-      alert("微信直接获取的经纬度为：" + res.longitude + " " + res.latitude);
+      // alert("微信直接获取的经纬度为：" + res.longitude + " " + res.latitude);
       const marker = new AMap.Marker({
         position: new AMap.LngLat(res.longitude, res.latitude),
         title: '当前位置'
