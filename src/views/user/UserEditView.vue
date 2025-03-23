@@ -155,7 +155,7 @@ const triggerUploader = () => {
     <van-form class="" @submit="submitProfileHandle">
       <van-field label="头像" @click="triggerUploader">
         <template #input>
-          <van-image round width="40" height="40" :src="form.avatar" />
+          <van-image round width="40" height="40" :src="form.avatar"/>
         </template>
       </van-field>
       <van-uploader ref="uploader" :after-read="afterRead" style="display: none;"/>

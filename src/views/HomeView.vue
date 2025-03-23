@@ -4,7 +4,7 @@ import {showDialog, showImagePreview, showNotify, showToast} from 'vant';
 import AMapLoader from "@amap/amap-jsapi-loader";
 import 'vant/es/notify/style';
 import init, {RsaEncryptor} from "@/util/rsa_wasm";
-import {type CheckPoint, doCheckin, getLastRecord, infoApi, listCheckPoint, loginApi, type RecordVO} from "@/api";
+import {type CheckPoint, doCheckin, getLastRecord, infoApi, listCheckPoint, loginApi, type RecordVo} from "@/api";
 import md5 from "md5";
 import router from "@/router";
 import {useUserStore} from "@/stores/user";
@@ -26,7 +26,7 @@ const onlineCount = ref(0);
 import simpleMapImgUrl from "@/assets/simpleMap.png";
 
 const userStore = useUserStore();
-const curRecord = ref<RecordVO>({
+const curRecord = ref<RecordVo>({
   status: "PENDING",
   startTime: "",
   endTime: "",
@@ -208,6 +208,13 @@ const updateLocation = () => {
     success: async (res) => {
       currentLocation.value = ` 纬度: ${res.latitude}, 经度: ${res.longitude}`;
 
+      const numbers = wgs84ToGcj02(res.longitude, res.latitude);
+
+      alert("计算得到的经纬度为：" + numbers[0] + " " + numbers[1]);
+
+      // alert(res.accuracy);
+      // alert(res.speed);
+
       matchedPoint.value = checkPoints.value.find(point => {
         const distance = AMap.GeometryUtil.distance([res.longitude, res.latitude], [point.longitude, point.latitude]);
         return distance <= 50;
@@ -215,7 +222,7 @@ const updateLocation = () => {
 
       if (matchedPoint.value) {
         if (currentStep.value === 0 || !matchedPoint.value.isEnd) {
-          form.value.type = matchedPoint.value.id;
+          form.value.type = matchedPoint.value.id || 1;
         }
         if (currentStep.value === 1 && !matchedPoint.value.isEnd) {
           showNotify({type: 'warning', message: '不在终点打卡点范围内，请移动到终点打卡点附近'});
@@ -232,43 +239,53 @@ const updateLocation = () => {
       form.value.latitude = res.latitude.toString();
       form.value.longitude = res.longitude.toString();
 
-      if (map.value) {
-        AMap.convertFrom([res.longitude, res.latitude], 'gps', async (status, result) => {
-          if (result.info === 'ok') {
-            const convertLatLng = result.locations[0];
-            const marker = new AMap.Marker({
-              position: new AMap.LngLat(convertLatLng.lng, convertLatLng.lat),
-              title: '当前位置'
-            });
-            map.value?.remove(map.value.getAllOverlays('marker'));
-            map.value?.add(marker);
-            await drawCircleHandle();
-            map.value?.setZoom(17);
-            map.value?.setCenter([convertLatLng.lng, convertLatLng.lat]);
-          }
-        });
-
-        wx.getLocation({
-          type: 'gcj02',
-          success: async (res) => {
-            const marker = new AMap.Marker({
-              position: new AMap.LngLat(res.longitude, res.latitude),
-              title: '当前位置'
-            });
-            map.value?.remove(map.value.getAllOverlays('marker'));
-            map.value?.add(marker);
-            await drawCircleHandle();
-            map.value?.setZoom(17);
-            map.value?.setCenter([res.longitude, res.latitude]);
-          }
-        });
-      }
-
+      // if (map.value) {
+      //   const numbers = wgs84ToGcj02(res.longitude, res.latitude);
+      //   const marker = new AMap.Marker({
+      //     position: new AMap.LngLat(numbers[0], numbers[1]),
+      //     title: '当前位置'
+      //   });
+      //   map.value.remove(map.value.getAllOverlays('marker'));
+      //   map.value.add(marker);
+      //   await drawCircleHandle();
+      //   map.value.setZoom(17);
+      //   map.value.setCenter(numbers);
+      // AMap.convertFrom([res.longitude, res.latitude], 'gps', async (status, result) => {
+      //   if (result.info === 'ok') {
+      //     const convertLatLng = result.locations[0];
+      //     const marker = new AMap.Marker({
+      //       position: new AMap.LngLat(convertLatLng.lng, convertLatLng.lat),
+      //       title: '当前位置'
+      //     });
+      //     map.value?.remove(map.value.getAllOverlays('marker'));
+      //     map.value?.add(marker);
+      //     await drawCircleHandle();
+      //     map.value?.setZoom(17);
+      //     map.value?.setCenter([convertLatLng.lng, convertLatLng.lat]);
+      //   }
+      // });
+      // }
     },
     fail: () => {
       currentLocation.value = '获取位置失败，请重试';
       canCheckIn.value = false;
       showNotify({type: 'danger', message: '获取位置失败，请检查定位权限'});
+    }
+  });
+
+  wx.getLocation({
+    type: 'gcj02',
+    success: async (res) => {
+      alert("微信直接获取的经纬度为：" + res.longitude + " " + res.latitude);
+      const marker = new AMap.Marker({
+        position: new AMap.LngLat(res.longitude, res.latitude),
+        title: '当前位置'
+      });
+      map.value?.remove(map.value.getAllOverlays('marker'));
+      map.value?.add(marker);
+      await drawCircleHandle();
+      map.value?.setZoom(17);
+      map.value?.setCenter([res.longitude, res.latitude]);
     }
   });
 };
