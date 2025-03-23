@@ -19,7 +19,7 @@ const version = import.meta.env.VITE_APP_VERSION;
 const {user} = useUserStore();
 const isLoading = ref(true);
 // 我勒个素材复用啊
-const userAvatar = ref("https://54sh.csu.edu.cn/assets/icons/tuanzi_footer.png")
+// const userAvatar = ref("https://54sh.csu.edu.cn/assets/icons/tuanzi_footer.png")
 
 onMounted(async () => {
   if (!user) {
@@ -32,12 +32,12 @@ onMounted(async () => {
       console.error("Failed to fetch user info:", error);
     } finally {
       // 检测用户头像, 自动替换为缺省值
-      console.log("User Avatar Url " + user?.avatar);
-      if(!user?.avatar){
-        console.log("未设置用户头像");
-      }else{
-        userAvatar.value = user?.avatar;
-      }
+      // console.log("User Avatar Url " + user?.avatar);
+      // if(!user?.avatar){
+      //   console.log("未设置用户头像");
+      // }else{
+      //   userAvatar.value = user?.avatar;
+      // }
       isLoading.value = false;
     }
   } else {
