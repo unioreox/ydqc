@@ -236,8 +236,11 @@ const updateLocation = () => {
       });
 
       if (matchedPoint.value) {
+        alert("匹配到的打卡点为：" + matchedPoint.value.name);
+        alert("匹配到的id为：" + matchedPoint.value.id);
         if (currentStep.value === 0 || !matchedPoint.value.isEnd) {
-          form.value.type = matchedPoint.value.id || 1;
+          alert(666)
+          form.value.type = matchedPoint.value.id;
         }
         if (currentStep.value === 1 && !matchedPoint.value.isEnd) {
           showNotify({type: 'warning', message: '不在终点打卡点范围内，请移动到终点打卡点附近'});
@@ -246,6 +249,7 @@ const updateLocation = () => {
           showNotify({type: 'warning', message: '不在起点打卡点范围内，请移动到起点打卡点附近'});
         }
         canCheckIn.value = true;
+        form.value.type = matchedPoint.value.id;
       } else {
         canCheckIn.value = false;
         showNotify({type: 'warning', message: '不在打卡点范围内，请移动到打卡点附近'});

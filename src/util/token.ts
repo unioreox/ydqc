@@ -11,3 +11,10 @@ export async function getToken() {
         resolve(token);
     });
 }
+
+export async function removeToken() {
+    return new Promise<void>((resolve) => {
+        Cookies.remove('token');
+        resolve();
+    });
+}

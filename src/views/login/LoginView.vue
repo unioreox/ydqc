@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import {showDialog} from "vant";
 import {ref} from "vue";
+import {Cookie} from "lucide-vue-next";
+import {removeToken} from "@/util/token";
 
 const activeTab = ref("campus"); // Default to campus login
 
@@ -13,8 +15,8 @@ const campusLoginHandle = () => {
 // WeChat login handler
 const wechatLoginHandle = () => {
   if (import.meta.env.MODE === 'production') {
-    window.location.href = `https://open.weixin.qq.com/connect/oauth2/authorize?appid=${"wxec410728170d3f78"}
-&redirect_uri=${encodeURIComponent("https://ydqc.csu.edu.cn/")}
+    window.location.href = `https://open.weixin.qq.com/connect/oauth2/authorize?appid=${"wx2fdfc27744ffa252"}
+&redirect_uri=${encodeURIComponent("https://race.54sher.com")}
 &response_type=code
 &scope=snsapi_userinfo
 #wechat_redirect`;
@@ -102,6 +104,10 @@ const wechatLoginHandle = () => {
       </div>
     </div>
   </div>
+  <van-button @click="()=>{
+    removeToken()
+  }"> 666
+  </van-button>
 </template>
 
 <style scoped>
