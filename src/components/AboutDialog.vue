@@ -79,7 +79,7 @@
       <div class="about-footer">
         <div class="slogan">盛世升华 服务中南</div>
         <div class="copyright">构建时间: {{ buildTime }}</div>
-        <div class="copyright">© 2001-2024 升华工作室</div>
+        <div class="copyright">© 2001-2025 升华工作室</div>
       </div>
     </div>
 

@@ -236,10 +236,7 @@ const updateLocation = () => {
       });
 
       if (matchedPoint.value) {
-        alert("匹配到的打卡点为：" + matchedPoint.value.name);
-        alert("匹配到的id为：" + matchedPoint.value.id);
         if (currentStep.value === 0 || !matchedPoint.value.isEnd) {
-          alert(666)
           form.value.type = matchedPoint.value.id;
         }
         if (currentStep.value === 1 && !matchedPoint.value.isEnd) {
@@ -455,6 +452,7 @@ const onOffsetChange = () => {
         :scrollable="false"
         class="notice-primary rounded-lg shadow-sm"
     >
+      我们还在努力测试本系统中，期待与大家一起翻山越岭！
       <!--秋季登山节相关排名的参考数据以 11 月 20 日晚 24：00 截止的数据为准，本系统将一直开放供师生使用，相应数据暂不清零。-->
     </van-notice-bar>
 

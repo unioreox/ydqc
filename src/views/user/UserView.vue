@@ -317,7 +317,7 @@ const showAboutDialog = (e: MouseEvent) => {
 
         <!-- Footer -->
         <div class="footer-copyright text-center py-4 text-[0.75rem]">
-          <span class="text-gray-600">copyright © 2001-2024 升华工作室 </span>
+          <span class="text-gray-600">copyright © 2001-2025 升华工作室 </span>
           <img src="@/assets/logo.png" alt="Logo" class="inline-block mx-2 w-6 h-6">
           <a @click="showAboutDialog"
              class="text-indigo-600 hover:text-indigo-800 transition-colors duration-300 cursor-pointer"> 关于 ></a>

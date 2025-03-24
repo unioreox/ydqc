@@ -16,7 +16,7 @@ const campusLoginHandle = () => {
 const wechatLoginHandle = () => {
   if (import.meta.env.MODE === 'production') {
     window.location.href = `https://open.weixin.qq.com/connect/oauth2/authorize?appid=${"wx2fdfc27744ffa252"}
-&redirect_uri=${encodeURIComponent("https://race.54sher.com")}
+&redirect_uri=${encodeURIComponent("https://ydqc.csu.edu.cn")}
 &response_type=code
 &scope=snsapi_userinfo
 #wechat_redirect`;
