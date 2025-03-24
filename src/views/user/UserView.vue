@@ -282,11 +282,6 @@ const showAboutDialog = (e: MouseEvent) => {
             </RouterLink>
           </div>
         </div>
-        /*
-        @click="()=>{
-    removeToken()
-  }"
-         */
 
         <!-- Logout Function-->
         <div class="bg-white bg-opacity-80 backdrop-filter backdrop-blur-lg rounded-xl shadow-lg overflow-hidden mb-4">
