@@ -444,17 +444,17 @@ const onOffsetChange = () => {
 <template>
   <div class="mountain-challenge">
     <!-- 通知栏 -->
-    <van-notice-bar
-        left-icon="info-o"
-        color="#1989fa"
-        background="#ecf9ff"
-        wrapable
-        :scrollable="false"
-        class="notice-primary rounded-lg shadow-sm"
-    >
-      我们还在努力测试本系统中，期待与大家一起翻山越岭！
-      <!--秋季登山节相关排名的参考数据以 11 月 20 日晚 24：00 截止的数据为准，本系统将一直开放供师生使用，相应数据暂不清零。-->
-    </van-notice-bar>
+    <!--<van-notice-bar-->
+    <!--    left-icon="info-o"-->
+    <!--    color="#1989fa"-->
+    <!--    background="#ecf9ff"-->
+    <!--    wrapable-->
+    <!--    :scrollable="false"-->
+    <!--    class="notice-primary rounded-lg shadow-sm"-->
+    <!--&gt;-->
+    <!--  我们还在努力测试本系统中，期待与大家一起翻山越岭！-->
+    <!--  &lt;!&ndash;秋季登山节相关排名的参考数据以 11 月 20 日晚 24：00 截止的数据为准，本系统将一直开放供师生使用，相应数据暂不清零。&ndash;&gt;-->
+    <!--</van-notice-bar>-->
 
     <!-- 滚动通知 -->
     <van-notice-bar

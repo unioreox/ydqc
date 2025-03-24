@@ -14,6 +14,7 @@ import {getLuckyGuy, infoApi} from "@/api";
 import {onMounted, ref} from "vue";
 import {showDialog} from "vant";
 import wx from "weixin-js-sdk";
+import {removeToken} from "@/util/token";
 
 const version = import.meta.env.VITE_APP_VERSION;
 const {user} = useUserStore();

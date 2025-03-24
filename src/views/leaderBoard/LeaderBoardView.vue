@@ -173,7 +173,7 @@ const fetchCollegeUsers = async () => {
         </van-tab>
 
         <!-- 学院参与率前10 -->
-        <van-tab title="学院参与率前 10 名">
+        <van-tab title="学院参与率">
           <div class="table-header">
             <span class="rank-column">排名</span>
             <span class="college-column">学院</span>
@@ -317,7 +317,7 @@ const fetchCollegeUsers = async () => {
 }
 
 .title {
-  font-size: 1.5rem;
+  font-size: 1.2rem;
   font-weight: 700;
   display: flex;
   align-items: center;
