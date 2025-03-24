@@ -106,7 +106,7 @@ const wechatLoginHandle = () => {
   </div>
   <van-button @click="()=>{
     removeToken()
-  }"> 666
+  }">Debug:清除登录状态
   </van-button>
 </template>
 

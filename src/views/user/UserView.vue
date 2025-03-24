@@ -282,6 +282,24 @@ const showAboutDialog = (e: MouseEvent) => {
             </RouterLink>
           </div>
         </div>
+        /*
+        @click="()=>{
+    removeToken()
+  }"
+         */
+
+        <!-- Logout Function-->
+        <div class="bg-white bg-opacity-80 backdrop-filter backdrop-blur-lg rounded-xl shadow-lg overflow-hidden mb-4">
+          <div class="p-6">
+            <h2 class="text-xl font-semibold mb-6 text-gray-800"> 账户操作 </h2>
+            <div @click="()=>{removeToken()}"
+                 class="flex items-center p-4 text-gray-700 bg-gray-50 rounded-xl hover:bg-gray-100 transition-all duration-300 group hover:shadow-md cursor-pointer">
+              <Settings class="w-6 h-6 text-indigo-500 group-hover:text-indigo-600 transition-colors duration-300"/>
+              <span class="flex-1 ml-4 font-medium"> 退出当前账户 </span>
+              <ChevronRight class="w-5 h-5 text-gray-400 group-hover:text-gray-600 transition-colors duration-300"/>
+            </div>
+          </div>
+        </div>
 
         <!-- Admin Section -->
         <div v-if="user?.isAdmin"
