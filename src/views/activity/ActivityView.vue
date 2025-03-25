@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import {ref, computed} from 'vue';
-import {showToast, showDialog} from 'vant';
-import {applyActivity, cancelApplyActivity, getAllActivities} from "@/api";
+import { ref, computed } from 'vue';
+import { showToast, showDialog } from 'vant';
+import { applyActivity, cancelApplyActivity, getAllActivities } from "@/api";
 
 // Define the Activity type based on the API response
 interface Activity {
@@ -134,25 +134,16 @@ const getProgressColor = (activity: Activity) => {
       <h1 class="page-title">活动列表</h1>
 
       <van-collapse v-model="activeNames" accordion>
-        <van-collapse-item
-            v-for="activity in activities"
-            :key="activity.id"
-            :name="activity.id"
-            class="activity-card"
-        >
+        <van-collapse-item v-for="activity in activities" :key="activity.id" :name="activity.id" class="activity-card">
           <template #title>
             <div class="card-header">
               <div class="card-title-wrapper">
                 <div class="activity-icon" :class="{ 'full': isActivityFull(activity) }">
-                  <van-icon :name="isActivityFull(activity) ? 'closed' : 'fire-o'"/>
+                  <van-icon :name="isActivityFull(activity) ? 'closed' : 'fire-o'" />
                 </div>
                 <div class="card-title">{{ activity.name || '-' }}</div>
               </div>
-              <van-tag
-                  :type="isActivityFull(activity) ? 'danger' : 'success'"
-                  class="card-tag"
-                  round
-              >
+              <van-tag :type="isActivityFull(activity) ? 'danger' : 'success'" class="card-tag" round>
                 {{ activity.curNum ?? '-' }}/{{ activity.limitNum ?? '-' }}
               </van-tag>
             </div>
@@ -164,15 +155,11 @@ const getProgressColor = (activity: Activity) => {
                 <span>已经报名</span>
               </div>
               <div class="countdown-wrapper" v-else-if="!isDeadlinePassed(activity)">
-                <van-icon name="underway-o" class="countdown-icon"/>
-                <van-count-down
-                    :time="getRemainingTime(activity.limitTime)"
-                    format="DD天HH时mm分ss秒"
-                    class="countdown"
-                />
+                <van-icon name="underway-o" class="countdown-icon" />
+                <van-count-down :time="getRemainingTime(activity.limitTime)" format="DD天HH时mm分ss秒" class="countdown" />
               </div>
               <div class="deadline-passed" v-else>
-                <van-icon name="closed" class="deadline-icon"/>
+                <van-icon name="closed" class="deadline-icon" />
                 <span>报名已截止</span>
               </div>
             </div>
@@ -180,17 +167,11 @@ const getProgressColor = (activity: Activity) => {
 
           <div class="card-content">
             <div class="hero-image-container">
-              <van-image
-                  :src="activity.heroImg || ''"
-                  width="100%"
-                  height="220"
-                  fit="cover"
-                  radius="12px"
-                  class="hero-image"
-              >
+              <van-image :src="activity.heroImg || ''" width="100%" height="220" fit="cover" radius="12px"
+                class="hero-image">
                 <template #error>
                   <div class="image-placeholder">
-                    <van-icon name="photo-o" size="48"/>
+                    <van-icon name="photo-o" size="48" />
                     <p>活动图片</p>
                   </div>
                 </template>
@@ -205,11 +186,19 @@ const getProgressColor = (activity: Activity) => {
 
             <div class="activity-details">
               <van-cell-group inset class="details-group">
-                <van-cell title="活动名称" :value="activity.name || '-'" class="detail-cell"/>
+                <van-cell title="活动名称" :value="activity.name || '-'" class="detail-cell" />
 
                 <van-cell title="活动描述" class="detail-cell description-cell">
                   <template #value>
+                    <!--
                     <div class="description">{{ activity.description || '-' }}</div>
+                    -->
+                    <van-text-ellipsis 
+                    class="description"
+                    rows="5" 
+                    :content=" activity.description || '-' " 
+                    expand-text="展开" 
+                    collapse-text="收起" />
                   </template>
                 </van-cell>
 
@@ -217,13 +206,10 @@ const getProgressColor = (activity: Activity) => {
                   <template #value>
                     <div class="participants">
                       <van-progress
-                          :percentage="Math.min(100, ((activity.curNum ?? 0) / (activity.limitNum ?? 1)) * 100)"
-                          :pivot-text="`${activity.curNum ?? '-'}/${activity.limitNum ?? '-'}`"
-                          :color="getProgressColor(activity)"
-                          track-color="#e9f5ff"
-                          stroke-width="10px"
-                          class="progress-bar"
-                      />
+                        :percentage="Math.min(100, ((activity.curNum ?? 0) / (activity.limitNum ?? 1)) * 100)"
+                        :pivot-text="`${activity.curNum ?? '-'}/${activity.limitNum ?? '-'}`"
+                        :color="getProgressColor(activity)" track-color="#e9f5ff" stroke-width="10px"
+                        class="progress-bar" />
                     </div>
                   </template>
                 </van-cell>
@@ -231,7 +217,7 @@ const getProgressColor = (activity: Activity) => {
                 <van-cell title="截止时间" class="detail-cell">
                   <template #value>
                     <div class="deadline-time" :class="{ 'passed': isDeadlinePassed(activity) }">
-                      <van-icon :name="isDeadlinePassed(activity) ? 'clock-o' : 'clock'" class="time-icon"/>
+                      <van-icon :name="isDeadlinePassed(activity) ? 'clock-o' : 'clock'" class="time-icon" />
                       <span>{{ formatDate(activity.limitTime) }}</span>
                     </div>
                   </template>
@@ -239,19 +225,16 @@ const getProgressColor = (activity: Activity) => {
               </van-cell-group>
 
               <div class="action-area">
-                <van-button
-                    block
-                    :type="activity.hasApplied ? 'danger' : (canRegister(activity) ? 'primary' : 'default')"
-                    :disabled="!canRegister(activity)"
-                    @click.stop="!activity.hasApplied ? handleRegister(activity) : handleCancel(activity)"
-                    class="register-button"
-                    round
-                >
+                <van-button block
+                  :type="activity.hasApplied ? 'danger' : (canRegister(activity) ? 'primary' : 'default')"
+                  :disabled="!canRegister(activity)"
+                  @click.stop="!activity.hasApplied ? handleRegister(activity) : handleCancel(activity)"
+                  class="register-button" round>
                   <template v-if="activity.hasApplied">
                     {{ '取消报名' }}
                   </template>
                   <template v-else-if="canRegister(activity)">
-                    <van-icon name="sign" class="button-icon"/>
+                    <van-icon name="sign" class="button-icon" />
                     立即报名
                   </template>
                   <template v-else>
@@ -265,13 +248,19 @@ const getProgressColor = (activity: Activity) => {
       </van-collapse>
 
       <div class="empty-state" v-if="!activities || activities.length === 0">
-        <van-empty description="暂无活动"/>
+        <van-empty description="暂无活动" />
       </div>
     </div>
   </div>
 </template>
 
 <style scoped>
+/* 将 Collapse Item 的 title 和 value 两个插槽都设为 block，上下分行显示 */
+:deep(.van-collapse-item__title),
+:deep(.van-collapse-item__value) {
+  display: block !important;
+}
+
 .activity-list {
   background: linear-gradient(135deg, #e0f7fa 0%, #e3f2fd 50%, #e8f5e9 100%);
   min-height: 100vh;
@@ -461,6 +450,7 @@ const getProgressColor = (activity: Activity) => {
 }
 
 .details-group {
+  margin: 0 auto 0 auto !important;
   border-radius: 12px;
   overflow: hidden;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
@@ -484,6 +474,7 @@ const getProgressColor = (activity: Activity) => {
   color: #646566;
   line-height: 1.6;
   font-size: 14px;
+  text-align: start;
 }
 
 .participants {
@@ -559,7 +550,7 @@ const getProgressColor = (activity: Activity) => {
 
 :deep(.van-cell__value) {
   width: 100%;
-  justify-content: end;
+  justify-content: center;
   display: flex;
   align-items: center;
 }
@@ -582,6 +573,7 @@ const getProgressColor = (activity: Activity) => {
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -592,5 +584,3 @@ const getProgressColor = (activity: Activity) => {
   animation: fadeIn 0.5s ease forwards;
 }
 </style>
-
-

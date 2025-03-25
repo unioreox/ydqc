@@ -15,6 +15,7 @@ export async function getToken() {
 export async function removeToken() {
     return new Promise<void>((resolve) => {
         Cookies.remove('token');
+        location.replace(location.href);
         resolve();
     });
 }

@@ -25,9 +25,10 @@ client.instance.interceptors.response.use(
                 router.push("/banned");
             }else{
                 // 其他情形
-                showDialog({message: response.data?.msg || "Unknown error"});
+                console.log(response);
+                showDialog({message: response.data?.msg || "未知错误"});
             }
-            return Promise.reject(new Error(response.data?.msg || "Unknown error"));
+            return Promise.reject(new Error(response.data?.msg || "未知错误"));
         } else {
             console.log(response.headers);
             if (response.headers.authorization) {
