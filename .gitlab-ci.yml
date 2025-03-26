@@ -1,11 +1,6 @@
 #使用node.js 20版本
 image: node:20
 
-# 设置缓存，避免每次都重新拉取node_modules
-cache:
-  paths:
-    - node_modules/
-
 # 定义流水线阶段
 stages:
   - install
