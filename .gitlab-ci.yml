@@ -21,6 +21,10 @@ install:
 build:
   stage: build
   script:
+    - echo "设置npm镜像源"
+    - npm config set registry https://registry.npmmirror.com
+    - echo "开始安装依赖"
+    - npm install
     - echo "Stage 2 - 构建产物"
     - npm run build-only
     - echo "打包 dist 文件夹内容"
