@@ -59,7 +59,10 @@ const fetchCountUsers = async () => {
 const fetchCollegeUsers = async () => {
   getCollegeLeaderBoard().then((res) => {
     if (res.data?.data?.leaderBoard && res.data?.data?.lastUpdateTime) {
-      collegeUser.value = res.data?.data?.leaderBoard;
+      // 应murmur要求删除的学院名称
+      const delCollegeName = ["湘雅医院", "湘雅二医院", "湘雅三医院"];
+      const collegeUser.value = res.data?.data?.leaderBoard.filter(item => !delCollegeName.includes(item.collegeName));
+      // collegeUser.value = res.data?.data?.leaderBoard;
       lastUpdated.value = res.data.data.lastUpdateTime;
     }
   });
