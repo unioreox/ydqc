@@ -13,6 +13,7 @@
   "dependencies": {
     "@amap/amap-jsapi-loader": "^1.0.1",
     "@hey-api/client-axios": "^0.6.2",
+    "@microsoft/clarity": "^1.0.0",
     "@originjs/crypto-js-wasm": "^1.1.1",
     "@types/js-cookie": "^3.0.6",
     "autoprefixer": "^10.4.20",

@@ -12,6 +12,7 @@ import wx from "weixin-js-sdk";
 import {io, Socket} from "socket.io-client";
 import {wgs84ToGcj02} from "@/util/convertLocation";
 import getCanvasFingerPrint from "@/util/canvasFingerPrint"
+import Clarity from '@microsoft/clarity';
 
 const socketLocation = import.meta.env.MODE === 'development' ? "http://localhost:9092" : "";
 
@@ -382,6 +383,15 @@ const loginAndGetInfoHandle = async () => {
       const res = await infoApi();
       if (res.data?.data) {
         userStore.setUser(res.data.data);
+        // custom-id=学号 friendly-name=昵称+学号
+        // https://www.npmjs.com/package/@microsoft/clarity
+        Clarity.identify(userStore.user?.id, "", "", userStore.user?.nickname + userStore.user?.idNumber);
+        Clarity.setTag("id", userStore.user?.id);
+        Clarity.setTag("idNumber", userStore.user?.idNumber);
+        Clarity.setTag("nickname", userStore.user?.nickname);
+        Clarity.setTag("college", userStore.user?.college);
+        Clarity.setTag("phone", userStore.user?.phone);
+
       }
     } catch (error) {
       console.error('Info fetch failed:', error);

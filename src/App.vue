@@ -6,9 +6,14 @@ import { onMounted } from 'vue'
 import wx from "weixin-js-sdk";
 import { getWxConfig } from "@/api";
 import { showNotify } from "vant";
+import Clarity from '@microsoft/clarity';
 
 onMounted(() => {
-  console.log('全局挂载完成，配置微信 js-sdk')
+  console.log('全局挂载完成，配置sdk');
+  
+  const projectId = "qu3cf7upw6";
+  Clarity.init(projectId);
+
   getWxConfig(
     {
       query: {
