@@ -30,4 +30,7 @@ coverage
 *.tsbuildinfo
 
 # Artifacts
-/dist/
+/dist
+/dist.zip
+/dist2
+/dist2.zip

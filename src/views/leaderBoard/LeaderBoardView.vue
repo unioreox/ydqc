@@ -135,7 +135,7 @@ const fetchCollegeUsers = async () => {
           <div class="table-header">
             <span class="rank-column">排名</span>
             <span class="name-column">姓名</span>
-            <span class="score-column">完成次数</span>
+            <span class="score-column">次数</span>
           </div>
 
           <ul v-if="countUser.length > 0" class="ranking-list">
@@ -157,7 +157,17 @@ const fetchCollegeUsers = async () => {
                   <img :src="user.userAvatar" :alt="user.userName" class="avatar">
                   <div v-if="index < 3" class="avatar-badge"></div>
                 </div>
+                
                 <span class="user-name">{{ user.userName }}</span>
+
+                <!-- <van-text-ellipsis
+                  class="user-name"
+                  rows="1"
+                  :content="user.userName"
+                  dots=" "
+                  expand-text=" "
+                  collapse-text="收起"
+                />                 -->
               </div>
 
               <div class="score-column">
@@ -264,7 +274,7 @@ const fetchCollegeUsers = async () => {
     <!-- 页脚信息 -->
     <div class="footer">
       <span class="footer-text">数据每五分钟更新一次</span>
-      <span class="footer-text">为大家所有的精彩表现点赞 <span class="footer-emoji">🎉</span></span>
+      <span class="footer-text">为大家的精彩表现点赞 <span class="footer-emoji">🎉</span></span>
     </div>
   </div>
 </template>
@@ -386,14 +396,14 @@ const fetchCollegeUsers = async () => {
 }
 
 .rank-column {
-  width: 16.666667%;
+  width: 20%;
   display: flex;
   justify-content: center;
   align-items: center;
 }
 
 .name-column {
-  width: 50%;
+  width: 80%;
   display: flex;
   align-items: center;
   padding-left: 0.5rem;
@@ -407,7 +417,7 @@ const fetchCollegeUsers = async () => {
 }
 
 .score-column {
-  width: 33.333333%;
+  width: 20%;
   display: flex;
   justify-content: flex-end;
   align-items: center;
@@ -524,6 +534,12 @@ const fetchCollegeUsers = async () => {
 .user-name {
   font-weight: 600;
   color: #2d3748;
+  /* 只显示一行名字 */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 9em;
+  display: inline-block;
 }
 
 .college-name {

@@ -139,7 +139,7 @@ const getProgressColor = (activity: Activity) => {
             <div class="card-header">
               <div class="card-title-wrapper">
                 <div class="activity-icon" :class="{ 'full': isActivityFull(activity) }">
-                  <van-icon :name="isActivityFull(activity) ? 'closed' : 'fire-o'" />
+                  <van-icon :name="isActivityFull(activity) ? 'stop-circle-o' : 'fire-o'" />
                 </div>
                 <div class="card-title">{{ activity.name || '-' }}</div>
               </div>
