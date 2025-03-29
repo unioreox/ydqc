@@ -453,7 +453,7 @@ const onOffsetChange = () => {
 
 <template>
   <div class="mountain-challenge">
-     通知栏
+     <!--通知栏-->
     <van-notice-bar
         left-icon="info-o"
         color="#1989fa"
