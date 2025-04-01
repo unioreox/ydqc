@@ -279,7 +279,7 @@ const onRefresh = () => {
                         </template>
                       </van-button>
 
-                      <van-button v-if="isDeadlinePassed(activity) && activity.hasReviewContent"
+                      <van-button v-if="activity.hasReviewContent"
                                   type="success"
                                   plain
                                   class="review-button"
