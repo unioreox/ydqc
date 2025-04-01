@@ -49,6 +49,9 @@ const checkPoints = ref<CheckPoint[]>([]);
 const matchedPoint = ref<CheckPoint | undefined>();
 const showBarrageInput = ref(false);
 
+// 获取最后一次更新位置的时间
+const lastUpdateLocationTime = ref(0);
+
 const checkInButtonText = computed(() => currentStep.value === 0 ? '起点打卡' : '终点打卡');
 
 interface Form {
@@ -207,6 +210,10 @@ const encryptDataAndCheckInHandle = async () => {
 };
 
 const updateLocation = () => {
+
+  // 更新最后一次获取位置的时间
+  lastUpdateLocationTime.value = Date.now();
+
   wx.getNetworkType({
     success: function (res) {
       if (res.networkType === "wifi") {
@@ -310,6 +317,13 @@ const updateLocation = () => {
 };
 
 const performCheckIn = async () => {
+
+  // 点击打卡按钮的时间 - 最后一次获取位置的时间 > 2min 即为卡bug
+  if(Date.now() - lastUpdateLocationTime.value > 120000){
+    showNotify({type: 'danger', message: '同学, 你在卡bug吗?'});
+    return 0;
+  }
+
   if (isSubmitting.value) return;
   isSubmitting.value = true;
   try {

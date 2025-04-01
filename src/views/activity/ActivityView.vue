@@ -21,7 +21,11 @@ const activities = ref<Activity[]>([]);
 
 const fetchData = () => {
   getAllActivities().then(res => {
-    activities.value = res.data?.data ?? [];
+    // activities.value = res.data?.data ?? [];
+    activities.value = (res.data?.data ?? []).slice().sort((a, b) => {
+      // 按创建时间倒序排列, 新的在前
+      return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+    });
   }).catch(() => {
     showToast('获取活动列表失败');
   });
