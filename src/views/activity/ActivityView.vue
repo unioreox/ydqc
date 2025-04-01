@@ -1,7 +1,10 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
-import { showToast, showDialog } from 'vant';
-import { applyActivity, cancelApplyActivity, getAllActivities } from "@/api";
+import {ref, computed, onMounted} from 'vue';
+import {showToast, showDialog} from 'vant';
+import {applyActivity, cancelApplyActivity, getAllActivities} from "@/api";
+import {useRouter} from 'vue-router';
+
+const router = useRouter();
 
 // Define the Activity type based on the API response
 interface Activity {
@@ -13,21 +16,30 @@ interface Activity {
   heroImg?: string;
   limitTime?: string;
   hasApplied?: boolean;
+  hasReviewContent?: boolean;
   createAt?: string;
   updateAt?: string;
 }
 
 const activities = ref<Activity[]>([]);
+const loading = ref(true);
+const refreshing = ref(false);
 
 const fetchData = () => {
+  loading.value = true;
   getAllActivities().then(res => {
     activities.value = res.data?.data ?? [];
   }).catch(() => {
     showToast('获取活动列表失败');
+  }).finally(() => {
+    loading.value = false;
+    refreshing.value = false;
   });
 };
 
-fetchData();
+onMounted(() => {
+  fetchData();
+});
 
 // Track which cards are expanded
 const activeNames = ref<string[]>([]);
@@ -126,131 +138,171 @@ const getProgressColor = (activity: Activity) => {
   if (percentage >= 70) return '#ff976a';
   return '#07c160';
 }
+
+// Navigate to activity review page
+const goToActivityReview = (activity: Activity) => {
+  router.push({
+    path: `/activity/review/${activity.id}`,
+    query: {name: activity.name}
+  });
+};
+
+// Handle pull to refresh
+const onRefresh = () => {
+  refreshing.value = true;
+  fetchData();
+};
 </script>
 
 <template>
   <div class="activity-list">
-    <div class="container">
-      <h1 class="page-title">活动列表</h1>
-
-      <van-collapse v-model="activeNames" accordion>
-        <van-collapse-item v-for="activity in activities" :key="activity.id" :name="activity.id" class="activity-card">
-          <template #title>
-            <div class="card-header">
-              <div class="card-title-wrapper">
-                <div class="activity-icon" :class="{ 'full': isActivityFull(activity) }">
-                  <van-icon :name="isActivityFull(activity) ? 'stop-circle-o' : 'fire-o'" />
-                </div>
-                <div class="card-title">{{ activity.name || '-' }}</div>
-              </div>
-              <van-tag :type="isActivityFull(activity) ? 'danger' : 'success'" class="card-tag" round>
-                {{ activity.curNum ?? '-' }}/{{ activity.limitNum ?? '-' }}
-              </van-tag>
-            </div>
-          </template>
-
-          <template #value>
-            <div class="card-preview pr-4">
-              <div class="countdown-wrapper" v-if="activity.hasApplied">
-                <span>已经报名</span>
-              </div>
-              <div class="countdown-wrapper" v-else-if="!isDeadlinePassed(activity)">
-                <van-icon name="underway-o" class="countdown-icon" />
-                <van-count-down :time="getRemainingTime(activity.limitTime)" format="DD天HH时mm分ss秒" class="countdown" />
-              </div>
-              <div class="deadline-passed" v-else>
-                <van-icon name="closed" class="deadline-icon" />
-                <span>报名已截止</span>
-              </div>
-            </div>
-          </template>
-
-          <div class="card-content">
-            <div class="hero-image-container">
-              <van-image :src="activity.heroImg || ''" width="100%" height="220" fit="cover" radius="12px"
-                class="hero-image">
-                <template #error>
-                  <div class="image-placeholder">
-                    <van-icon name="photo-o" size="48" />
-                    <p>活动图片</p>
-                  </div>
-                </template>
-              </van-image>
-
-              <div class="image-overlay" v-if="isActivityFull(activity) || isDeadlinePassed(activity)">
-                <div class="overlay-content">
-                  {{ isActivityFull(activity) ? '名额已满' : '报名已截止' }}
-                </div>
-              </div>
-            </div>
-
-            <div class="activity-details">
-              <van-cell-group inset class="details-group">
-                <van-cell title="活动名称" :value="activity.name || '-'" class="detail-cell" />
-
-                <van-cell title="活动描述" class="detail-cell description-cell">
-                  <template #value>
-                    <!--
-                    <div class="description">{{ activity.description || '-' }}</div>
-                    -->
-                    <van-text-ellipsis 
-                    class="description"
-                    rows="5" 
-                    :content=" activity.description || '-' " 
-                    expand-text="展开" 
-                    collapse-text="收起" />
-                  </template>
-                </van-cell>
-
-                <van-cell title="报名人数" class="detail-cell">
-                  <template #value>
-                    <div class="participants">
-                      <van-progress
-                        :percentage="Math.min(100, ((activity.curNum ?? 0) / (activity.limitNum ?? 1)) * 100)"
-                        :pivot-text="`${activity.curNum ?? '-'}/${activity.limitNum ?? '-'}`"
-                        :color="getProgressColor(activity)" track-color="#e9f5ff" stroke-width="10px"
-                        class="progress-bar" />
-                    </div>
-                  </template>
-                </van-cell>
-
-                <van-cell title="截止时间" class="detail-cell">
-                  <template #value>
-                    <div class="deadline-time" :class="{ 'passed': isDeadlinePassed(activity) }">
-                      <van-icon :name="isDeadlinePassed(activity) ? 'clock-o' : 'clock'" class="time-icon" />
-                      <span>{{ formatDate(activity.limitTime) }}</span>
-                    </div>
-                  </template>
-                </van-cell>
-              </van-cell-group>
-
-              <div class="action-area">
-                <van-button block
-                  :type="activity.hasApplied ? 'danger' : (canRegister(activity) ? 'primary' : 'default')"
-                  :disabled="!canRegister(activity)"
-                  @click.stop="!activity.hasApplied ? handleRegister(activity) : handleCancel(activity)"
-                  class="register-button" round>
-                  <template v-if="activity.hasApplied">
-                    {{ '取消报名' }}
-                  </template>
-                  <template v-else-if="canRegister(activity)">
-                    <van-icon name="sign" class="button-icon" />
-                    立即报名
-                  </template>
-                  <template v-else>
-                    {{ isActivityFull(activity) ? '名额已满' : '报名已截止' }}
-                  </template>
-                </van-button>
-              </div>
-            </div>
+    <van-pull-refresh v-model="refreshing" @refresh="onRefresh">
+      <van-skeleton title :row="6" :loading="loading" animated>
+        <div class="container">
+          <div class="page-header">
+            <h1 class="page-title">活动列表</h1>
+            <p class="page-subtitle">来发现缤纷多彩的活动吧</p>
           </div>
-        </van-collapse-item>
-      </van-collapse>
 
-      <div class="empty-state" v-if="!activities || activities.length === 0">
-        <van-empty description="暂无活动" />
-      </div>
-    </div>
+          <van-collapse v-model="activeNames" accordion>
+            <van-collapse-item v-for="activity in activities" :key="activity.id" :name="activity.id"
+                               class="activity-card">
+              <template #title>
+                <div class="card-header">
+                  <div class="card-title-wrapper">
+                    <div class="activity-icon" :class="{ 'full': isActivityFull(activity) }">
+                      <van-icon :name="isActivityFull(activity) ? 'stop-circle-o' : 'fire-o'"/>
+                    </div>
+                    <div class="card-title">{{ activity.name || '-' }}</div>
+                  </div>
+                  <van-tag :type="isActivityFull(activity) ? 'danger' : 'success'" class="card-tag" round>
+                    {{ activity.curNum ?? '-' }}/{{ activity.limitNum ?? '-' }}
+                  </van-tag>
+                </div>
+              </template>
+
+              <template #value>
+                <div class="card-preview pr-4">
+                  <div class="countdown-wrapper" v-if="activity.hasApplied">
+                    <van-badge dot color="#07c160"/>
+                    <span class="ml-2">已报名</span>
+                  </div>
+                  <div class="countdown-wrapper" v-else-if="!isDeadlinePassed(activity)">
+                    <van-icon name="underway-o" class="countdown-icon"/>
+                    <van-count-down :time="getRemainingTime(activity.limitTime)" format="DD天HH时mm分ss秒"
+                                    class="countdown"/>
+                  </div>
+                  <div class="deadline-passed" v-else>
+                    <van-icon name="closed" class="deadline-icon"/>
+                    <span>报名已截止</span>
+                  </div>
+                </div>
+              </template>
+
+              <div class="card-content">
+                <div class="hero-image-container">
+                  <van-image :src="activity.heroImg || ''" width="100%" height="220" fit="cover" radius="12px"
+                             class="hero-image">
+                    <template #error>
+                      <div class="image-placeholder">
+                        <van-icon name="photo-o" size="48"/>
+                        <p>活动图片</p>
+                      </div>
+                    </template>
+                  </van-image>
+
+                  <div class="image-overlay" v-if="isActivityFull(activity) || isDeadlinePassed(activity)">
+                    <div class="overlay-content">
+                      {{ isActivityFull(activity) ? '名额已满' : '报名已截止' }}
+                    </div>
+                  </div>
+                </div>
+
+                <div class="activity-details">
+                  <van-cell-group inset class="details-group">
+                    <van-cell title="活动名称" :value="activity.name || '-'" class="detail-cell"/>
+
+                    <van-cell title="活动描述" class="detail-cell description-cell">
+                      <template #value>
+                        <van-text-ellipsis
+                            class="description"
+                            rows="3"
+                            :content="activity.description || '-'"
+                            expand-text="展开"
+                            collapse-text="收起"/>
+                      </template>
+                    </van-cell>
+
+                    <van-cell title="报名人数" class="detail-cell">
+                      <template #value>
+                        <div class="participants">
+                          <van-progress
+                              :percentage="Math.min(100, ((activity.curNum ?? 0) / (activity.limitNum ?? 1)) * 100)"
+                              :pivot-text="`${activity.curNum ?? '-'}/${activity.limitNum ?? '-'}`"
+                              :color="getProgressColor(activity)" track-color="#e9f5ff" stroke-width="10px"
+                              class="progress-bar"/>
+                        </div>
+                      </template>
+                    </van-cell>
+
+                    <van-cell title="截止时间" class="detail-cell">
+                      <template #value>
+                        <div class="deadline-time" :class="{ 'passed': isDeadlinePassed(activity) }">
+                          <van-icon :name="isDeadlinePassed(activity) ? 'clock-o' : 'clock'" class="time-icon"/>
+                          <span>{{ formatDate(activity.limitTime) }}</span>
+                        </div>
+                      </template>
+                    </van-cell>
+                  </van-cell-group>
+
+                  <div class="action-area">
+                    <div class="button-group">
+                      <van-button
+                          :type="activity.hasApplied ? 'danger' : (canRegister(activity) ? 'primary' : 'default')"
+                          :disabled="!canRegister(activity) && !activity.hasApplied"
+                          @click.stop="!activity.hasApplied ? handleRegister(activity) : handleCancel(activity)"
+                          class="register-button" round block>
+                        <template v-if="activity.hasApplied">
+                          <van-icon name="cross" class="button-icon"/>
+                          取消报名
+                        </template>
+                        <template v-else-if="canRegister(activity)">
+                          <van-icon name="sign" class="button-icon"/>
+                          立即报名
+                        </template>
+                        <template v-else>
+                          {{ isActivityFull(activity) ? '名额已满' : '报名已截止' }}
+                        </template>
+                      </van-button>
+
+                      <van-button v-if="isDeadlinePassed(activity) && activity.hasReviewContent"
+                                  type="success"
+                                  plain
+                                  class="review-button"
+                                  round
+                                  @click.stop="goToActivityReview(activity)">
+                        <van-icon name="photo-o" class="button-icon"/>
+                        活动回顾
+                      </van-button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </van-collapse-item>
+          </van-collapse>
+
+          <div class="empty-state" v-if="!loading && (!activities || activities.length === 0)">
+            <van-empty description="暂无活动" image="search">
+              <template #bottom>
+                <van-button round type="primary" class="empty-button">刷新页面</van-button>
+              </template>
+            </van-empty>
+          </div>
+        </div>
+      </van-skeleton>
+    </van-pull-refresh>
+
+    <van-back-top/>
   </div>
 </template>
 
@@ -274,23 +326,36 @@ const getProgressColor = (activity: Activity) => {
   margin: 0 auto;
 }
 
-.page-title {
+.page-header {
   text-align: center;
-  font-size: 24px;
-  font-weight: 700;
-  color: #2c3e50;
   margin: 16px 0 24px;
   position: relative;
   padding-bottom: 12px;
 }
 
-.page-title::after {
+.page-title {
+  font-size: 28px;
+  font-weight: 700;
+  color: #2c3e50;
+  margin: 0 0 8px;
+  background: linear-gradient(90deg, #3498db, #2ecc71);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.page-subtitle {
+  font-size: 16px;
+  color: #7f8c8d;
+  margin: 0;
+}
+
+.page-header::after {
   content: '';
   position: absolute;
   bottom: 0;
   left: 50%;
   transform: translateX(-50%);
-  width: 60px;
+  width: 80px;
   height: 3px;
   background: linear-gradient(90deg, #3498db, #2ecc71);
   border-radius: 3px;
@@ -512,15 +577,30 @@ const getProgressColor = (activity: Activity) => {
   padding: 20px 16px 8px;
 }
 
+.button-group {
+  display: flex;
+  gap: 10px;
+}
+
 .register-button {
-  height: 48px;
-  font-size: 16px;
+  height: 44px;
+  font-size: 15px;
   font-weight: 600;
   box-shadow: 0 4px 12px rgba(7, 193, 96, 0.3);
   transition: all 0.3s ease;
+  flex: 3;
 }
 
-.register-button:not(:disabled):hover {
+.review-button {
+  height: 44px;
+  font-size: 15px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  flex: 2;
+}
+
+.register-button:not(:disabled):hover,
+.review-button:hover {
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(7, 193, 96, 0.4);
 }
@@ -532,6 +612,11 @@ const getProgressColor = (activity: Activity) => {
 
 .empty-state {
   padding: 40px 0;
+}
+
+.empty-button {
+  width: 160px;
+  margin-top: 16px;
 }
 
 /* 自定义 van-collapse 样式 */
@@ -554,7 +639,6 @@ const getProgressColor = (activity: Activity) => {
   display: flex;
   align-items: center;
 }
-
 
 :deep(.van-cell::after) {
   border-bottom: 1px solid rgba(0, 0, 0, 0.05);

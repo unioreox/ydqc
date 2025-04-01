@@ -107,6 +107,14 @@ export type CheckInRequest = {
     timestamp: string;
 };
 
+export interface ActivityReviewVO {
+    title: string;
+    date: string; // Use string to represent LocalDateTime
+    coverImage: string;
+    markdown: string;
+}
+
+
 export type ApiResponseRecordVo = {
     code?: number;
     msg?: string;
@@ -738,6 +746,21 @@ export type GetAllActivitiesResponses = {
      */
     200: ApiResponseListActivityVo;
 };
+
+export type getReviewContentResponses = {
+    /**
+     * OK
+     */
+    200: ActivityReviewVo;
+}
+
+export type getReviewContentResponse = getReviewContentResponses[keyof getReviewContentResponses];
+
+export type ActivityReviewVo = {
+    code?: number;
+    msg?: string;
+    data?: ActivityReviewVO;
+}
 
 export type GetAllActivitiesResponse = GetAllActivitiesResponses[keyof GetAllActivitiesResponses];
 
