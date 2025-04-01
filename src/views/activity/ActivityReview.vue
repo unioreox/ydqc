@@ -127,35 +127,35 @@ const handleMarkdownImageClick = (event: MouseEvent) => {
         </div>
 
         <!-- Gallery -->
-      <!--  <div class="gallery-section">-->
-      <!--    <div class="section-header">-->
-      <!--      <div class="section-title">-->
-      <!--        <van-icon name="photo-o" class="section-icon"/>-->
-      <!--        <h2>全部活动照片</h2>-->
-      <!--      </div>-->
-      <!--      <van-button size="small" type="primary" plain round icon="expand-o" @click="openGallery(0)">-->
-      <!--        全部查看-->
-      <!--      </van-button>-->
-      <!--    </div>-->
+        <!--  <div class="gallery-section">-->
+        <!--    <div class="section-header">-->
+        <!--      <div class="section-title">-->
+        <!--        <van-icon name="photo-o" class="section-icon"/>-->
+        <!--        <h2>全部活动照片</h2>-->
+        <!--      </div>-->
+        <!--      <van-button size="small" type="primary" plain round icon="expand-o" @click="openGallery(0)">-->
+        <!--        全部查看-->
+        <!--      </van-button>-->
+        <!--    </div>-->
 
-      <!--    &lt;!&ndash;<div class="gallery-grid">&ndash;&gt;-->
-      <!--    &lt;!&ndash;  <div&ndash;&gt;-->
-      <!--    &lt;!&ndash;      v-for="(image, index) in review.gallery.split(',').slice(0, 6)"&ndash;&gt;-->
-      <!--    &lt;!&ndash;      :key="index"&ndash;&gt;-->
-      <!--    &lt;!&ndash;      class="gallery-item"&ndash;&gt;-->
-      <!--    &lt;!&ndash;      @click="openGallery(index)">&ndash;&gt;-->
-      <!--    &lt;!&ndash;    <van-image&ndash;&gt;-->
-      <!--    &lt;!&ndash;        :src="image"&ndash;&gt;-->
-      <!--    &lt;!&ndash;        width="100%"&ndash;&gt;-->
-      <!--    &lt;!&ndash;        height="100%"&ndash;&gt;-->
-      <!--    &lt;!&ndash;        fit="cover"&ndash;&gt;-->
-      <!--    &lt;!&ndash;        radius="8px"/>&ndash;&gt;-->
-      <!--    &lt;!&ndash;    <div class="gallery-overlay" v-if="index === 5 && review.gallery.split(',').length > 6">&ndash;&gt;-->
-      <!--    &lt;!&ndash;      <span>+{{ review.gallery.split(',').length - 6 }}</span>&ndash;&gt;-->
-      <!--    &lt;!&ndash;    </div>&ndash;&gt;-->
-      <!--    &lt;!&ndash;  </div>&ndash;&gt;-->
-      <!--    &lt;!&ndash;</div>&ndash;&gt;-->
-      <!--  </div>-->
+        <!--    &lt;!&ndash;<div class="gallery-grid">&ndash;&gt;-->
+        <!--    &lt;!&ndash;  <div&ndash;&gt;-->
+        <!--    &lt;!&ndash;      v-for="(image, index) in review.gallery.split(',').slice(0, 6)"&ndash;&gt;-->
+        <!--    &lt;!&ndash;      :key="index"&ndash;&gt;-->
+        <!--    &lt;!&ndash;      class="gallery-item"&ndash;&gt;-->
+        <!--    &lt;!&ndash;      @click="openGallery(index)">&ndash;&gt;-->
+        <!--    &lt;!&ndash;    <van-image&ndash;&gt;-->
+        <!--    &lt;!&ndash;        :src="image"&ndash;&gt;-->
+        <!--    &lt;!&ndash;        width="100%"&ndash;&gt;-->
+        <!--    &lt;!&ndash;        height="100%"&ndash;&gt;-->
+        <!--    &lt;!&ndash;        fit="cover"&ndash;&gt;-->
+        <!--    &lt;!&ndash;        radius="8px"/>&ndash;&gt;-->
+        <!--    &lt;!&ndash;    <div class="gallery-overlay" v-if="index === 5 && review.gallery.split(',').length > 6">&ndash;&gt;-->
+        <!--    &lt;!&ndash;      <span>+{{ review.gallery.split(',').length - 6 }}</span>&ndash;&gt;-->
+        <!--    &lt;!&ndash;    </div>&ndash;&gt;-->
+        <!--    &lt;!&ndash;  </div>&ndash;&gt;-->
+        <!--    &lt;!&ndash;</div>&ndash;&gt;-->
+        <!--  </div>-->
       </div>
     </van-skeleton>
 
