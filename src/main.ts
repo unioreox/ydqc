@@ -47,7 +47,11 @@ import {
     CollapseItem,
     CountDown,
     Progress,
-    Uploader
+    Uploader,
+    ImagePreview,
+    BackTop,
+    Skeleton,
+    ShareSheet
 } from "vant";
 
 const app = createApp(App)
@@ -95,6 +99,11 @@ app.use(CollapseItem);
 app.use(CountDown);
 app.use(Progress);
 app.use(Uploader);
+app.use(ImagePreview);
+app.use(BackTop);
+app.use(Skeleton);
+app.use(ShareSheet);
+
 
 // 请求库配置相关
 import "@/api/config";

@@ -45,13 +45,13 @@ export default defineConfig({
         proxy: {
             '/api': {
                 // debug-bridge 配置对应端口
-                target: 'http://localhost:8085',
+                target: 'http://localhost:8080',
                 changeOrigin: true,
                 rewrite: path => path.replace("/api/v1", "")
             },
             '/uploads': {
                 // debug-bridge 配置对应端口
-                target: 'http://localhost:8085',
+                target: 'http://localhost:8080',
                 changeOrigin: true,
             },
         }

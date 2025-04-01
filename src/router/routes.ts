@@ -38,6 +38,11 @@ const routes = [
                 path: '',
                 name: "活动",
                 component: () => import("@/views/activity/ActivityView.vue"),
+            },
+            {
+                path: "review/:id",
+                name: "活动回顾",
+                component: () => import("@/views/activity/ActivityReview.vue"),
             }
         ],
     },
