@@ -1,11 +1,6 @@
 #使用node.js 20版本
 image: node:20
 
-# 设置缓存，避免每次都重新拉取node_modules
-cache:
-  paths:
-    - node_modules/
-
 # 定义流水线阶段
 stages:
   - install
@@ -26,6 +21,10 @@ install:
 build:
   stage: build
   script:
+    - echo "设置npm镜像源"
+    - npm config set registry https://registry.npmmirror.com
+    - echo "开始安装依赖"
+    - npm install
     - echo "Stage 2 - 构建产物"
     - npm run build-only
     - echo "打包 dist 文件夹内容"
