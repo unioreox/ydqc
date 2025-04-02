@@ -174,32 +174,49 @@ const onRefresh = () => {
               <template #title>
                 <div class="card-header">
                   <div class="card-title-wrapper">
-                    <div class="activity-icon" :class="{ 'full': isActivityFull(activity) }">
-                      <van-icon :name="isActivityFull(activity) ? 'stop-circle-o' : 'fire-o'"/>
+                    <!-- 时间截止or人数满 红 -->
+                    <div class="activity-icon" :class="{ 'full': isActivityFull(activity) || getRemainingTime() == 0 }">
+                      <!-- 时间截止or人数满 红 -->
+                      <van-icon :name="isActivityFull(activity) || getRemainingTime() == 0 ? 'stop-circle-o' : 'fire-o'"/>
                     </div>
-                    <div class="card-title">{{ activity.name || '-' }}</div>
+<!--                    <div class="card-title">{{ activity.name || '-' }}</div>-->
                   </div>
-                  <van-tag :type="isActivityFull(activity) ? 'danger' : 'success'" class="card-tag" round>
+                  <div class="card-preview pr-4">
+                    <div class="countdown-wrapper" v-if="activity.hasApplied">
+                      <van-badge dot color="#07c160"/>
+                      <span class="ml-2">已报名</span>
+                    </div>
+                    <div class="countdown-wrapper" v-else-if="!isDeadlinePassed(activity)">
+                      <van-icon name="underway-o" class="countdown-icon"/>
+                      <van-count-down :time="getRemainingTime(activity.limitTime)" format="DD天HH时mm分ss秒"
+                                      class="countdown"/>
+                    </div>
+                    <div class="deadline-passed" v-else>
+                      <van-icon name="closed" class="deadline-icon"/>
+                      <!-- 最朴实无华的一集 -->
+                      <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;报名已截止</span>
+                    </div>
+                  </div>
+                  <!-- 时间截止or人数满 红 -->
+                  <van-tag :type="isActivityFull(activity) || getRemainingTime() == 0 ? 'danger' : 'success'" class="card-tag" round>
                     {{ activity.curNum ?? '-' }}/{{ activity.limitNum ?? '-' }}
                   </van-tag>
                 </div>
               </template>
 
               <template #value>
-                <div class="card-preview pr-4">
-                  <div class="countdown-wrapper" v-if="activity.hasApplied">
-                    <van-badge dot color="#07c160"/>
-                    <span class="ml-2">已报名</span>
-                  </div>
-                  <div class="countdown-wrapper" v-else-if="!isDeadlinePassed(activity)">
-                    <van-icon name="underway-o" class="countdown-icon"/>
-                    <van-count-down :time="getRemainingTime(activity.limitTime)" format="DD天HH时mm分ss秒"
-                                    class="countdown"/>
-                  </div>
-                  <div class="deadline-passed" v-else>
-                    <van-icon name="closed" class="deadline-icon"/>
-                    <span>报名已截止</span>
-                  </div>
+                <div class="card-title">
+                  {{ activity.name || '-' }}
+                  <van-button v-if="activity.hasReviewContent"
+                              type="success"
+                              style="display: block"
+                              plain
+                              class="review-button"
+                              round
+                              @click.stop="goToActivityReview(activity)">
+                    <van-icon name="photo-o" class="button-icon"/>
+                    活动回顾
+                  </van-button>
                 </div>
               </template>
 
@@ -413,6 +430,7 @@ const onRefresh = () => {
   font-size: 16px;
   font-weight: 700;
   color: #323233;
+  text-align: center;
 }
 
 .card-tag {
