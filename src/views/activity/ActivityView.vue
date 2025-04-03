@@ -329,20 +329,20 @@ const onRefresh = () => {
 </template>
 
 <style scoped>
-/* 用于活动标题视觉居中 */
+/* 用于活动标题视觉居中, 使用vmin寻找视口中的最小值, 兼容折叠屏&PC */
 .activity-countdown-icon-span{
   position: absolute;
-  left: 29vw;
+  left: 29vmin;
 }
 
 .activity-countdown-span{
   position: absolute;
-  left: 33vw;
+  left: 33vmin;
 }
 
 .activity-title-span {
   position: absolute;
-  left: 38vw;
+  left: 38vmin;
 }
 
 /* 将 Collapse Item 的 title 和 value 两个插槽都设为 block，上下分行显示 */
