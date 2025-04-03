@@ -179,24 +179,23 @@ const onRefresh = () => {
                       <!-- 时间截止or人数满 红 -->
                       <van-icon :name="isActivityFull(activity) || getRemainingTime(activity.limitTime) == 0 ? 'stop-circle-o' : 'fire-o'"/>
                     </div>
-<!--                    <div class="card-title">{{ activity.name || '-' }}</div>-->
+                    <!-- <div class="card-title">{{ activity.name || '-' }}</div> -->
                   </div>
                   <div class="card-preview pr-4">
                     <div class="countdown-wrapper" v-if="activity.hasApplied">
                       <van-badge dot color="#07c160"/>
-                      <span class="ml-2">已报名</span>
+                      <span class="ml-2 activity-title-span">已报名</span>
                     </div>
                     <div class="countdown-wrapper" v-else-if="!isDeadlinePassed(activity)">
-<!--                      请神人了用nbsp布局-->
-                      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                      <van-icon name="underway-o" class="countdown-icon"/>
-                      <van-count-down :time="getRemainingTime(activity.limitTime)" format="DD天HH时mm分ss秒"
-                                      class="countdown"/>
+                      <!-- 请神人了用nbsp布局 -->
+                      <!-- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; -->
+                      <van-icon name="underway-o" class="countdown-icon activity-countdown-icon-span"/>
+                      <van-count-down :time="getRemainingTime(activity.limitTime)" format="DD天HH时mm分ss秒" class="countdown activity-countdown-span"/>
                     </div>
                     <div class="deadline-passed" v-else>
                       <van-icon name="closed" class="deadline-icon"/>
                       <!-- 最朴实无华的一集 -->
-                      <span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;报名已截止</span>
+                      <span class="activity-title-span">报名已截止</span>
                     </div>
                   </div>
                   <!-- 时间截止or人数满 红 -->
@@ -330,6 +329,22 @@ const onRefresh = () => {
 </template>
 
 <style scoped>
+/* 用于活动标题视觉居中 */
+.activity-countdown-icon-span{
+  position: absolute;
+  left: 29vw;
+}
+
+.activity-countdown-span{
+  position: absolute;
+  left: 33vw;
+}
+
+.activity-title-span {
+  position: absolute;
+  left: 38vw;
+}
+
 /* 将 Collapse Item 的 title 和 value 两个插槽都设为 block，上下分行显示 */
 :deep(.van-collapse-item__title),
 :deep(.van-collapse-item__value) {
