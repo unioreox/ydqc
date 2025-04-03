@@ -175,9 +175,9 @@ const onRefresh = () => {
                 <div class="card-header">
                   <div class="card-title-wrapper">
                     <!-- 时间截止or人数满 红 -->
-                    <div class="activity-icon" :class="{ 'full': isActivityFull(activity) || getRemainingTime() == 0 }">
+                    <div class="activity-icon" :class="{ 'full': isActivityFull(activity) || getRemainingTime(activity.limitTime) == 0 }">
                       <!-- 时间截止or人数满 红 -->
-                      <van-icon :name="isActivityFull(activity) || getRemainingTime() == 0 ? 'stop-circle-o' : 'fire-o'"/>
+                      <van-icon :name="isActivityFull(activity) || getRemainingTime(activity.limitTime) == 0 ? 'stop-circle-o' : 'fire-o'"/>
                     </div>
 <!--                    <div class="card-title">{{ activity.name || '-' }}</div>-->
                   </div>
@@ -187,6 +187,8 @@ const onRefresh = () => {
                       <span class="ml-2">已报名</span>
                     </div>
                     <div class="countdown-wrapper" v-else-if="!isDeadlinePassed(activity)">
+<!--                      请神人了用nbsp布局-->
+                      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                       <van-icon name="underway-o" class="countdown-icon"/>
                       <van-count-down :time="getRemainingTime(activity.limitTime)" format="DD天HH时mm分ss秒"
                                       class="countdown"/>
@@ -198,7 +200,7 @@ const onRefresh = () => {
                     </div>
                   </div>
                   <!-- 时间截止or人数满 红 -->
-                  <van-tag :type="isActivityFull(activity) || getRemainingTime() == 0 ? 'danger' : 'success'" class="card-tag" round>
+                  <van-tag :type="isActivityFull(activity) || getRemainingTime(activity.limitTime) == 0 ? 'danger' : 'success'" class="card-tag" round>
                     {{ activity.curNum ?? '-' }}/{{ activity.limitNum ?? '-' }}
                   </van-tag>
                 </div>
@@ -296,15 +298,15 @@ const onRefresh = () => {
                         </template>
                       </van-button>
 
-                      <van-button v-if="activity.hasReviewContent"
-                                  type="success"
-                                  plain
-                                  class="review-button"
-                                  round
-                                  @click.stop="goToActivityReview(activity)">
-                        <van-icon name="photo-o" class="button-icon"/>
-                        活动回顾
-                      </van-button>
+<!--                      <van-button v-if="activity.hasReviewContent"-->
+<!--                                  type="success"-->
+<!--                                  plain-->
+<!--                                  class="review-button"-->
+<!--                                  round-->
+<!--                                  @click.stop="goToActivityReview(activity)">-->
+<!--                        <van-icon name="photo-o" class="button-icon"/>-->
+<!--                        活动回顾-->
+<!--                      </van-button>-->
                     </div>
                   </div>
                 </div>
