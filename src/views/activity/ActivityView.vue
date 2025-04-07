@@ -210,7 +210,7 @@ const onRefresh = () => {
                   {{ activity.name || '-' }}
                   <van-button v-if="activity.hasReviewContent"
                               type="success"
-                              style="display: block"
+                              style="display: block; margin: auto;"
                               plain
                               class="review-button"
                               round

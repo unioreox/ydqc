@@ -3,6 +3,7 @@ import {showDialog} from "vant";
 import {ref} from "vue";
 import {Cookie} from "lucide-vue-next";
 import {removeToken} from "@/util/token";
+import AboutDialog from "@/components/AboutDialog.vue";
 
 const activeTab = ref("campus"); // Default to campus login
 
@@ -29,6 +30,15 @@ const wechatLoginHandle = () => {
       window.location.href = `/?code=justfortest`;
     });
   }
+};
+
+// 创建对话框组件的引用
+const aboutDialogRef = ref();
+
+// 显示关于对话框的方法
+const showAboutDialog = (e: MouseEvent) => {
+  e.preventDefault();
+  aboutDialogRef.value.open();
 };
 </script>
 
@@ -91,7 +101,7 @@ const wechatLoginHandle = () => {
             </svg>
           </div>
           <h2 class="login-option-title">微信登录</h2>
-          <p class="login-option-desc">使用微信快速登录（请确保在微信客户端内）</p>
+          <p class="login-option-desc">使用微信快速登录<br>（请确保在微信客户端内）</p>
           <van-button
               type="success"
               class="login-btn wechat-btn"
@@ -102,11 +112,20 @@ const wechatLoginHandle = () => {
           </van-button>
         </div>
       </div>
+      <!-- Footer -->
+      <div class="footer-copyright text-center py-4 text-[0.75rem]">
+        <span class="text-gray-600">Copyright &copy; 2001-2025 升华工作室 </span>
+        <img src="@/assets/logo.png" alt="Logo" class="inline-block mx-2 w-6 h-6">
+        <a @click="showAboutDialog"
+           class="text-indigo-600 hover:text-indigo-800 transition-colors duration-300 cursor-pointer"> 关于 ></a>
+        <!-- 引入关于弹窗组件 -->
+        <AboutDialog ref="aboutDialogRef"/>
+      </div>
     </div>
   </div>
   <van-button @click="()=>{
     removeToken()
-  }">Debug:清除登录状态
+  }">Debug: 清除登录状态
   </van-button>
 </template>
 
