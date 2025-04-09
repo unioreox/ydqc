@@ -64,7 +64,7 @@ const buildInfo = ref({
 
 async function checkUpdate() {
   try {
-    const response = await fetch('/build-info.json');
+    const response = await fetch('/build-info.json' + '?_timestamp=' + Date.now());
     if (!response.ok) throw new Error('Fetch Build Info Error');
     const currentInfo = await response.json();
     currentBuildTime.value = currentInfo.time;
