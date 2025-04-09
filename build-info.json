@@ -1,0 +1,14 @@
+{
+  "time": "2025-04-09T05:29:34.383Z",
+  "commitId": "2a6562a",
+  "commitMessage": "fix: 布局问题",
+  "announcement": {
+    "switch": true,
+    "info": "恭喜各位推送抽奖中奖同学，领奖时间地点我们将于近期公布，请大家及时关注，3月25日下午不设领奖点~"
+  },
+  "updateInfo": {
+    "switch": true,
+    "header": "更新提示",
+    "body": "服务器热更新, 点击刷新"
+  }
+}

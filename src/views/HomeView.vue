@@ -421,6 +421,7 @@ onMounted(async () => {
     await getLastRecordHandle();
     await initMap();
     updateLocation();
+    getAnnouncement();
   } catch (error) {
     console.error('Initialization failed:', error);
     showNotify({type: 'danger', message: '初始化失败，请刷新重试'});
@@ -463,11 +464,23 @@ const onOffsetChange = () => {
     message: '点击发表弹幕，与' + onlineCount.value + '人一起分享叭~',
   });
 };
+
+const announcementInfo = ref({
+    "switch": false,
+    "info": ""
+});
+
+async function getAnnouncement(){
+  const response = await fetch('/build-info.json');
+    if (!response.ok) throw new Error('Fetch Build Info Error');
+    const info = await response.json();
+      announcementInfo.value = info.announcement;
+}
 </script>
 
 <template>
   <div class="mountain-challenge">
-     <!--通知栏-->
+    <!--通知栏-->
     <van-notice-bar
         left-icon="info-o"
         color="#1989fa"
@@ -475,8 +488,10 @@ const onOffsetChange = () => {
         wrapable
         :scrollable="false"
         class="notice-primary rounded-lg shadow-sm"
+        v-if="announcementInfo.switch"
     >
-      恭喜各位推送抽奖中奖同学，领奖时间地点我们将于近期公布，请大家及时关注，3月25日下午不设领奖点~
+      {{ announcementInfo.info }}
+      <!-- 恭喜各位推送抽奖中奖同学，领奖时间地点我们将于近期公布，请大家及时关注，3月25日下午不设领奖点~ -->
       <!--我们还在努力测试本系统中，期待与大家一起翻山越岭！-->
       <!--秋季登山节相关排名的参考数据以 11 月 20 日晚 24：00 截止的数据为准，本系统将一直开放供师生使用，相应数据暂不清零。-->
     </van-notice-bar>

@@ -22,7 +22,7 @@
           <img :src="logoSrc" alt="升华工作室" class="logo-image"/>
         </div>
         <h3 class="studio-name">升华工作室</h3>
-        <div class="version-badge">v{{ version }}</div>
+        <div class="version-badge">{{ buildInfo.commitId }}</div>
       </div>
 
       <!-- 开发团队 -->
@@ -78,7 +78,10 @@
       <!-- 页脚 -->
       <div class="about-footer">
         <div class="slogan">盛世升华 服务中南</div>
-        <div class="copyright">构建时间: {{ buildTime }}</div>
+        <div class="copyright">构建时间: {{ buildInfo.time }}</div>
+        <div class="copyright">
+          {{ buildInfo.commitId }} - {{ buildInfo.commitMsg }}
+        </div>
         <div class="copyright">© 2001-2025 升华工作室</div>
       </div>
     </div>
@@ -117,17 +120,22 @@ import AvatarSrc3 from '@/assets/avatar/3.jpg';
 import AvatarSrc4 from '@/assets/avatar/4.jpg';
 import { ref, onMounted } from 'vue';
 
-const buildTime = ref('');
+const buildInfo = ref({"time":"未知","commitId":"未知","commitMsg":"未知"});
 
 onMounted(async () => {
   try {
-    const response = await fetch('/build-time.json');
-    if (!response.ok) throw new Error('Fetch Build Time Error');
-    const { time } = await response.json();
-    buildTime.value = new Date(time).toLocaleString(); // 转换为本地时间格式
+    const response = await fetch('/build-info.json');
+    if (!response.ok) throw new Error('Fetch Build Info Error');
+    const info = await response.json();
+    // 转换为本地时间格式
+    buildInfo.value.time = new Date(info.time).toLocaleString();
+    buildInfo.value.commitId = info.commitId;
+    buildInfo.value.commitMsg = info.commitMessage;
   } catch (error) {
     console.error('Fetch Build Time Error:', error);
-    buildTime.value = '未知';
+    buildInfo.value.time = "未知(Fetch Error)";
+    buildInfo.value.commitId = "未知(Fetch Error)";
+    buildInfo.value.commitMsg = "未知(Fetch Error)";
   }
 });
 

@@ -2,15 +2,16 @@
 import { RouterLink, RouterView } from 'vue-router'
 
 // 全局挂载完成后，配置微信 js-sdk
-import { onMounted } from 'vue'
+import { onMounted, ref } from 'vue'
 import wx from "weixin-js-sdk";
 import { getWxConfig } from "@/api";
-import { showNotify } from "vant";
+import { showNotify, showConfirmDialog } from "vant";
 import Clarity from '@microsoft/clarity';
 
 onMounted(() => {
+  checkUpdate();
   console.log('全局挂载完成，配置sdk');
-  
+
   const projectId = "qu3cf7upw6";
   Clarity.init(projectId);
 
@@ -42,11 +43,88 @@ onMounted(() => {
     }
   });
 })
+
+const currentBuildTime = ref();
+const checkUpdateSwitch = ref(true);
+
+const buildInfo = ref({
+  "time": "",
+  "commitId": "",
+  "commitMsg": "",
+  "announcement": {
+    "switch": false,
+    "info": ""
+  },
+  "updateInfo": {
+    "switch": false,
+    "header": "",
+    "body": ""
+  }
+});
+
+async function checkUpdate() {
+  try {
+    const response = await fetch('/build-info.json');
+    if (!response.ok) throw new Error('Fetch Build Info Error');
+    const currentInfo = await response.json();
+    currentBuildTime.value = currentInfo.time;
+    autoRefresh();
+  } catch (error) {
+    console.error('Fetch Build Time Error:', error);
+    checkUpdate();
+  }
+}
+
+async function autoRefresh() {
+  if (!checkUpdateSwitch.value) return;
+  
+  try {
+    const response = await fetch('/build-info.json' + '?_timestamp' + Date.now());
+    if (!response.ok) throw new Error('Fetch Build Info Error');
+    const info = await response.json();
+    if (info.time != currentBuildTime.value) {
+      buildInfo.value.time = new Date(info.time).toLocaleString();
+      buildInfo.value.commitId = info.commitId;
+      buildInfo.value.commitMsg = info.commitMessage;
+      buildInfo.value.announcement = info.announcement;
+      buildInfo.value.updateInfo = info.updateInfo;
+      
+      // 在显示对话框前暂停自动刷新
+      checkUpdateSwitch.value = false;
+      
+      showConfirmDialog({
+        title: buildInfo.value.updateInfo.header,
+        message: buildInfo.value.updateInfo.body
+        + "\n构建时间:" + buildInfo.value.time
+        + "\n版本ID:" + buildInfo.value.commitId
+        + "\n" + buildInfo.value.commitMsg,
+      })
+        .then(() => {
+          // 用户确认后刷新页面
+          location.reload();
+        })
+        .catch(() => {
+          // 用户取消，保持 checkUpdateSwitch 为 false
+          console.log('用户取消更新，停止自动刷新');
+        });
+      return; // 提前退出，避免设置新的定时器
+    }
+    
+    // 设置下一次检查的定时器
+    setTimeout(() => autoRefresh(), 2000);
+  } catch (error) {
+    console.error('Fetch Build Time Error:', error);
+    // 出错时仍继续检查
+    setTimeout(() => autoRefresh(), 2000);
+  }
+}
+
 </script>
 
 <template>
   <!-- Canvas FingerPrint -->
-  <canvas class="initCanvasFingerPrint" id="initCanvasFingerPrint" style="z-index: -100; opacity: 0; display: none;"></canvas>
+  <canvas class="initCanvasFingerPrint" id="initCanvasFingerPrint"
+    style="z-index: -100; opacity: 0; display: none;"></canvas>
   <RouterView />
 </template>
 
