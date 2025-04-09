@@ -79,7 +79,7 @@ async function autoRefresh() {
   if (!checkUpdateSwitch.value) return;
   
   try {
-    const response = await fetch('/build-info.json' + '?_timestamp' + Date.now());
+    const response = await fetch('/build-info.json' + '?_timestamp=' + Date.now());
     if (!response.ok) throw new Error('Fetch Build Info Error');
     const info = await response.json();
     if (info.time != currentBuildTime.value) {
@@ -92,7 +92,8 @@ async function autoRefresh() {
       // 在显示对话框前暂停自动刷新
       checkUpdateSwitch.value = false;
       
-      showConfirmDialog({
+      if(buildInfo.value.updateInfo.switch){
+        showConfirmDialog({
         title: buildInfo.value.updateInfo.header,
         message: buildInfo.value.updateInfo.body
         + "\n构建时间:" + buildInfo.value.time
@@ -108,14 +109,22 @@ async function autoRefresh() {
           console.log('用户取消更新，停止自动刷新');
         });
       return; // 提前退出，避免设置新的定时器
+      }else{
+        // 直接刷新, 静默更新
+        showNotify({
+          type: 'success',
+          message: '服务器强制应用热更新'
+        })
+        setTimeout(() => location.reload(), 6000);
+      }
     }
     
     // 设置下一次检查的定时器
-    setTimeout(() => autoRefresh(), 2000);
+    setTimeout(() => autoRefresh(), 5000);
   } catch (error) {
     console.error('Fetch Build Time Error:', error);
     // 出错时仍继续检查
-    setTimeout(() => autoRefresh(), 2000);
+    setTimeout(() => autoRefresh(), 5000);
   }
 }
 
