@@ -1,14 +1,21 @@
 {
-  "time": "2025-04-09T05:42:23.383Z",
-  "commitId": "测试环境commitId",
-  "commitMessage": "测试环境commitMsg",
+  "time": "2025-04-09T14:44:35.677Z",
+  "commitInfo": {
+    "commitId": "6eaf8ec",
+    "commitMessage": "chore: 解决冲突",
+    "branchName": "main",
+    "fileStats": "5 files changed, 506 insertions(+), 122 deletions(-)",
+    "tagInfo": [
+      "v2025.04.09_de2fa822-1-g6eaf8ec"
+    ]
+  },
   "announcement": {
     "switch": true,
-    "info": "测试环境announcement.info"
+    "info": "恭喜各位推送抽奖中奖同学，领奖时间地点我们将于近期公布，请大家及时关注，3月25日下午不设领奖点~"
   },
   "updateInfo": {
     "switch": true,
-    "header": "测试环境updateInfo.header",
-    "body": "测试环境updateInfo.body"
+    "header": "更新提示",
+    "body": "服务器热更新, 点击刷新\n建议您更新, 防止出现打卡数据异常"
   }
 }

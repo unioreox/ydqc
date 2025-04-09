@@ -32,7 +32,7 @@ function getGitCommitInfo() {
         const commitMessage = execSync('git log -1 --pretty=%s').toString().trim()
         const branchName = execSync('git rev-parse --abbrev-ref HEAD').toString().trim()
         const fileStats = execSync('git diff --shortstat HEAD~1').toString().trim()
-        const commitHistory = execSync('git log -5 --pretty=format:"%h - %an, %ar : %s"')
+        const tagInfo = execSync('git describe --tags --always').toString().trim()
             .toString()
             .trim()
             .split('\n')
@@ -41,7 +41,7 @@ function getGitCommitInfo() {
             commitMessage: commitMessage,
             branchName: branchName,
             fileStats: fileStats,
-            commitHistory: commitHistory,
+            tagInfo: tagInfo,
         }
         return { commitInfo }
     } catch (error) {

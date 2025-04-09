@@ -22,7 +22,7 @@
           <img :src="logoSrc" alt="升华工作室" class="logo-image"/>
         </div>
         <h3 class="studio-name">升华工作室</h3>
-        <div class="version-badge">{{ buildInfo.commitId }}</div>
+        <div class="version-badge">{{ buildInfo.commitInfo.commitId }}</div>
       </div>
 
       <!-- 开发团队 -->
@@ -78,9 +78,9 @@
       <!-- 页脚 -->
       <div class="about-footer">
         <div class="slogan">盛世升华 服务中南</div>
-        <div class="copyright">构建时间: {{ buildInfo.time }}</div>
+        <div class="copyright">构建时间: {{ new Date(buildInfo.time).toLocaleString() }}</div>
         <div class="copyright">
-          {{ buildInfo.commitId }} - {{ buildInfo.commitMsg }}
+          {{ buildInfo.commitInfo.commitId }} - {{ buildInfo.commitInfo.commitMessage }}
         </div>
         <div class="copyright">© 2001-2025 升华工作室</div>
       </div>
@@ -120,7 +120,26 @@ import AvatarSrc3 from '@/assets/avatar/3.jpg';
 import AvatarSrc4 from '@/assets/avatar/4.jpg';
 import { ref, onMounted } from 'vue';
 
-const buildInfo = ref({"time":"未知","commitId":"未知","commitMsg":"未知"});
+// new Date(info.time).toLocaleString()
+const buildInfo = ref({
+  time: "",
+  commitInfo: {
+    commitId: "",
+    commitMessage: "",
+    branchName: "",
+    fileStats: "",
+    tagInfo: [],
+  },
+  announcement: {
+    switch: false,
+    info: ""
+  },
+  updateInfo: {
+    switch: false,
+    header: "",
+    body: ""
+  }
+});
 
 onMounted(async () => {
   try {
@@ -128,14 +147,9 @@ onMounted(async () => {
     if (!response.ok) throw new Error('Fetch Build Info Error');
     const info = await response.json();
     // 转换为本地时间格式
-    buildInfo.value.time = new Date(info.time).toLocaleString();
-    buildInfo.value.commitId = info.commitId;
-    buildInfo.value.commitMsg = info.commitMessage;
+    buildInfo.value = info;
   } catch (error) {
     console.error('Fetch Build Time Error:', error);
-    buildInfo.value.time = "未知(Fetch Error)";
-    buildInfo.value.commitId = "未知(Fetch Error)";
-    buildInfo.value.commitMsg = "未知(Fetch Error)";
   }
 });
 
@@ -143,7 +157,7 @@ onMounted(async () => {
 const showPopup = ref(false);
 
 // 版本信息
-const version = ref('2.0_main');
+const version = ref();
 
 
 // 团队成员数据

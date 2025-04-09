@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import {ref, computed, nextTick, onMounted, watch} from 'vue';
-import {showDialog, showImagePreview, showNotify, showToast} from 'vant';
+import { ref, computed, nextTick, onMounted, watch } from 'vue';
+import { showDialog, showImagePreview, showNotify, showToast } from 'vant';
 import AMapLoader from "@amap/amap-jsapi-loader";
 import 'vant/es/notify/style';
-import init, {RsaEncryptor} from "@/util/rsa_wasm";
-import {type CheckPoint, doCheckin, getLastRecord, infoApi, listCheckPoint, loginApi, type RecordVo} from "@/api";
+import init, { RsaEncryptor } from "@/util/rsa_wasm";
+import { type CheckPoint, doCheckin, getLastRecord, infoApi, listCheckPoint, loginApi, type RecordVo } from "@/api";
 import md5 from "md5";
 import router from "@/router";
-import {useUserStore} from "@/stores/user";
+import { useUserStore } from "@/stores/user";
 import wx from "weixin-js-sdk";
-import {io, Socket} from "socket.io-client";
-import {wgs84ToGcj02} from "@/util/convertLocation";
+import { io, Socket } from "socket.io-client";
+import { wgs84ToGcj02 } from "@/util/convertLocation";
 import getCanvasFingerPrint from "@/util/canvasFingerPrint"
 import Clarity from '@microsoft/clarity';
 
@@ -95,7 +95,7 @@ const getLastRecordHandle = async () => {
     if (res.data?.data) {
       const lastRecord = res.data.data;
       if (lastRecord.status === "PENDING") {
-        showNotify({type: 'success', message: '检测到你有未完成的记录，继续挑战吧！'});
+        showNotify({ type: 'success', message: '检测到你有未完成的记录，继续挑战吧！' });
         curRecord.value = lastRecord;
         currentStep.value = 1;
         currentStage.value = 0;
@@ -103,7 +103,7 @@ const getLastRecordHandle = async () => {
         currentStep.value = 0;
         currentStage.value = -1;
         form.value.type = checkPoints.value.find(point => !point.isEnd)?.id || 1;
-        showNotify({type: 'success', message: '点击发起挑战或者再次挑战！😏'});
+        showNotify({ type: 'success', message: '点击发起挑战或者再次挑战！😏' });
       }
     } else {
       curRecord.value = {
@@ -118,7 +118,7 @@ const getLastRecordHandle = async () => {
     }
   } catch (error) {
     console.error('Failed to get last record:', error);
-    showNotify({type: 'danger', message: '获取上次记录失败，请重试'});
+    showNotify({ type: 'danger', message: '获取上次记录失败，请重试' });
   }
 };
 
@@ -166,7 +166,7 @@ const initMap = async () => {
     isLoading.value = false;
   } catch (error) {
     console.error("加载高德地图失败:", error);
-    showNotify({type: 'danger', message: '地图加载失败，请刷新重试'});
+    showNotify({ type: 'danger', message: '地图加载失败，请刷新重试' });
   }
 };
 
@@ -178,7 +178,7 @@ const getCheckInPointHandle = async () => {
     }
   } catch (error) {
     console.error('Failed to get check-in points:', error);
-    showNotify({type: 'danger', message: '获取打卡点失败，请重试'});
+    showNotify({ type: 'danger', message: '获取打卡点失败，请重试' });
   }
 };
 
@@ -186,8 +186,8 @@ const encryptDataAndCheckInHandle = async () => {
   await init();
   const encryptor = new RsaEncryptor();
   const queryParams = Object.entries(form.value)
-      .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
-      .join('&');
+    .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+    .join('&');
   const data = new TextEncoder().encode(queryParams);
   const encrypted = encryptor.encrypt(data);
 
@@ -248,16 +248,16 @@ const updateLocation = () => {
           form.value.type = matchedPoint.value.id;
         }
         if (currentStep.value === 1 && !matchedPoint.value.isEnd) {
-          showNotify({type: 'warning', message: '不在终点打卡点范围内，请移动到终点打卡点附近'});
+          showNotify({ type: 'warning', message: '不在终点打卡点范围内，请移动到终点打卡点附近' });
         }
         if (currentStep.value === 0 && matchedPoint.value.isEnd) {
-          showNotify({type: 'warning', message: '不在起点打卡点范围内，请移动到起点打卡点附近'});
+          showNotify({ type: 'warning', message: '不在起点打卡点范围内，请移动到起点打卡点附近' });
         }
         canCheckIn.value = true;
         form.value.type = matchedPoint.value.id;
       } else {
         canCheckIn.value = false;
-        showNotify({type: 'warning', message: '不在打卡点范围内，请移动到打卡点附近'});
+        showNotify({ type: 'warning', message: '不在打卡点范围内，请移动到打卡点附近' });
       }
 
       form.value.latitude = res.latitude.toString();
@@ -295,7 +295,7 @@ const updateLocation = () => {
     fail: () => {
       currentLocation.value = '获取位置失败，请重试';
       canCheckIn.value = false;
-      showNotify({type: 'danger', message: '获取位置失败，请检查定位权限'});
+      showNotify({ type: 'danger', message: '获取位置失败，请检查定位权限' });
     }
   });
 
@@ -319,8 +319,8 @@ const updateLocation = () => {
 const performCheckIn = async () => {
 
   // 点击打卡按钮的时间 - 最后一次获取位置的时间 > 2min 即为卡bug
-  if(Date.now() - lastUpdateLocationTime.value > 120000){
-    showNotify({type: 'danger', message: '同学, 你在卡bug吗?'});
+  if (Date.now() - lastUpdateLocationTime.value > 120000) {
+    showNotify({ type: 'danger', message: '同学, 你在卡bug吗?' });
     return 0;
   }
 
@@ -348,18 +348,18 @@ const performCheckIn = async () => {
         await getLastRecordHandle();
       }
 
-      showNotify({type: 'success', message: '打卡成功！'});
+      showNotify({ type: 'success', message: '打卡成功！' });
 
       if (!userStore.user?.count && currentStep.value === 0) {
         await router.push('/finish');
       }
 
     } else {
-      showNotify({type: 'danger', message: '打卡失败，请重试'});
+      showNotify({ type: 'danger', message: '打卡失败，请重试' });
     }
   } catch (error) {
     console.error('Check-in failed:', error);
-    showNotify({type: 'danger', message: '打卡失败，请重试'});
+    showNotify({ type: 'danger', message: '打卡失败，请重试' });
   } finally {
     isSubmitting.value = false;
   }
@@ -379,7 +379,7 @@ const loginAndGetInfoHandle = async () => {
   const code = new URLSearchParams(window.location.search).get('code');
   if (code) {
     try {
-      await loginApi({query: {code}});
+      await loginApi({ query: { code } });
       const res = await infoApi();
       if (res.data?.data) {
         userStore.setUser(res.data.data);
@@ -390,7 +390,7 @@ const loginAndGetInfoHandle = async () => {
       }
     } catch (error) {
       console.error('Login or info fetch failed:', error);
-      showNotify({type: 'danger', message: '登录失败，请重试'});
+      showNotify({ type: 'danger', message: '登录失败，请重试' });
     }
   } else {
     try {
@@ -409,7 +409,7 @@ const loginAndGetInfoHandle = async () => {
       }
     } catch (error) {
       console.error('Info fetch failed:', error);
-      showNotify({type: 'danger', message: '获取用户信息失败，请重试'});
+      showNotify({ type: 'danger', message: '获取用户信息失败，请重试' });
     }
   }
 };
@@ -424,7 +424,7 @@ onMounted(async () => {
     getAnnouncement();
   } catch (error) {
     console.error('Initialization failed:', error);
-    showNotify({type: 'danger', message: '初始化失败，请刷新重试'});
+    showNotify({ type: 'danger', message: '初始化失败，请刷新重试' });
   }
 });
 
@@ -465,44 +465,63 @@ const onOffsetChange = () => {
   });
 };
 
-const announcementInfo = ref({
-    "switch": false,
-    "info": ""
+const jsonInfo = ref({
+  time: "",
+  commitInfo: {
+    commitId: "",
+    commitMessage: "",
+    branchName: "",
+    fileStats: "",
+    tagInfo: [],
+  },
+  announcement: {
+    switch: false,
+    info: ""
+  },
+  updateInfo: {
+    switch: false,
+    header: "",
+    body: ""
+  }
 });
 
-async function getAnnouncement(){
+async function getAnnouncement() {
   const response = await fetch('/build-info.json');
-    if (!response.ok) throw new Error('Fetch Build Info Error');
-    const info = await response.json();
-      announcementInfo.value = info.announcement;
+  if (!response.ok) throw new Error('Fetch Build Info Error');
+  const info = await response.json();
+  jsonInfo.value = info;
+}
+
+function getDetailData(){
+  showDialog({
+        messageAlign: "left",
+        allowHtml: true,
+        title: "详细信息",
+        message: "\nbuildTime: " + new Date(jsonInfo.value.time).toLocaleString()
+        + "\ncommitId: " + jsonInfo.value.commitInfo.commitId
+        + "\ncommitMsg: " + jsonInfo.value.commitInfo.commitMessage
+        + "\ncommitDiff: " + jsonInfo.value.commitInfo.fileStats
+        + "\ncommitTag: " + jsonInfo.value.commitInfo.tagInfo
+        + "\nonBranch: " + jsonInfo.value.commitInfo.branchName,
+      })
+        .then(() => {})
 }
 </script>
 
 <template>
   <div class="mountain-challenge">
     <!--通知栏-->
-    <van-notice-bar
-        left-icon="info-o"
-        color="#1989fa"
-        background="#ecf9ff"
-        wrapable
-        :scrollable="false"
-        class="notice-primary rounded-lg shadow-sm"
-        v-if="announcementInfo.switch"
-    >
-      {{ announcementInfo.info }}
+    <van-notice-bar left-icon="info-o" color="#1989fa" background="#ecf9ff" wrapable :scrollable="false"
+      class="notice-primary rounded-lg shadow-sm" v-if="jsonInfo.announcement.switch">
+      {{ jsonInfo.announcement.info }}
       <!-- 恭喜各位推送抽奖中奖同学，领奖时间地点我们将于近期公布，请大家及时关注，3月25日下午不设领奖点~ -->
       <!--我们还在努力测试本系统中，期待与大家一起翻山越岭！-->
       <!--秋季登山节相关排名的参考数据以 11 月 20 日晚 24：00 截止的数据为准，本系统将一直开放供师生使用，相应数据暂不清零。-->
     </van-notice-bar>
 
     <!-- 滚动通知 -->
-    <van-notice-bar
-        left-icon="volume-o"
-        :scrollable="false"
-        class="mt-3 notice-secondary rounded-lg shadow-sm"
-        v-if="socketMessages.length > 0"
-    >
+    <van-notice-bar left-icon="volume-o" :scrollable="false" class="mt-3 notice-secondary rounded-lg shadow-sm"
+      v-if="socketMessages.length > 0">
       <van-swipe vertical class="notice-swipe" :autoplay="3000" :touchable="false" :show-indicators="false">
         <van-swipe-item v-for="(msg, index) in socketMessages" :key="index" class="font-medium">
           {{ msg }}
@@ -527,8 +546,8 @@ async function getAnnouncement(){
     <!-- 地图卡片 -->
     <div class="mt-6 rounded-xl shadow-lg p-4 map-card">
       <div class="flex space-x-4">
-        <div id="amap-container"
-             class="h-58 w-2/3 rounded-lg overflow-hidden border border-gray-200 shadow-inner"></div>
+        <div id="amap-container" class="h-58 w-2/3 rounded-lg overflow-hidden border border-gray-200 shadow-inner">
+        </div>
         <div class="flex-1 flex flex-col justify-between">
           <van-steps :active="currentStage" class="w-32 h-26" direction="vertical" active-color="#07c160">
             <van-step>
@@ -539,16 +558,13 @@ async function getAnnouncement(){
             </van-step>
           </van-steps>
 
-          <van-image
-              :src="simpleMapImgUrl"
-              fit="cover"
-              class="h-28 rounded-lg p-1 shadow-sm transition-transform duration-300 hover:scale-105"
-              @click="showImagePreview([simpleMapImgUrl])"
-          />
+          <van-image :src="simpleMapImgUrl" fit="cover"
+            class="h-28 rounded-lg p-1 shadow-sm transition-transform duration-300 hover:scale-105"
+            @click="showImagePreview([simpleMapImgUrl])" />
 
           <div
-              class="p-3 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg shadow-inner cursor-pointer hover:bg-gray-100 transition duration-200 border border-gray-200"
-              @click="updateLocation">
+            class="p-3 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg shadow-inner cursor-pointer hover:bg-gray-100 transition duration-200 border border-gray-200"
+            @click="updateLocation">
             <h2 class="text-sm font-semibold text-center border-b border-gray-300 pb-1 mb-1">点击刷新位置</h2>
             <p class="text-xs text-gray-700">请在红色打卡范围（50m）进行打卡</p>
           </div>
@@ -558,14 +574,8 @@ async function getAnnouncement(){
 
     <!-- 打卡按钮 -->
     <div class="mt-6 flex justify-center">
-      <van-button
-          type="primary"
-          size="large"
-          :disabled="!canCheckIn"
-          @click="performCheckIn"
-          :loading="isSubmitting"
-          class="w-full max-w-xs rounded-lg shadow-md check-in-button"
-      >
+      <van-button type="primary" size="large" :disabled="!canCheckIn" @click="performCheckIn" :loading="isSubmitting"
+        class="w-full max-w-xs rounded-lg shadow-md check-in-button">
         {{ checkInButtonText }}
       </van-button>
     </div>
@@ -581,14 +591,8 @@ async function getAnnouncement(){
     <!--</div>-->
 
     <!-- 浮动按钮 -->
-    <van-floating-bubble
-        axis="xy"
-        icon="chat"
-        magnetic="x"
-        @offset-change="onOffsetChange"
-        @click="openBarrageInput"
-        class="bubble-animation"
-    />
+    <van-floating-bubble axis="xy" icon="chat" magnetic="x" @offset-change="onOffsetChange" @click="openBarrageInput"
+      class="bubble-animation" />
 
     <!-- 弹幕输入弹窗 -->
     <van-popup v-model:show="showBarrageInput" position="bottom" round :style="{ height: '20%' }" class="barrage-popup">
@@ -608,25 +612,25 @@ async function getAnnouncement(){
       </div>
       <div class="text-center mt-2 text-sm text-gray-600">
         服务器实时连接状态：
-        <van-icon :name="isWSConnected ? 'success' : 'close'" :color="isWSConnected ? 'green' : 'red'"/>
+        <van-icon :name="isWSConnected ? 'success' : 'close'" :color="isWSConnected ? 'green' : 'red'" />
         <span :class="isWSConnected ? 'text-green-600' : 'text-red-600'">
           {{ isWSConnected ? '已连接' : '未连接' }}
         </span>
       </div>
       <div class="text-center mt-2 text-sm text-gray-600">
-        {{ jsonInfo.commitInfo.commitId }} - {{ jsonInfo.commitInfo.commitMessage }} <br>
-
+        <van-button plain hairline type="primary" size="small" block @click="getDetailData">版本详细信息</van-button>
+        <!-- {{ jsonInfo.commitInfo.commitId }} - {{ jsonInfo.commitInfo.commitMessage }} -->
       </div>
     </div>
 
-    <van-divider class="my-8" dashed/>
+    <van-divider class="my-8" dashed />
     <div style="height: 1vh;"></div>
 
     <!-- 打卡成功弹窗 -->
     <van-popup v-model:show="showSuccessPopup" round position="bottom" class="success-popup">
       <div class="p-6 text-center" v-if="currentStep === 1">
         <div class="success-icon-container">
-          <van-icon name="success" size="48" color="#07c160"/>
+          <van-icon name="success" size="48" color="#07c160" />
         </div>
         <h2 class="mt-4 text-xl font-bold text-green-700">打卡成功！</h2>
         <p class="mt-2 text-gray-700">欢迎你加入"FUN 山越岭"登山挑战赛！迈开步子，顶峰相见！</p>
@@ -636,7 +640,7 @@ async function getAnnouncement(){
       </div>
       <div class="p-6 text-center" v-else>
         <div class="success-icon-container">
-          <van-icon name="success" size="48" color="#07c160"/>
+          <van-icon name="success" size="48" color="#07c160" />
         </div>
         <h2 class="mt-4 text-xl font-bold text-green-700">打卡成功！</h2>
         <p class="mt-2 text-gray-700">恭喜你已经完成挑战 {{ userStore.user?.count ? userStore.user?.count + 1 : 1 }}
@@ -714,9 +718,11 @@ async function getAnnouncement(){
   0% {
     box-shadow: 0 0 0 0 rgba(0, 123, 255, 0.4);
   }
+
   70% {
     box-shadow: 0 0 0 10px rgba(0, 123, 255, 0);
   }
+
   100% {
     box-shadow: 0 0 0 0 rgba(0, 123, 255, 0);
   }
@@ -753,4 +759,3 @@ async function getAnnouncement(){
   --van-barrage-item-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 </style>
-

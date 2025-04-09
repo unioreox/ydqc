@@ -54,7 +54,7 @@ const buildInfo = ref({
     commitMessage: "",
     branchName: "",
     fileStats: "",
-    commitHistory: []
+    tagInfo: [],
   },
   announcement: {
     switch: false,
@@ -95,11 +95,16 @@ async function autoRefresh() {
       
       if(buildInfo.value.updateInfo.switch){
         showConfirmDialog({
+        // messageAlign: "left",
+        allowHtml: true,
         title: buildInfo.value.updateInfo.header,
         message: buildInfo.value.updateInfo.body
-        + "\n构建时间:" + buildInfo.value.time
-        + "\n版本ID:" + buildInfo.value.commitInfo.commitId
-        + "\n" + buildInfo.value.commitInfo.commitMessage,
+        + "\n构建时间: " + new Date(buildInfo.value.time).toLocaleString(),
+        // + "\n提交版本: " + buildInfo.value.commitInfo.commitId
+        // + "\n提交信息: " + buildInfo.value.commitInfo.commitMessage
+        // + "\n提交比较: " + buildInfo.value.commitInfo.fileStats
+        // + "\n提交标签: " + buildInfo.value.commitInfo.tagInfo
+        // + "\n分支名称: " + buildInfo.value.commitInfo.branchName,
       })
         .then(() => {
           // 用户确认后刷新页面
