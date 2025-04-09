@@ -30,13 +30,23 @@ function getGitCommitInfo() {
     try {
         const commitId = execSync('git rev-parse --short HEAD').toString().trim()
         const commitMessage = execSync('git log -1 --pretty=%s').toString().trim()
-        return { commitId, commitMessage }
+        const branchName = execSync('git rev-parse --abbrev-ref HEAD').toString().trim()
+        const fileStats = execSync('git diff --shortstat HEAD~1').toString().trim()
+        const commitHistory = execSync('git log -5 --pretty=format:"%h - %an, %ar : %s"')
+            .toString()
+            .trim()
+            .split('\n')
+        const commitInfo = {
+            commitId: commitId,
+            commitMessage: commitMessage,
+            branchName: branchName,
+            fileStats: fileStats,
+            commitHistory: commitHistory,
+        }
+        return { commitInfo }
     } catch (error) {
         console.warn('无法获取 Git 提交信息')
-        return {
-            commitId: '未知(Build Error)',
-            commitMessage: '未知(Build Error)'
-        }
+        return {}
     }
 }
 
@@ -58,13 +68,12 @@ function buildInfoPlugin() {
             const buildTime = new Date().toISOString()
 
             // 获取 Git 信息
-            const { commitId, commitMessage } = getGitCommitInfo()
+            const { commitInfo } = getGitCommitInfo()
 
             // 构建输出内容
             const buildInfo = {
                 time: buildTime,
-                commitId,
-                commitMessage,
+                commitInfo,
                 announcement,
                 updateInfo,
             }

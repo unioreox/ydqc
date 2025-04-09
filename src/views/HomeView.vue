@@ -613,9 +613,14 @@ async function getAnnouncement(){
           {{ isWSConnected ? '已连接' : '未连接' }}
         </span>
       </div>
+      <div class="text-center mt-2 text-sm text-gray-600">
+        {{ jsonInfo.commitInfo.commitId }} - {{ jsonInfo.commitInfo.commitMessage }} <br>
+
+      </div>
     </div>
 
-    <van-divider class="my-4" dashed/>
+    <van-divider class="my-8" dashed/>
+    <div style="height: 1vh;"></div>
 
     <!-- 打卡成功弹窗 -->
     <van-popup v-model:show="showSuccessPopup" round position="bottom" class="success-popup">

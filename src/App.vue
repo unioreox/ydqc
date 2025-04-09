@@ -48,17 +48,22 @@ const currentBuildTime = ref();
 const checkUpdateSwitch = ref(true);
 
 const buildInfo = ref({
-  "time": "",
-  "commitId": "",
-  "commitMsg": "",
-  "announcement": {
-    "switch": false,
-    "info": ""
+  time: "",
+  commitInfo: {
+    commitId: "",
+    commitMessage: "",
+    branchName: "",
+    fileStats: "",
+    commitHistory: []
   },
-  "updateInfo": {
-    "switch": false,
-    "header": "",
-    "body": ""
+  announcement: {
+    switch: false,
+    info: ""
+  },
+  updateInfo: {
+    switch: false,
+    header: "",
+    body: ""
   }
 });
 
@@ -83,11 +88,7 @@ async function autoRefresh() {
     if (!response.ok) throw new Error('Fetch Build Info Error');
     const info = await response.json();
     if (info.time != currentBuildTime.value) {
-      buildInfo.value.time = new Date(info.time).toLocaleString();
-      buildInfo.value.commitId = info.commitId;
-      buildInfo.value.commitMsg = info.commitMessage;
-      buildInfo.value.announcement = info.announcement;
-      buildInfo.value.updateInfo = info.updateInfo;
+      buildInfo.value = info;
       
       // 在显示对话框前暂停自动刷新
       checkUpdateSwitch.value = false;
@@ -97,8 +98,8 @@ async function autoRefresh() {
         title: buildInfo.value.updateInfo.header,
         message: buildInfo.value.updateInfo.body
         + "\n构建时间:" + buildInfo.value.time
-        + "\n版本ID:" + buildInfo.value.commitId
-        + "\n" + buildInfo.value.commitMsg,
+        + "\n版本ID:" + buildInfo.value.commitInfo.commitId
+        + "\n" + buildInfo.value.commitInfo.commitMessage,
       })
         .then(() => {
           // 用户确认后刷新页面
