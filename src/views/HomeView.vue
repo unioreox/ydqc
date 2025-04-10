@@ -486,7 +486,7 @@ const jsonInfo = ref({
 });
 
 async function getAnnouncement() {
-  const response = await fetch('/build-info.json');
+  const response = await fetch('/build-info.json' + '?_timestamp=' + Date.now());
   if (!response.ok) throw new Error('Fetch Build Info Error');
   const info = await response.json();
   jsonInfo.value = info;

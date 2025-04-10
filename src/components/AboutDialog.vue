@@ -143,7 +143,7 @@ const buildInfo = ref({
 
 onMounted(async () => {
   try {
-    const response = await fetch('/build-info.json');
+    const response = await fetch('/build-info.json' + '?_timestamp=' + Date.now());
     if (!response.ok) throw new Error('Fetch Build Info Error');
     const info = await response.json();
     // 转换为本地时间格式

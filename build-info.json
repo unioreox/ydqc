@@ -1,12 +1,12 @@
 {
-  "time": "2025-04-09T14:44:35.677Z",
+  "time": "2025-04-09T15:09:17.857Z",
   "commitInfo": {
-    "commitId": "6eaf8ec",
-    "commitMessage": "chore: 解决冲突",
+    "commitId": "2b5946d",
+    "commitMessage": "feat: vite写入详细热更新数据",
     "branchName": "main",
-    "fileStats": "5 files changed, 506 insertions(+), 122 deletions(-)",
+    "fileStats": "5 files changed, 137 insertions(+), 106 deletions(-)",
     "tagInfo": [
-      "v2025.04.09_de2fa822-1-g6eaf8ec"
+      "v2025.04.09_6eaf8ec6-1-g2b5946d"
     ]
   },
   "announcement": {
