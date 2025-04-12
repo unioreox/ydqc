@@ -522,6 +522,9 @@ async function getAnnouncement() {
 }
 
 const weatherAlert = ref(false);
+const airAlert = ref(false)
+const aqi = ref();
+const aqiText = ref();
 
 async function getWeather() {
   const wRes = await fetch(jsonInfo.value.weather.config.api
@@ -532,6 +535,14 @@ async function getWeather() {
   const wResData = await wRes.json();
   // console.log(wResData)
   wInfo.value = wResData;
+
+  aqi.value = wInfo.value.airData.aqi.toString();
+  aqiText.value = wInfo.value.airData.text.toString();
+
+  if (wInfo.value.airData.aqi >= 200 && !airAlert.value) {
+    airAlert.value = true;
+    pushWeatherAlert(2);
+  }
 
   if (wInfo.value.alarmData.w.length > 0 && !weatherAlert.value) {
     weatherAlert.value = true;
@@ -553,13 +564,21 @@ function pushWeatherAlert(type: number) {
     }).then(() => {
       // on close
     });
-  } else {
+  } else if(type === 1) {
     showDialog({
       title: jsonInfo.value.weather.info.title.apply,
       message: jsonInfo.value.weather.info.body.apply,
     }).then(() => {
       // on close
     });
+  } else if(type === 2) {
+    showDialog({
+      title: "空气质量提示",
+      message: "当前AQI为" + wInfo.value.airData.aqi + "，达到" + wInfo.value.airData.text
+      + "级别\n建议减少外出，避免室外活动！"
+    }).then(() => {
+      // on close
+    }); 
   }
 }
 
@@ -599,20 +618,24 @@ function getDetailData() {
     <!-- 天气信息 -->
     <van-notice-bar left-icon="location-o" color="#1989fa" background="#ecf9ff"
       class="notice-primary rounded-lg shadow-sm" v-if="jsonInfo.weather.switch.info && wInfo.info.state">
-      {{ wInfo.cityData.weatherinfo.cityname }}
+      <b>{{ wInfo.cityData.weatherinfo.cityname }}</b>
       {{ wInfo.cityData.weatherinfo.weather }}
       {{ wInfo.cityData.weatherinfo.tempn }} - {{ wInfo.cityData.weatherinfo.temp }}
       {{ wInfo.cityData.weatherinfo.wd }}
       {{ wInfo.cityData.weatherinfo.ws }}
+      AQI:{{ aqi }} {{ aqiText }}级别
     </van-notice-bar>
 
-    <!-- 天气警告 -->
-    <!-- <van-sticky offset-top="3rem"> -->
+    <!-- 天气警告 --> 
+    <!-- <van-sticky offset-top="3rem"> jsonInfo?.weather?.switch?.warn && wInfo?.airData?.aqi >= 150 && wInfo.info.state -->
     <van-notice-bar left-icon="warn-o" :scrollable="false" class="mt-3 notice-secondary rounded-lg shadow-sm"
-      v-if="jsonInfo?.weather?.switch?.warn && wInfo?.alarmData?.w?.length > 0 && wInfo.info.state">
+      v-if="jsonInfo?.weather?.switch?.warn && ((wInfo?.alarmData?.w?.length > 0 && wInfo.info.state) || aqi >=150)">
       <van-swipe vertical class="notice-swipe" :autoplay="3000" :touchable="false" :show-indicators="false">
         <van-swipe-item v-for="(w, index) in wInfo.alarmData.w" :key="index" class="font-medium">
           {{ w.w13 || null }}
+        </van-swipe-item>
+        <van-swipe-item v-if="aqi >=150" class="font-medium" :key="wInfo.alarmData.w.length + 1">
+          AQI:{{ aqi }} - {{ aqiText }}， 建议减少室外活动
         </van-swipe-item>
       </van-swipe>
     </van-notice-bar>
