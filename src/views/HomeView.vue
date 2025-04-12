@@ -421,7 +421,9 @@ onMounted(async () => {
     await getLastRecordHandle();
     await initMap();
     updateLocation();
-    getAnnouncement();
+    // 第一次必须异步请求
+    await getWeather();
+    await getAnnouncement();
   } catch (error) {
     console.error('Initialization failed:', error);
     showNotify({ type: 'danger', message: '初始化失败，请刷新重试' });
@@ -593,7 +595,6 @@ function getDetailData() {
 
 <template>
   <div class="mountain-challenge">
-    <!-- 天气预警 紧急公告 -->
     <!-- 通知栏 天气 -->
     <!-- 天气信息 -->
     <van-notice-bar left-icon="location-o" color="#1989fa" background="#ecf9ff"

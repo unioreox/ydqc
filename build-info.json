@@ -1,12 +1,12 @@
 {
-  "time": "2025-04-12T08:20:21.482Z",
+  "time": "2025-04-12T09:14:26.831Z",
   "commitInfo": {
-    "commitId": "ea8f7ed",
-    "commitMessage": "fix: 微信缓存控制",
+    "commitId": "5bf32d3",
+    "commitMessage": "feat: 气象预警功能",
     "branchName": "main",
-    "fileStats": "5 files changed, 99 insertions(+), 30 deletions(-)",
+    "fileStats": "5 files changed, 241 insertions(+), 28 deletions(-)",
     "tagInfo": [
-      "v2025.04.10_ea8f7ed8"
+      "v2025.04.10_ea8f7ed8-1-g5bf32d3"
     ]
   },
   "announcement": {
@@ -24,7 +24,7 @@
       "warn": true
     },
     "config": {
-      "api": "http://127.0.0.1:5173/weather.json",
+      "api": "https://danmuku.54sher.com/weather",
       "province": "湖南",
       "city": "长沙"
     },
