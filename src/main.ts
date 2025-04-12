@@ -51,7 +51,7 @@ import {
     ImagePreview,
     BackTop,
     Skeleton,
-    ShareSheet
+    ShareSheet,
 } from "vant";
 
 const app = createApp(App)
@@ -61,6 +61,7 @@ app.use(router)
 
 // 注册组件
 app.use(Button);
+app.use(Sticky);
 app.use(NavBar);
 app.use(Tabbar);
 app.use(TabbarItem);
@@ -107,5 +108,6 @@ app.use(ShareSheet);
 
 // 请求库配置相关
 import "@/api/config";
+import { Sticky } from 'vant';
 
 app.mount('#app')

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, nextTick, onMounted, watch } from 'vue';
-import { showDialog, showImagePreview, showNotify, showToast } from 'vant';
+import { showDialog, showImagePreview, showNotify, showToast, Sticky } from 'vant';
 import AMapLoader from "@amap/amap-jsapi-loader";
 import 'vant/es/notify/style';
 import init, { RsaEncryptor } from "@/util/rsa_wasm";
@@ -482,41 +482,145 @@ const jsonInfo = ref({
     switch: false,
     header: "",
     body: ""
+  },
+  weather: {
+    switch: {
+      info: false,
+      warn: false,
+    },
+    config: {
+      api: "https://danmuku.54sher.com/weather",
+      province: "湖南",
+      city: "长沙",
+    },
+    info: {
+      title: {
+        apply: "中央气象台发布天气预警",
+        cancel: "天气预警解除"
+      },
+      body: {
+        apply: "请仔细评估天气情况，及时返回到安全地带。\n如遇紧急情况，请及时拨打紧急电话！",
+        cancel: "继续征服岳麓山吧！"
+      }
+    }
   }
 });
+
+const wInfo = ref();
 
 async function getAnnouncement() {
   const response = await fetch('/build-info.json' + '?_timestamp=' + Date.now());
   if (!response.ok) throw new Error('Fetch Build Info Error');
   const info = await response.json();
   jsonInfo.value = info;
+  // getWeather();
+  if (jsonInfo.value.weather.switch.info || jsonInfo.value.weather.switch.warn) {
+    getWeatherWithPolling();
+  }
 }
 
-function getDetailData(){
+const weatherAlert = ref(false);
+
+async function getWeather() {
+  const wRes = await fetch(jsonInfo.value.weather.config.api
+    + '?province=' + jsonInfo.value.weather.config.province
+    + '&city=' + jsonInfo.value.weather.config.city
+    + '&_timestamp=' + Date.now());
+  if (!wRes.ok) throw new Error('Fetch Weather Info Error');
+  const wResData = await wRes.json();
+  // console.log(wResData)
+  wInfo.value = wResData;
+
+  if (wInfo.value.alarmData.w.length > 0 && !weatherAlert.value) {
+    weatherAlert.value = true;
+    pushWeatherAlert(1);
+  } else if (wInfo.value.alarmData.w.length === 0 && weatherAlert.value) {
+    weatherAlert.value = false;
+    pushWeatherAlert(0);
+  }
+
+  // console.log("获取天气数据成功");
+  // getAnnouncement();
+}
+
+function pushWeatherAlert(type: number) {
+  if (type === 0) {
+    showDialog({
+      title: jsonInfo.value.weather.info.title.cancel,
+      message: jsonInfo.value.weather.info.body.cancel,
+    }).then(() => {
+      // on close
+    });
+  } else {
+    showDialog({
+      title: jsonInfo.value.weather.info.title.apply,
+      message: jsonInfo.value.weather.info.body.apply,
+    }).then(() => {
+      // on close
+    });
+  }
+}
+
+async function getWeatherWithPolling(interval = 10000) {
+  try {
+    await getWeather(); // 调用原始函数
+
+    // 设置下一次轮询
+    setTimeout(() => getWeatherWithPolling(interval), interval);
+  } catch (error) {
+    console.error("获取天气数据失败", error);
+    // 出错时缩短轮询间隔
+    setTimeout(() => getWeatherWithPolling(interval), 10000);
+  }
+}
+
+function getDetailData() {
   showDialog({
-        messageAlign: "left",
-        allowHtml: true,
-        title: "详细信息",
-        message: "\nbuildTime: " + new Date(jsonInfo.value.time).toLocaleString()
-        + "\ncommitId: " + jsonInfo.value.commitInfo.commitId
-        + "\ncommitMsg: " + jsonInfo.value.commitInfo.commitMessage
-        + "\ncommitDiff: " + jsonInfo.value.commitInfo.fileStats
-        + "\ncommitTag: " + jsonInfo.value.commitInfo.tagInfo
-        + "\nonBranch: " + jsonInfo.value.commitInfo.branchName,
-      })
-        .then(() => {})
+    messageAlign: "left",
+    allowHtml: true,
+    title: "详细信息",
+    message:
+      "buildTime: " + new Date(jsonInfo.value.time).toLocaleString()
+      + "\ncommitId: " + jsonInfo.value.commitInfo.commitId
+      + "\ncommitMsg: " + jsonInfo.value.commitInfo.commitMessage
+      + "\ncommitDiff: " + jsonInfo.value.commitInfo.fileStats
+      + "\ncommitTag: " + jsonInfo.value.commitInfo.tagInfo
+      + "\nonBranch: " + jsonInfo.value.commitInfo.branchName,
+  })
+    .then(() => { })
 }
 </script>
 
 <template>
   <div class="mountain-challenge">
-    <!--通知栏-->
+    <!-- 天气预警 紧急公告 -->
+    <!-- 通知栏 天气 -->
+    <!-- 天气信息 -->
+    <van-notice-bar left-icon="location-o" color="#1989fa" background="#ecf9ff"
+      class="notice-primary rounded-lg shadow-sm" v-if="jsonInfo.weather.switch.info && wInfo.info.state">
+      {{ wInfo.cityData.weatherinfo.cityname }}
+      {{ wInfo.cityData.weatherinfo.weather }}
+      {{ wInfo.cityData.weatherinfo.tempn }} - {{ wInfo.cityData.weatherinfo.temp }}
+      {{ wInfo.cityData.weatherinfo.wd }}
+      {{ wInfo.cityData.weatherinfo.ws }}
+    </van-notice-bar>
+
+    <!-- 天气警告 -->
+    <!-- <van-sticky offset-top="3rem"> -->
+    <van-notice-bar left-icon="warn-o" :scrollable="false" class="mt-3 notice-secondary rounded-lg shadow-sm"
+      v-if="jsonInfo?.weather?.switch?.warn && wInfo?.alarmData?.w?.length > 0 && wInfo.info.state">
+      <van-swipe vertical class="notice-swipe" :autoplay="3000" :touchable="false" :show-indicators="false">
+        <van-swipe-item v-for="(w, index) in wInfo.alarmData.w" :key="index" class="font-medium">
+          {{ w.w13 || null }}
+        </van-swipe-item>
+      </van-swipe>
+    </van-notice-bar>
+    <!-- </van-sticky> -->
+
+    <!-- 通知栏 公告 -->
     <van-notice-bar left-icon="info-o" color="#1989fa" background="#ecf9ff" wrapable :scrollable="false"
-      class="notice-primary rounded-lg shadow-sm" v-if="jsonInfo.announcement.switch">
+      class="mt-3 notice-primary rounded-lg shadow-sm" v-if="jsonInfo.announcement.switch">
       {{ jsonInfo.announcement.info }}
-      <!-- 恭喜各位推送抽奖中奖同学，领奖时间地点我们将于近期公布，请大家及时关注，3月25日下午不设领奖点~ -->
-      <!--我们还在努力测试本系统中，期待与大家一起翻山越岭！-->
-      <!--秋季登山节相关排名的参考数据以 11 月 20 日晚 24：00 截止的数据为准，本系统将一直开放供师生使用，相应数据暂不清零。-->
     </van-notice-bar>
 
     <!-- 滚动通知 -->

@@ -1,21 +1,42 @@
 {
-  "time": "2025-04-09T15:09:17.857Z",
+  "time": "2025-04-12T08:20:21.482Z",
   "commitInfo": {
-    "commitId": "2b5946d",
-    "commitMessage": "feat: vite写入详细热更新数据",
+    "commitId": "ea8f7ed",
+    "commitMessage": "fix: 微信缓存控制",
     "branchName": "main",
-    "fileStats": "5 files changed, 137 insertions(+), 106 deletions(-)",
+    "fileStats": "5 files changed, 99 insertions(+), 30 deletions(-)",
     "tagInfo": [
-      "v2025.04.09_6eaf8ec6-1-g2b5946d"
+      "v2025.04.10_ea8f7ed8"
     ]
   },
   "announcement": {
-    "switch": true,
+    "switch": false,
     "info": "恭喜各位推送抽奖中奖同学，领奖时间地点我们将于近期公布，请大家及时关注，3月25日下午不设领奖点~"
   },
   "updateInfo": {
     "switch": true,
     "header": "更新提示",
     "body": "服务器热更新, 点击刷新\n建议您更新, 防止出现打卡数据异常"
+  },
+  "weather": {
+    "switch": {
+      "info": true,
+      "warn": true
+    },
+    "config": {
+      "api": "http://127.0.0.1:5173/weather.json",
+      "province": "湖南",
+      "city": "长沙"
+    },
+    "info": {
+      "title": {
+        "apply": "中央气象台发布天气预警",
+        "cancel": "天气预警解除"
+      },
+      "body": {
+        "apply": "请仔细评估天气情况，及时返回到安全地带。\n如遇紧急情况，请及时拨打紧急电话！",
+        "cancel": "继续征服岳麓山吧！"
+      }
+    }
   }
 }

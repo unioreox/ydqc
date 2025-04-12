@@ -14,7 +14,7 @@ import { execSync } from 'child_process'
 function getCustomInfo() {
     // 公告
     const announcement = {
-        switch: true,
+        switch: false,
         info: "恭喜各位推送抽奖中奖同学，领奖时间地点我们将于近期公布，请大家及时关注，3月25日下午不设领奖点~",
     };
     // 更新信息
@@ -23,7 +23,29 @@ function getCustomInfo() {
         header: "更新提示",
         body: "服务器热更新, 点击刷新\n建议您更新, 防止出现打卡数据异常",
     };
-    return { announcement, updateInfo };
+    // 天气信息
+    const weather = {
+        switch: {
+            info: true,
+            warn: true,
+        },
+        config: {
+            api: "https://danmuku.54sher.com/weather",
+            province: "湖南",
+            city: "长沙",
+        },
+        info: {
+            title: {
+                apply: "中央气象台发布天气预警",
+                cancel: "天气预警解除"
+            },
+            body: {
+                apply: "请仔细评估天气情况，及时返回到安全地带。\n如遇紧急情况，请及时拨打紧急电话！",
+                cancel: "继续征服岳麓山吧！"
+            }
+        }
+    }
+    return { announcement, updateInfo, weather };
 }
 
 function getGitCommitInfo() {
@@ -62,7 +84,7 @@ function buildInfoPlugin() {
         },
         closeBundle() {
             // 预定义信息(如公告, 更新日志等)
-            const { announcement, updateInfo } = getCustomInfo()
+            const { announcement, updateInfo, weather } = getCustomInfo()
 
             // 获取构建时间
             const buildTime = new Date().toISOString()
@@ -76,6 +98,7 @@ function buildInfoPlugin() {
                 commitInfo,
                 announcement,
                 updateInfo,
+                weather,
             }
 
             // 确保输出目录存在
