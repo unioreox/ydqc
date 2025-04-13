@@ -23,10 +23,10 @@ build:
   script:
     - echo "设置APT镜像源为阿里云"
     # 创建新的sources.list
-    - echo "deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ $(lsb_release -cs) main restricted universe multiverse" > /etc/apt/sources.list
-    - echo "deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ $(lsb_release -cs)-updates main restricted universe multiverse" >> /etc/apt/sources.list
-    - echo "deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ $(lsb_release -cs)-backports main restricted universe multiverse" >> /etc/apt/sources.list
-    - echo "deb https://mirrors.tuna.tsinghua.edu.cn/ubuntu/ $(lsb_release -cs)-security main restricted universe multiverse" >> /etc/apt/sources.list
+    - echo "deb https://mirrors.tuna.tsinghua.edu.cn/debian/ $(lsb_release -cs) main restricted universe multiverse" > /etc/apt/sources.list
+    - echo "deb https://mirrors.tuna.tsinghua.edu.cn/debian/ $(lsb_release -cs)-updates main restricted universe multiverse" >> /etc/apt/sources.list
+    - echo "deb https://mirrors.tuna.tsinghua.edu.cn/debian/ $(lsb_release -cs)-backports main restricted universe multiverse" >> /etc/apt/sources.list
+    - echo "deb https://mirrors.tuna.tsinghua.edu.cn/debian/ $(lsb_release -cs)-security main restricted universe multiverse" >> /etc/apt/sources.list
     - echo "安装zip工具"
     - apt-get update && apt-get install -y zip
     - echo "Stage 2 - 构建产物"
