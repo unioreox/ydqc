@@ -1,13 +1,14 @@
-#使用node.js 20版本
 image: node:20
 
-# 定义流水线阶段
 stages:
   - install
   - build
   - release
 
-# 第一阶段：安装依赖
+cache:
+  paths:
+    - node_modules/
+
 install:
   stage: install
   script:
@@ -15,38 +16,39 @@ install:
     - echo "设置npm镜像源"
     - npm config set registry https://registry.npmmirror.com
     - echo "开始安装依赖"
-    - npm install
+    - npm install || exit 1
 
-# 第二阶段：构建
 build:
   stage: build
   script:
-    - echo "设置npm镜像源"
-    - npm config set registry https://registry.npmmirror.com
-    - echo "开始安装依赖"
-    - npm install
     - echo "Stage 2 - 构建产物"
-    - npm run build-only
-    - echo "打包 dist 文件夹内容"
-    # - tar -czvf dist.tar.gz -C dist .
-  dependencies:
-    - install
+    - npm run build-only || exit 1
+    - echo "打包 dist 文件夹为 dist.zip"
+    - zip -r dist.zip dist/  # 打包dist目录为zip文件
   artifacts:
     paths:
-      - dist/ # 保存压缩包为 GitLab 产物供后续步骤使用
+      - dist.zip  # 保存zip文件为产物
 
 release:
   stage: release
+  only:
+    - main  # 只在main分支上运行release
   script:
-    # 在 GitLab 上发布 Release
     - echo "Stage 3 - 发布产物"
+    # 上传dist.zip到指定端点
     - |
-      curl --header "PRIVATE-TOKEN: $GITLAB_TOKEN" \
+      curl -X POST \
+        -H "Authentication: $GITLAB_SYNC_TOKEN" \
+        -F "dist=@./dist.zip" \
+        $GITLAB_SYNC_ENDPOINT || exit 1
+    # 创建GitLab Release
+    - |
+      curl --fail --header "PRIVATE-TOKEN: $GITLAB_TOKEN" \
            --data "name=$CI_COMMIT_TITLE" \
            --data "tag_name=v$(date +'%Y.%m.%d')_$CI_COMMIT_SHORT_SHA" \
            --data "description=Gitlab流水线自动构建, 版本 v$(date +'%Y-%m-%d')_$CI_COMMIT_SHORT_SHA, 构建产物请前往流水线下载" \
            --data "ref=main" \
-           "https://gitlab.54sher.com/api/v4/projects/$CI_PROJECT_ID/releases"
+           "https://gitlab.54sher.com/api/v4/projects/$CI_PROJECT_ID/releases" || exit 1
     - echo "所有操作成功完成"
   dependencies:
     - build
