@@ -170,8 +170,9 @@ const teamMembers = ref([
 
 // 技术栈数据
 const techStack = ref([
+  {category: '关联项目', items: ['csu-dynamic-youth', 'csu-dynamic-youth-backend', 'csu-dynamic-youth-debug-bridge', 'csu-dynamic-youth-weather', 'csu-dynamic-youth-gitlab-sync']},
   {category: '前端', items: ['Vite', 'Vue3', 'Vant', 'TypeScript']},
-  {category: '后端', items: ['SpringBoot', 'MyBatis', 'MySQL']},
+  {category: '后端', items: ['SpringBoot', 'MyBatis', 'MySQL', 'Express']},
   {category: '核心技术', items: ['为人民服务']}
 ]);
 
