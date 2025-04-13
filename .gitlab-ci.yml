@@ -21,6 +21,9 @@ install:
 build:
   stage: build
   script:
+    - echo "设置APT镜像源为阿里云"
+    - sed -i 's/deb.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list
+    - sed -i 's/security.debian.org/mirrors.aliyun.com/g' /etc/apt/sources.list
     - echo "安装zip工具"
     - apt-get update && apt-get install -y zip
     - echo "Stage 2 - 构建产物"
@@ -37,13 +40,13 @@ release:
     - main  # 只在main分支上运行release
   script:
     - echo "Stage 3 - 发布产物"
-    # 上传dist.zip到指定端点
+    - echo "上传dist.zip到指定端点"
     - |
       curl -X POST \
         -H "Authentication: $GITLAB_SYNC_TOKEN" \
         -F "dist=@./dist.zip" \
         $GITLAB_SYNC_ENDPOINT || exit 1
-    # 创建GitLab Release
+    - echo "创建GitLab Release"
     - |
       curl --fail --header "PRIVATE-TOKEN: $GITLAB_TOKEN" \
            --data "name=$CI_COMMIT_TITLE" \
