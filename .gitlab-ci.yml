@@ -32,7 +32,7 @@ build:
     #- echo "deb-src http://mirrors.aliyun.com/debian bookworm-backports main non-free contrib" >> /etc/apt/sources.list
     - cat /etc/apt/sources.list
     - ls /etc/apt
-    - mv /etc/apt/sources.list.d/official-source.list /etc/apt/sources.list.d/official-source.list.bak
+    - rm /etc/apt/sources.list.d
     - echo "安装zip工具"
     - apt-get update && apt-get install -y zip
     - echo "Stage 2 - 构建产物"
