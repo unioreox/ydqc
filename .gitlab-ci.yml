@@ -36,6 +36,8 @@ build:
     - echo "安装zip工具"
     - apt-get update && apt-get install -y zip
     - echo "Stage 2 - 构建产物"
+    - npm config set registry https://registry.npmmirror.com
+    - npm install || exit 1
     - npm run build-only || exit 1
     - echo "打包 dist 文件夹为 dist.zip"
     - zip -r dist.zip dist/  # 打包dist目录为zip文件
