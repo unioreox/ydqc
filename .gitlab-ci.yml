@@ -21,7 +21,7 @@ install:
 build:
   stage: build
   script:
-    - echo "设置APT镜像源为清华大学"
+    - echo "设置APT镜像源为阿里云"
     # 创建新的sources.list
     - sed -i 's|http://.*deb.debian.org|https://mirrors.tuna.tsinghua.edu.cn/debian|g' /etc/apt/sources.list
     - echo "安装zip工具"
