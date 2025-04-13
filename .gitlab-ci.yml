@@ -21,6 +21,8 @@ install:
 build:
   stage: build
   script:
+    - echo "安装zip工具"
+    - apt-get update && apt-get install -y zip
     - echo "Stage 2 - 构建产物"
     - npm run build-only || exit 1
     - echo "打包 dist 文件夹为 dist.zip"
