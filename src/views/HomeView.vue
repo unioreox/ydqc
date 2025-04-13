@@ -667,7 +667,7 @@ function getDetailData() {
       AQI:{{ aqi }} {{ aqiText }}级别
     </van-notice-bar>
 
-    <!-- 天气警告 --> 
+    <!-- 天气警告 + 开始爬山公告 --> 
     <!-- <van-sticky offset-top="3rem"> jsonInfo?.weather?.switch?.warn && wInfo?.airData?.aqi >= 150 && wInfo.info.state -->
     <van-notice-bar left-icon="info-o" :scrollable="false" class="mt-3 notice-secondary rounded-lg shadow-sm"
       v-if="socketMessages.length > 0 || (jsonInfo?.weather?.switch?.warn && ((wInfo?.alarmData?.w?.length > 0 && wInfo.info.state) || aqi >=150))">
@@ -686,20 +686,20 @@ function getDetailData() {
     <!-- </van-sticky> -->
 
     <!-- 通知栏 公告 -->
-    <!-- <van-notice-bar left-icon="info-o" color="#1989fa" background="#ecf9ff" wrapable :scrollable="false"
+    <van-notice-bar left-icon="info-o" color="#1989fa" background="#ecf9ff" wrapable :scrollable="false"
       class="mt-3 notice-primary rounded-lg shadow-sm" v-if="jsonInfo.announcement.switch">
       {{ jsonInfo.announcement.info }}
-    </van-notice-bar> -->
+    </van-notice-bar>
 
     <!-- 滚动通知 -->
-    <van-notice-bar left-icon="volume-o" :scrollable="false" class="mt-3 notice-secondary rounded-lg shadow-sm"
+    <!-- <van-notice-bar left-icon="volume-o" :scrollable="false" class="mt-3 notice-secondary rounded-lg shadow-sm"
       v-if="socketMessages.length > 0">
       <van-swipe vertical class="notice-swipe" :autoplay="3000" :touchable="false" :show-indicators="false">
         <van-swipe-item v-for="(msg, index) in socketMessages" :key="index" class="font-medium">
           {{ msg }}
         </van-swipe-item>
       </van-swipe>
-    </van-notice-bar>
+    </van-notice-bar> -->
 
     <!-- 横幅区域 -->
     <div class="mt-4 relative overflow-hidden rounded-xl shadow-lg banner-container">
