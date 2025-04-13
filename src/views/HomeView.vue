@@ -25,8 +25,8 @@ const inputRef = ref<HTMLInputElement | null>(null);
 const onlineCount = ref(0);
 
 import simpleMapImgUrl from "@/assets/simpleMap.png";
-import type {WeatherData} from "@/types/weather";
-import type {BuildInfo} from "@/types/buildInfo";
+import type { WeatherData } from "@/types/weather";
+import type { BuildInfo } from "@/types/buildInfo";
 
 const userStore = useUserStore();
 const curRecord = ref<RecordVo>({
@@ -447,10 +447,10 @@ socket.on("race", (msg) => {
   clearSocketMessages(msg);
 });
 
-async function clearSocketMessages(data: string){
+async function clearSocketMessages(data: string) {
   setTimeout(() => {
     socketMessages.value = socketMessages.value.filter(item => item !== data);
-  },3000)
+  }, 10000)
 }
 
 socket.on("onlineCount", (msg) => {
@@ -519,44 +519,44 @@ const jsonInfo = ref<BuildInfo>({
 });
 
 const wInfo = ref<WeatherData>(
-    {
-      info: {
-        timeStamp: 1744531360003,
-        infoSource: "中央气象台",
-        sourceUrl: [
-          "http://d1.weather.com.cn/dingzhi/101250101.html?_=",
-          "http://www.nmc.cn/rest/weather?stationid=sgkrL&_="
-        ],
-        serverCore: "csu-dynamic-youth-weather",
-        author: "54sher",
-        state: true,
-        msg: "你居然发现了我们的天气api! 如要使用, 可访问danmuku.54sher.com/weather?province=&city="
-      },
-      cityData: {
-        weatherinfo: {
-          city: "101250101",
-          cityname: "长沙",
-          fctime: "202504131100",
-          temp: "25℃",
-          tempn: "15℃",
-          weather: "晴",
-          weathercode: "d0",
-          weathercoden: "n0",
-          wd: "南风",
-          ws: "<3级"
-        }
-      },
-      alarmData: {
-        w: []
-      },
-      airData: {
-        forecasttime: "2025-04-13 15:00",
-        aqi: 182,
-        aq: 4,
-        text: "中度污染",
-        aqiCode: "99031;99032;99033;99034;99035;99036;99037;99038;99039;99040"
+  {
+    info: {
+      timeStamp: 1744531360003,
+      infoSource: "中央气象台",
+      sourceUrl: [
+        "http://d1.weather.com.cn/dingzhi/101250101.html?_=",
+        "http://www.nmc.cn/rest/weather?stationid=sgkrL&_="
+      ],
+      serverCore: "csu-dynamic-youth-weather",
+      author: "54sher",
+      state: true,
+      msg: "你居然发现了我们的天气api! 如要使用, 可访问danmuku.54sher.com/weather?province=&city="
+    },
+    cityData: {
+      weatherinfo: {
+        city: "101250101",
+        cityname: "长沙",
+        fctime: "202504131100",
+        temp: "25℃",
+        tempn: "15℃",
+        weather: "晴",
+        weathercode: "d0",
+        weathercoden: "n0",
+        wd: "南风",
+        ws: "<3级"
       }
+    },
+    alarmData: {
+      w: []
+    },
+    airData: {
+      forecasttime: "2025-04-13 15:00",
+      aqi: 182,
+      aq: 4,
+      text: "中度污染",
+      aqiCode: "99031;99032;99033;99034;99035;99036;99037;99038;99039;99040"
     }
+  }
 );
 
 async function getAnnouncement() {
@@ -613,21 +613,21 @@ function pushWeatherAlert(type: number) {
     }).then(() => {
       // on close
     });
-  } else if(type === 1) {
+  } else if (type === 1) {
     showDialog({
       title: jsonInfo.value.weather.info.title.apply,
       message: jsonInfo.value.weather.info.body.apply,
     }).then(() => {
       // on close
     });
-  } else if(type === 2) {
+  } else if (type === 2) {
     showDialog({
       title: "空气质量提示",
       message: "当前AQI为" + wInfo.value.airData.aqi + "，达到" + wInfo.value.airData.text
-      + "级别\n建议减少外出，避免室外活动！"
+        + "级别\n建议减少外出，避免室外活动！"
     }).then(() => {
       // on close
-    }); 
+    });
   }
 }
 
@@ -665,39 +665,46 @@ function getDetailData() {
   <div class="mountain-challenge">
     <!-- 通知栏 天气 -->
     <!-- 天气信息 -->
-    <van-notice-bar left-icon="location-o" color="#1989fa" background="#ecf9ff"
-      class="notice-primary rounded-lg shadow-sm" v-if="jsonInfo.weather.switch.info && wInfo.info.state">
-      <b>{{ wInfo.cityData.weatherinfo.cityname }}</b>
-      {{ wInfo.cityData.weatherinfo.weather }}
-      {{ wInfo.cityData.weatherinfo.tempn }} - {{ wInfo.cityData.weatherinfo.temp }}
-      {{ wInfo.cityData.weatherinfo.wd }}
-      {{ wInfo.cityData.weatherinfo.ws }}
-      AQI:{{ aqi }} {{ aqiText }}级别
-    </van-notice-bar>
+    <transition name="fade-slide">
+      <van-notice-bar left-icon="location-o" color="#1989fa" background="#ecf9ff"
+        class="notice-primary rounded-lg shadow-sm" v-if="jsonInfo.weather.switch.info && wInfo.info.state">
+        <b>{{ wInfo.cityData.weatherinfo.cityname }}</b>
+        {{ wInfo.cityData.weatherinfo.weather }}
+        {{ wInfo.cityData.weatherinfo.tempn }} - {{ wInfo.cityData.weatherinfo.temp }}
+        {{ wInfo.cityData.weatherinfo.wd }}
+        {{ wInfo.cityData.weatherinfo.ws }}
+        AQI:{{ aqi }} {{ aqiText }}级别
+      </van-notice-bar>
+    </transition>
 
-    <!-- 天气警告 + 开始爬山公告 --> 
+    <!-- 天气警告 + 开始爬山公告 -->
     <!-- <van-sticky offset-top="3rem"> jsonInfo?.weather?.switch?.warn && wInfo?.airData?.aqi >= 150 && wInfo.info.state -->
-    <van-notice-bar left-icon="volume-o" :scrollable="false" class="mt-3 notice-secondary rounded-lg shadow-sm"
-      v-if="socketMessages.length > 0 || (jsonInfo?.weather?.switch?.warn && ((wInfo?.alarmData?.w?.length > 0 && wInfo.info.state) || aqi >=150))">
-      <van-swipe vertical class="notice-swipe" :autoplay="3000" :touchable="false" :show-indicators="false">
-        <van-swipe-item v-for="(w, index) in wInfo.alarmData.w" :key="index" class="font-medium">
-          {{ w.w13 || null }}
-        </van-swipe-item>
-        <van-swipe-item v-if="aqi >=150" class="font-medium" :key="wInfo.alarmData.w.length + 1">
-          AQI:{{ aqi }} - {{ aqiText }}， 建议减少室外活动
-        </van-swipe-item>
-        <van-swipe-item v-for="(msg, index2) in socketMessages" :key="index2 + wInfo.alarmData.w.length + 1" class="font-medium">
-          {{ msg }}
-        </van-swipe-item>
-      </van-swipe>
-    </van-notice-bar>
+    <transition name="fade-slide">
+      <van-notice-bar left-icon="volume-o" :scrollable="false" class="mt-3 notice-secondary rounded-lg shadow-sm"
+        v-if="socketMessages.length > 0 || (jsonInfo?.weather?.switch?.warn && ((wInfo?.alarmData?.w?.length > 0 && wInfo.info.state) || aqi >= 150))">
+        <van-swipe vertical class="notice-swipe" :autoplay="3000" :touchable="false" :show-indicators="false">
+          <van-swipe-item v-for="(w, index) in wInfo.alarmData.w" :key="index" class="font-medium">
+            {{ w.w13 || null }}
+          </van-swipe-item>
+          <van-swipe-item v-if="aqi >= 150" class="font-medium" :key="wInfo.alarmData.w.length + 1">
+            AQI:{{ aqi }} - {{ aqiText }}， 建议减少室外活动
+          </van-swipe-item>
+          <van-swipe-item v-for="(msg, index2) in socketMessages" :key="index2 + wInfo.alarmData.w.length + 1"
+            class="font-medium">
+            {{ msg }}
+          </van-swipe-item>
+        </van-swipe>
+      </van-notice-bar>
+    </transition>
     <!-- </van-sticky> -->
 
     <!-- 通知栏 公告 -->
-    <van-notice-bar left-icon="info-o" color="#1989fa" background="#ecf9ff" wrapable :scrollable="false"
-      class="mt-3 notice-primary rounded-lg shadow-sm" v-if="jsonInfo.announcement.switch">
-      {{ jsonInfo.announcement.info }}
-    </van-notice-bar>
+    <transition name="fade-slide">
+      <van-notice-bar left-icon="info-o" color="#1989fa" background="#ecf9ff" wrapable :scrollable="false"
+        class="mt-3 notice-primary rounded-lg shadow-sm" v-if="jsonInfo.announcement.switch">
+        {{ jsonInfo.announcement.info }}
+      </van-notice-bar>
+    </transition>
 
     <!-- 滚动通知 -->
     <!-- <van-notice-bar left-icon="volume-o" :scrollable="false" class="mt-3 notice-secondary rounded-lg shadow-sm"
@@ -788,7 +795,9 @@ function getDetailData() {
     <!-- 在线人数和连接状态 -->
     <div class="mt-6 p-3 bg-white/80 rounded-lg shadow-sm">
       <div class="text-center text-sm text-gray-700 font-medium">
-        正在与 <span class="text-green-600 font-bold">{{ (onlineCount === 0 && isWSConnected)?"99+":onlineCount }}</span> 人一起征服岳麓山
+        正在与 <span class="text-green-600 font-bold">{{ (onlineCount === 0 && isWSConnected) ? "99+" : onlineCount
+          }}</span>
+        人一起征服岳麓山
       </div>
       <div class="text-center mt-2 text-sm text-gray-600">
         服务器实时连接状态：
@@ -834,6 +843,24 @@ function getDetailData() {
 </template>
 
 <style lang="less" scoped>
+.fade-slide-enter-active {
+  transition: all 0.4s ease;
+}
+
+.fade-slide-leave-active {
+  transition: all 0.4s cubic-bezier(1, 0.5, 0.8, 1);
+}
+
+.fade-slide-enter-from {
+  transform: translateY(-20px);
+  opacity: 0;
+}
+
+.fade-slide-leave-to {
+  transform: translateY(-20px);
+  opacity: 0;
+}
+
 .mountain-challenge {
   max-width: 600px;
   margin: 0 auto;
