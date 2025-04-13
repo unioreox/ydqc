@@ -438,12 +438,20 @@ socket.on("connect", () => {
   // socket.emit("chat", "又有一位同学加入了比赛！🎉");
 });
 
+const socketMessagesLength = ref<number>(0);
 socket.on("race", (msg) => {
-  if (socketMessages.value.length >= 1) {
-    socketMessages.value.shift();
-  }
+  // if (socketMessages.value.length >= 1) {
+  //   socketMessages.value.shift();
+  // }
   socketMessages.value.push(msg);
+  clearSocketMessages(msg);
 });
+
+async function clearSocketMessages(data: string){
+  setTimeout(() => {
+    socketMessages.value = socketMessages.value.filter(item => item !== data);
+  },3000)
+}
 
 socket.on("onlineCount", (msg) => {
   onlineCount.value = msg;
