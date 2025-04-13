@@ -491,7 +491,7 @@ const jsonInfo = ref({
       warn: false,
     },
     config: {
-      api: "https://danmuku.54sher.com/weather",
+      api: "https://ydqc.csu.edu.cn/weather",
       province: "湖南",
       city: "长沙",
     },
