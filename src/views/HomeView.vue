@@ -25,6 +25,8 @@ const inputRef = ref<HTMLInputElement | null>(null);
 const onlineCount = ref(0);
 
 import simpleMapImgUrl from "@/assets/simpleMap.png";
+import type {WeatherData} from "@/types/weather";
+import type {BuildInfo} from "@/types/buildInfo";
 
 const userStore = useUserStore();
 const curRecord = ref<RecordVo>({
@@ -467,7 +469,7 @@ const onOffsetChange = () => {
   });
 };
 
-const jsonInfo = ref({
+const jsonInfo = ref<BuildInfo>({
   time: "",
   commitInfo: {
     commitId: "",
@@ -508,7 +510,46 @@ const jsonInfo = ref({
   }
 });
 
-const wInfo = ref();
+const wInfo = ref<WeatherData>(
+    {
+      info: {
+        timeStamp: 1744531360003,
+        infoSource: "中央气象台",
+        sourceUrl: [
+          "http://d1.weather.com.cn/dingzhi/101250101.html?_=",
+          "http://www.nmc.cn/rest/weather?stationid=sgkrL&_="
+        ],
+        serverCore: "csu-dynamic-youth-weather",
+        author: "54sher",
+        state: true,
+        msg: "你居然发现了我们的天气api! 如要使用, 可访问danmuku.54sher.com/weather?province=&city="
+      },
+      cityData: {
+        weatherinfo: {
+          city: "101250101",
+          cityname: "长沙",
+          fctime: "202504131100",
+          temp: "25℃",
+          tempn: "15℃",
+          weather: "晴",
+          weathercode: "d0",
+          weathercoden: "n0",
+          wd: "南风",
+          ws: "<3级"
+        }
+      },
+      alarmData: {
+        w: []
+      },
+      airData: {
+        forecasttime: "2025-04-13 15:00",
+        aqi: 182,
+        aq: 4,
+        text: "中度污染",
+        aqiCode: "99031;99032;99033;99034;99035;99036;99037;99038;99039;99040"
+      }
+    }
+);
 
 async function getAnnouncement() {
   const response = await fetch('/build-info.json' + '?_timestamp=' + Date.now());
