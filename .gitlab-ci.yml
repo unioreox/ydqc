@@ -24,13 +24,14 @@ build:
     - echo "设置APT镜像源为阿里云"
     # 创建新的sources.list
     - echo "deb http://mirrors.aliyun.com/debian/ bookworm main non-free contrib" > /etc/apt/sources.list
-    #- echo "deb-src http://mirrors.aliyun.com/debian/ bookworm main non-free contrib" >> /etc/apt/sources.list
-    - echo "deb http://mirrors.aliyun.com/debian-security bookworm-security main" >> /etc/apt/sources.list
-    - echo "deb http://mirrors.aliyun.com/debian bookworm-updates main non-free contrib" >> /etc/apt/sources.list
+    #- echo "deb-src http://mirrors.aliyun.com/debian bookworm main non-free contrib" >> /etc/apt/sources.list
+    - echo "deb http://mirrors.aliyun.com/debian-security/ bookworm-security main" >> /etc/apt/sources.list
+    - echo "deb http://mirrors.aliyun.com/debian/ bookworm-updates main non-free contrib" >> /etc/apt/sources.list
     #- echo "deb-src http://mirrors.aliyun.com/debian bookworm-updates main non-free contrib" >> /etc/apt/sources.list
-    - echo "deb http://mirrors.aliyun.com/debian bookworm-backports main non-free contrib" >> /etc/apt/sources.list
+    - echo "deb http://mirrors.aliyun.com/debian/ bookworm-backports main non-free contrib" >> /etc/apt/sources.list
     #- echo "deb-src http://mirrors.aliyun.com/debian bookworm-backports main non-free contrib" >> /etc/apt/sources.list
     - cat /etc/apt/sources.list
+    - ls /etc/apt
     - echo "安装zip工具"
     - apt-get update && apt-get install -y zip
     - echo "Stage 2 - 构建产物"
