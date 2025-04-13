@@ -669,7 +669,7 @@ function getDetailData() {
 
     <!-- 天气警告 + 开始爬山公告 --> 
     <!-- <van-sticky offset-top="3rem"> jsonInfo?.weather?.switch?.warn && wInfo?.airData?.aqi >= 150 && wInfo.info.state -->
-    <van-notice-bar left-icon="info-o" :scrollable="false" class="mt-3 notice-secondary rounded-lg shadow-sm"
+    <van-notice-bar left-icon="volume-o" :scrollable="false" class="mt-3 notice-secondary rounded-lg shadow-sm"
       v-if="socketMessages.length > 0 || (jsonInfo?.weather?.switch?.warn && ((wInfo?.alarmData?.w?.length > 0 && wInfo.info.state) || aqi >=150))">
       <van-swipe vertical class="notice-swipe" :autoplay="3000" :touchable="false" :show-indicators="false">
         <van-swipe-item v-for="(w, index) in wInfo.alarmData.w" :key="index" class="font-medium">
