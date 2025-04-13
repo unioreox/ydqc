@@ -669,8 +669,8 @@ function getDetailData() {
 
     <!-- 天气警告 --> 
     <!-- <van-sticky offset-top="3rem"> jsonInfo?.weather?.switch?.warn && wInfo?.airData?.aqi >= 150 && wInfo.info.state -->
-    <van-notice-bar left-icon="warn-o" :scrollable="false" class="mt-3 notice-secondary rounded-lg shadow-sm"
-      v-if="jsonInfo?.weather?.switch?.warn && ((wInfo?.alarmData?.w?.length > 0 && wInfo.info.state) || aqi >=150)">
+    <van-notice-bar left-icon="info-o" :scrollable="false" class="mt-3 notice-secondary rounded-lg shadow-sm"
+      v-if="socketMessages.length > 0 || (jsonInfo?.weather?.switch?.warn && ((wInfo?.alarmData?.w?.length > 0 && wInfo.info.state) || aqi >=150))">
       <van-swipe vertical class="notice-swipe" :autoplay="3000" :touchable="false" :show-indicators="false">
         <van-swipe-item v-for="(w, index) in wInfo.alarmData.w" :key="index" class="font-medium">
           {{ w.w13 || null }}
@@ -678,15 +678,18 @@ function getDetailData() {
         <van-swipe-item v-if="aqi >=150" class="font-medium" :key="wInfo.alarmData.w.length + 1">
           AQI:{{ aqi }} - {{ aqiText }}， 建议减少室外活动
         </van-swipe-item>
+        <van-swipe-item v-for="(msg, index2) in socketMessages" :key="index2 + wInfo.alarmData.w.length + 1" class="font-medium">
+          {{ msg }}
+        </van-swipe-item>
       </van-swipe>
     </van-notice-bar>
     <!-- </van-sticky> -->
 
     <!-- 通知栏 公告 -->
-    <van-notice-bar left-icon="info-o" color="#1989fa" background="#ecf9ff" wrapable :scrollable="false"
+    <!-- <van-notice-bar left-icon="info-o" color="#1989fa" background="#ecf9ff" wrapable :scrollable="false"
       class="mt-3 notice-primary rounded-lg shadow-sm" v-if="jsonInfo.announcement.switch">
       {{ jsonInfo.announcement.info }}
-    </van-notice-bar>
+    </van-notice-bar> -->
 
     <!-- 滚动通知 -->
     <van-notice-bar left-icon="volume-o" :scrollable="false" class="mt-3 notice-secondary rounded-lg shadow-sm"
@@ -777,7 +780,7 @@ function getDetailData() {
     <!-- 在线人数和连接状态 -->
     <div class="mt-6 p-3 bg-white/80 rounded-lg shadow-sm">
       <div class="text-center text-sm text-gray-700 font-medium">
-        正在与 <span class="text-green-600 font-bold">{{ onlineCount }}</span> 人一起征服岳麓山
+        正在与 <span class="text-green-600 font-bold">{{ (onlineCount === 0 && isWSConnected)?"99+":onlineCount }}</span> 人一起征服岳麓山
       </div>
       <div class="text-center mt-2 text-sm text-gray-600">
         服务器实时连接状态：
