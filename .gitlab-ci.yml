@@ -23,9 +23,8 @@ build:
   script:
     - echo "设置APT镜像源为阿里云"
     # 创建新的sources.list
-    - sed -i 's|http://.*deb.debian.org|https://mirrors.tuna.tsinghua.edu.cn/debian|g' /etc/apt/sources.list
     - echo "安装zip工具"
-    - apt-get update && apt-get install -y zip
+    - apt-get -o Acquire::http::Proxy="http://mirrors.aliyun.com" update && apt-get install -y zip
     - echo "Stage 2 - 构建产物"
     - npm run build-only || exit 1
     - echo "打包 dist 文件夹为 dist.zip"
