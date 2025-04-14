@@ -448,9 +448,17 @@ socket.on("race", (msg) => {
 });
 
 async function clearSocketMessages(data: string) {
+  if(aqi?.value >= 200){
+    socketMessages.value.length += 1;
+    if(wInfo?.value.alarmData.w.length > 0){
+      socketMessages.value.length += wInfo.value.alarmData.w.length;
+    }
+  }else if(wInfo?.value.alarmData.w.length > 0){
+    socketMessages.value.length += wInfo.value.alarmData.w.length;
+  }
   setTimeout(() => {
     socketMessages.value = socketMessages.value.filter(item => item !== data);
-  }, 10000)
+  }, 3000 * (socketMessages.value.length + socketMessages.value.length))
 }
 
 socket.on("onlineCount", (msg) => {
@@ -681,12 +689,12 @@ function getDetailData() {
     <!-- <van-sticky offset-top="3rem"> jsonInfo?.weather?.switch?.warn && wInfo?.airData?.aqi >= 150 && wInfo.info.state -->
     <transition name="fade-slide">
       <van-notice-bar left-icon="volume-o" :scrollable="false" class="mt-3 notice-secondary rounded-lg shadow-sm"
-        v-if="socketMessages.length > 0 || (jsonInfo?.weather?.switch?.warn && ((wInfo?.alarmData?.w?.length > 0 && wInfo.info.state) || aqi >= 150))">
+        v-if="socketMessages.length > 0 || (jsonInfo?.weather?.switch?.warn && ((wInfo?.alarmData?.w?.length > 0 && wInfo.info.state) || aqi >= 200))">
         <van-swipe vertical class="notice-swipe" :autoplay="3000" :touchable="false" :show-indicators="false">
           <van-swipe-item v-for="(w, index) in wInfo.alarmData.w" :key="index" class="font-medium">
             {{ w.w13 || null }}
           </van-swipe-item>
-          <van-swipe-item v-if="aqi >= 150" class="font-medium" :key="wInfo.alarmData.w.length + 1">
+          <van-swipe-item v-if="aqi >= 200" class="font-medium" :key="wInfo.alarmData.w.length + 1">
             AQI:{{ aqi }} - {{ aqiText }}， 建议减少室外活动
           </van-swipe-item>
           <van-swipe-item v-for="(msg, index2) in socketMessages" :key="index2 + wInfo.alarmData.w.length + 1"
