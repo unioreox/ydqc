@@ -422,7 +422,8 @@ onMounted(async () => {
     await getCheckInPointHandle();
     await getLastRecordHandle();
     await initMap();
-    updateLocation();
+    // 修复定位在圈内但是打卡按钮禁用问题
+    await updateLocation();
     // 第一次必须异步请求
     await getWeather();
     await getAnnouncement();
