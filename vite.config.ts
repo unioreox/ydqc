@@ -14,7 +14,7 @@ import { execSync } from 'child_process'
 function getCustomInfo() {
     // 公告
     const announcement = {
-        switch: true,
+        switch: false,
         info: "登山系统维护中, 我们将尽快重新上线",
     };
     // 更新信息
