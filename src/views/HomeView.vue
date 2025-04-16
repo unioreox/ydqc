@@ -11,7 +11,6 @@ import { useUserStore } from "@/stores/user";
 import wx from "weixin-js-sdk";
 import { io, Socket } from "socket.io-client";
 import { wgs84ToGcj02 } from "@/util/convertLocation";
-import { wgs84ToGcj02New } from '@/util/wgs84togcj02'
 import getCanvasFingerPrint from "@/util/canvasFingerPrint"
 import Clarity from '@microsoft/clarity';
 
@@ -45,7 +44,7 @@ const currentStage = ref(-1);
 const currentLocation = ref('正在获取位置...');
 const canCheckIn = ref(false);
 const showSuccessPopup = ref(false);
-const map = ref<AMap.Map | null>(null);
+const map = ref<any | null>(null);
 const isLoading = ref(true);
 const isSubmitting = ref(false);
 const checkPoints = ref<CheckPoint[]>([]);
@@ -54,15 +53,10 @@ const showBarrageInput = ref(false);
 
 // 协助模式
 const pressButtonCount = ref<number>(0);
-const wxGetLocationGcj02Data = ref({
+const wxGetLocationWgs84Data = ref({
   latitude: 0,
   longitude: 0,
-  accuracy: 0,
-});
-const wxGetLocationGcj02Data = ref({
-  latitude: 0,
-  longitude: 0,
-  accuracy: 0,
+  accuracy: -1,
 });
 
 // 获取最后一次更新位置的时间
@@ -145,11 +139,13 @@ const drawCircleHandle = async () => {
 
   checkPoints.value.forEach(point => {
     // wgs84 转 gcj02
-    // wgs84 转 gcj02
-    const [gcj02Lng, gcj02Lat] = wgs84ToGcj02(point.longitude, point.latitude);
+    if(!point.longitude || !point.latitude){
+      return;
+    }
+    const gcj02Data: any = wgs84ToGcj02(point.longitude, point.latitude, "WGS84");
     console.log("添加打卡指示");
     new AMap.Circle({
-      center: new AMap.LngLat(gcj02Lng, gcj02Lat),
+      center: new AMap.LngLat(gcj02Data[0], gcj02Data[1]),
       radius: 50,
       strokeColor: "#ff0000",
       strokeOpacity: 1,
@@ -227,6 +223,9 @@ const encryptDataAndCheckInHandle = async () => {
 
 const locationButtonCooldown = ref(false);
 const updateLocation = () => {
+  console.log("[check]wgs84ToGcj02 初始值" + wgs84ToGcj02(0, 0))
+  console.log("[check]wgs84ToGcj02 计算值" + wgs84ToGcj02(28.161783, 112.92671))
+  console.log("[check]wgs84ToGcj02 期待值" + [28.158673101633696, 112.93213203851515])
   pressButtonCount.value++;
   if (locationButtonCooldown.value) return;
 
@@ -250,15 +249,8 @@ const updateLocation = () => {
   wx.getLocation({
     type: 'wgs84',
     success: async (res) => {
-      // alert("微信获取wgs84的经纬度为：" + res.longitude + " " + res.latitude);
       currentLocation.value = ` 纬度: ${res.latitude}, 经度: ${res.longitude}`;
-
-      const numbers = wgs84ToGcj02(res.longitude, res.latitude);
-
-      // alert("计算得到的经纬度为：" + numbers[0].toFixed(6) + " " + numbers[1].toFixed(6));
-
-      // alert(res.accuracy);
-      // alert(res.speed);
+      const gcj02Position: any = wgs84ToGcj02(res.latitude, res.longitude);
 
       matchedPoint.value = checkPoints.value.find(point => {
         const distance = AMap.GeometryUtil.distance([res.longitude, res.latitude], [point.longitude, point.latitude]);
@@ -267,7 +259,7 @@ const updateLocation = () => {
 
       if (matchedPoint.value) {
         if (currentStep.value === 0 || !matchedPoint.value.isEnd) {
-          form.value.type = matchedPoint.value.id;
+          form.value.type = matchedPoint.value.id ?? -1;
         }
         if (currentStep.value === 1 && !matchedPoint.value.isEnd) {
           showNotify({ type: 'warning', message: '不在终点打卡点范围内，请移动到终点打卡点附近' });
@@ -276,16 +268,29 @@ const updateLocation = () => {
           showNotify({ type: 'warning', message: '不在起点打卡点范围内，请移动到起点打卡点附近' });
         }
         canCheckIn.value = true;
-        form.value.type = matchedPoint.value.id;
+        form.value.type = matchedPoint.value.id ?? -1;
       } else {
         canCheckIn.value = false;
         showNotify({ type: 'warning', message: '不在打卡点范围内，请移动到打卡点附近' });
       }
 
+      wxGetLocationWgs84Data.value.latitude = res.latitude;
+      wxGetLocationWgs84Data.value.longitude = res.longitude;
+      wxGetLocationWgs84Data.value.accuracy = res.accuracy;
       form.value.latitude = res.latitude.toString();
       form.value.longitude = res.longitude.toString();
-
       form.value.accuracy = res.accuracy.toString();
+
+      const marker = new AMap.Marker({
+        position: new AMap.LngLat(gcj02Position[1], gcj02Position[0]),
+        title: '当前位置'
+      });
+
+      map.value?.remove(map.value.getAllOverlays('marker'));
+      map.value?.add(marker);
+      await drawCircleHandle();
+      map.value?.setZoom(17);
+      map.value?.setCenter([gcj02Position[1], gcj02Position[0]]);
 
       // if (map.value) {
       //   const numbers = wgs84ToGcj02(res.longitude, res.latitude);
@@ -317,36 +322,36 @@ const updateLocation = () => {
     fail: () => {
       wxGetLocationWgs84Data.value.latitude = 0;
       wxGetLocationWgs84Data.value.longitude = 0;
-      wxGetLocationWgs84Data.value.accuracy = 0;
+      wxGetLocationWgs84Data.value.accuracy = -1;
       currentLocation.value = '获取位置失败，请重试';
       canCheckIn.value = false;
       showNotify({ type: 'danger', message: '获取位置失败，请检查定位权限' });
     }
   });
 
-  wx.getLocation({
-    type: 'gcj02',
-    success: async (res) => {
-      // alert("微信直接获取的经纬度为：" + res.longitude + " " + res.latitude);
-      const marker = new AMap.Marker({
-        position: new AMap.LngLat(res.longitude, res.latitude),
-        title: '当前位置'
-      });
-      wxGetLocationGcj02Data.value.longitude = res.longitude;
-      wxGetLocationGcj02Data.value.latitude = res.latitude;
-      wxGetLocationGcj02Data.value.accuracy = res.accuracy;
-      map.value?.remove(map.value.getAllOverlays('marker'));
-      map.value?.add(marker);
-      await drawCircleHandle();
-      map.value?.setZoom(17);
-      map.value?.setCenter([res.longitude, res.latitude]);
-    },
-    fail: () => {
-      wxGetLocationGcj02Data.value.longitude = 0;
-      wxGetLocationGcj02Data.value.latitude = 0;
-      wxGetLocationGcj02Data.value.accuracy = 0;
-    }
-  });
+  // wx.getLocation({
+  //   type: 'gcj02',
+  //   success: async (res) => {
+  //     // alert("微信直接获取的经纬度为：" + res.longitude + " " + res.latitude);
+  //     const marker = new AMap.Marker({
+  //       position: new AMap.LngLat(res.longitude, res.latitude),
+  //       title: '当前位置'
+  //     });
+  //     wxGetLocationGcj02Data.value.longitude = res.longitude;
+  //     wxGetLocationGcj02Data.value.latitude = res.latitude;
+  //     wxGetLocationGcj02Data.value.accuracy = res.accuracy;
+  //     map.value?.remove(map.value.getAllOverlays('marker'));
+  //     map.value?.add(marker);
+  //     await drawCircleHandle();
+  //     map.value?.setZoom(17);
+  //     map.value?.setCenter([res.longitude, res.latitude]);
+  //   },
+  //   fail: () => {
+  //     wxGetLocationGcj02Data.value.longitude = 0;
+  //     wxGetLocationGcj02Data.value.latitude = 0;
+  //     wxGetLocationGcj02Data.value.accuracy = 0;
+  //   }
+  // });
 
   // 预留协助模式接口
 
@@ -713,25 +718,19 @@ function getDetailData() {
 
 function getWgs84Gcj02Data() {
   if (pressButtonCount.value >= 2) {
-    let [gcj02LngNew, gcj02LatNew] = wgs84ToGcj02New(wxGetLocationWgs84Data.value.latitude, wxGetLocationWgs84Data.value.longitude);
-    let [gcj02LngOld, gcj02LatOld] = wgs84ToGcj02(wxGetLocationWgs84Data.value.latitude, wxGetLocationWgs84Data.value.longitude);
+    let gcj02Data = wgs84ToGcj02(wxGetLocationWgs84Data.value.latitude, wxGetLocationWgs84Data.value.longitude) ?? [0, 0];
 
-    alert('location raw data'
-      + '\n1 wx.getLocation'
+    alert('原始坐标信息'
+      + '\n\nwx.getLocation'
       + '\ntype: wgs84'
       + '\nres.latitude ' + wxGetLocationWgs84Data.value.latitude
       + '\nres.longitude ' + wxGetLocationWgs84Data.value.longitude
       + '\nres.accuracy ' + wxGetLocationWgs84Data.value.accuracy
-      + '\n2 wx.getLocation'
+      + '\n\nwgs84ToGcj02'
       + '\ntype: gcj02'
-      + '\nres.latitude ' + wxGetLocationGcj02Data.value.latitude
-      + '\nres.longitude ' + wxGetLocationGcj02Data.value.longitude
-      + '\nres.accuracy ' + wxGetLocationGcj02Data.value.accuracy
-      + '\n3 wgs84-gcj02(new, old)'
-      + '\ntype: gcj02'
-      + '\nres.latitude ' + gcj02LngNew + " " + gcj02LngOld
-      + '\nres.longitude ' + gcj02LatNew + " " + gcj02LatOld
-      + '\nres.accuracy ' + wxGetLocationGcj02Data.value.accuracy
+      + '\nres.latitude ' + gcj02Data[1]
+      + '\nres.longitude ' + gcj02Data[0]
+      + '\nres.accuracy ' + wxGetLocationWgs84Data.value.accuracy
     );
   }
 }
