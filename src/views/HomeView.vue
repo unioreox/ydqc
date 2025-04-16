@@ -11,6 +11,7 @@ import { useUserStore } from "@/stores/user";
 import wx from "weixin-js-sdk";
 import { io, Socket } from "socket.io-client";
 import { wgs84ToGcj02 } from "@/util/convertLocation";
+import { wgs84ToGcj02New } from '@/util/wgs84togcj02'
 import getCanvasFingerPrint from "@/util/canvasFingerPrint"
 import Clarity from '@microsoft/clarity';
 
@@ -50,6 +51,14 @@ const isSubmitting = ref(false);
 const checkPoints = ref<CheckPoint[]>([]);
 const matchedPoint = ref<CheckPoint | undefined>();
 const showBarrageInput = ref(false);
+
+// 协助模式
+const pressButtonCount = ref<number>(0);
+const wxGetLocationGcj02Data = ref({
+  latitude: 0,
+  longtitude: 0,
+  accuracy: 0,
+});
 
 // 获取最后一次更新位置的时间
 const lastUpdateLocationTime = ref(0);
@@ -213,6 +222,7 @@ const encryptDataAndCheckInHandle = async () => {
 
 const locationButtonCooldown = ref(false);
 const updateLocation = () => {
+  pressButtonCount.value ++;
   if (locationButtonCooldown.value) return;
 
   // 冷却
@@ -314,13 +324,42 @@ const updateLocation = () => {
         position: new AMap.LngLat(res.longitude, res.latitude),
         title: '当前位置'
       });
+      wxGetLocationGcj02Data.value.longtitude = res.longitude;
+      wxGetLocationGcj02Data.value.latitude = res.latitude;
+      wxGetLocationGcj02Data.value.accuracy = res.accuracy;
       map.value?.remove(map.value.getAllOverlays('marker'));
       map.value?.add(marker);
       await drawCircleHandle();
       map.value?.setZoom(17);
       map.value?.setCenter([res.longitude, res.latitude]);
+    },
+    fail: () => {
+      wxGetLocationGcj02Data.value.longtitude = 0;
+      wxGetLocationGcj02Data.value.latitude = 0;
+      wxGetLocationGcj02Data.value.accuracy = 0;
     }
   });
+
+  if (pressButtonCount.value >= 2){
+    let [gcj02Lng, gcj02Lat] = wgs84ToGcj02New(wxGetLocationGcj02Data.value.latitude, wxGetLocationGcj02Data.value.longtitude);
+
+        console.log('1 wx.getLocation'
+        + '\ntype: wgs84'
+        + '\nres.latitude ' + form.value.latitude
+        + '\nres.longitude ' + form.value.longitude
+        + '\nres.accuracy ' + form.value.accuracy
+        + '\n2 wx.getLocation'
+        + '\ntype: gcj02'
+        + '\nres.latitude ' + wxGetLocationGcj02Data.value.latitude
+        + '\nres.longitude ' + wxGetLocationGcj02Data.value.longtitude
+        + '\nres.accuracy ' + wxGetLocationGcj02Data.value.accuracy
+        + '\n3 wgs84-gcj02'
+        + '\ntype: gcj02'
+        + '\nres.latitude ' + gcj02Lng
+        + '\nres.longitude ' + gcj02Lat
+        + '\nres.accuracy ' + wxGetLocationGcj02Data.value.accuracy
+  );
+  }
 
   setTimeout(() => {
     locationButtonCooldown.value = false;
