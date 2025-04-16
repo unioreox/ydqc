@@ -251,7 +251,8 @@ const updateLocation = () => {
       const strIn = res.latitude + "," + res.longitude;
       const gcj02PositionRaw = wgs84ToGcj02(strIn);
       alert(gcj02PositionRaw + " " + typeof gcj02PositionRaw[0]);
-      gcj02Position = parseFloat(gcj02PositionRaw);
+      const gcj02Position = parseFloat(gcj02PositionRaw);
+      alert(gcj02Position + " " + typeof gcj02Position[0]);
 
       matchedPoint.value = checkPoints.value.find(point => {
         const distance = AMap.GeometryUtil.distance([res.longitude, res.latitude], [point.longitude, point.latitude]);
