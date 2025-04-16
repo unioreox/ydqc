@@ -222,7 +222,7 @@ const encryptDataAndCheckInHandle = async () => {
 
 const locationButtonCooldown = ref(false);
 const updateLocation = () => {
-  pressButtonCount.value ++;
+  pressButtonCount.value++;
   if (locationButtonCooldown.value) return;
 
   // 冷却
@@ -340,26 +340,7 @@ const updateLocation = () => {
     }
   });
 
-  if (pressButtonCount.value >= 2){
-    let [gcj02Lng, gcj02Lat] = wgs84ToGcj02New(wxGetLocationGcj02Data.value.latitude, wxGetLocationGcj02Data.value.longtitude);
-
-        console.log('1 wx.getLocation'
-        + '\ntype: wgs84'
-        + '\nres.latitude ' + form.value.latitude
-        + '\nres.longitude ' + form.value.longitude
-        + '\nres.accuracy ' + form.value.accuracy
-        + '\n2 wx.getLocation'
-        + '\ntype: gcj02'
-        + '\nres.latitude ' + wxGetLocationGcj02Data.value.latitude
-        + '\nres.longitude ' + wxGetLocationGcj02Data.value.longtitude
-        + '\nres.accuracy ' + wxGetLocationGcj02Data.value.accuracy
-        + '\n3 wgs84-gcj02'
-        + '\ntype: gcj02'
-        + '\nres.latitude ' + gcj02Lng
-        + '\nres.longitude ' + gcj02Lat
-        + '\nres.accuracy ' + wxGetLocationGcj02Data.value.accuracy
-  );
-  }
+  // 预留协助模式接口
 
   setTimeout(() => {
     locationButtonCooldown.value = false;
@@ -704,6 +685,7 @@ async function getWeatherWithPolling(interval = 10000) {
 }
 
 function getDetailData() {
+  getWgs84Gcj02Data();
   showDialog({
     messageAlign: "left",
     allowHtml: true,
@@ -714,9 +696,34 @@ function getDetailData() {
       + "\ncommitMsg: " + jsonInfo.value.commitInfo.commitMessage
       + "\ncommitDiff: " + jsonInfo.value.commitInfo.fileStats
       + "\ncommitTag: " + jsonInfo.value.commitInfo.tagInfo
-      + "\nonBranch: " + jsonInfo.value.commitInfo.branchName,
+      + "\nonBranch: " + jsonInfo.value.commitInfo.branchName
+      + "\ngetWgs84Gcj02Data: Press getLocation Button Twice"
+      ,
   })
     .then(() => { })
+}
+
+function getWgs84Gcj02Data() {
+  if (pressButtonCount.value >= 2) {
+    let [gcj02Lng, gcj02Lat] = wgs84ToGcj02New(wxGetLocationGcj02Data.value.latitude, wxGetLocationGcj02Data.value.longtitude);
+
+    alert('1 wx.getLocation'
+      + '\ntype: wgs84'
+      + '\nres.latitude ' + form.value.latitude
+      + '\nres.longitude ' + form.value.longitude
+      + '\nres.accuracy ' + form.value.accuracy
+      + '\n2 wx.getLocation'
+      + '\ntype: gcj02'
+      + '\nres.latitude ' + wxGetLocationGcj02Data.value.latitude
+      + '\nres.longitude ' + wxGetLocationGcj02Data.value.longtitude
+      + '\nres.accuracy ' + wxGetLocationGcj02Data.value.accuracy
+      + '\n3 wgs84-gcj02'
+      + '\ntype: gcj02'
+      + '\nres.latitude ' + gcj02Lng
+      + '\nres.longitude ' + gcj02Lat
+      + '\nres.accuracy ' + wxGetLocationGcj02Data.value.accuracy
+    );
+  }
 }
 </script>
 
