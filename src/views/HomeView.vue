@@ -27,7 +27,6 @@ const onlineCount = ref(0);
 import simpleMapImgUrl from "@/assets/simpleMap.png";
 import type { WeatherData } from "@/types/weather";
 import type { BuildInfo } from "@/types/buildInfo";
-import { parseBounds } from 'html2canvas/dist/types/css/layout/bounds';
 
 const userStore = useUserStore();
 const curRecord = ref<RecordVo>({
