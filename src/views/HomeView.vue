@@ -723,10 +723,10 @@ function getWgs84Gcj02Data() {
     alert('原始坐标信息'
       + '\n\nwx.getLocation'
       + '\ntype: wgs84'
-      + '\nres.latitude ' + wxGetLocationWgs84Data.value.latitude
-      + '\nres.longitude ' + wxGetLocationWgs84Data.value.longitude
-      + '\nres.accuracy ' + wxGetLocationWgs84Data.value.accuracy
-      + '\n\nwgs84ToGcj02'
+      + '\nres.latitude ' + form.value.latitude
+      + '\nres.longitude ' + form.value.longitude
+      + '\nres.accuracy ' + form.value.accuracy
+      + '\n2 wx.getLocation'
       + '\ntype: gcj02'
       + '\nres.latitude ' + gcj02Data[1]
       + '\nres.longitude ' + gcj02Data[0]
