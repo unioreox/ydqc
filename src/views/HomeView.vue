@@ -248,12 +248,12 @@ const updateLocation = () => {
     type: 'wgs84',
     success: async (res) => {
       currentLocation.value = ` 纬度: ${res.latitude}, 经度: ${res.longitude}`;
-      alert(res.latitude + " " + res.longitude + " " + typeof res.latitude)
+      //alert(res.latitude + " " + res.longitude + " " + typeof res.latitude)
       const strIn = res.latitude + "," + res.longitude;
       const gcj02PositionRaw = wgs84ToGcj02(strIn);
-      alert(gcj02PositionRaw + " " + typeof gcj02PositionRaw[0]);
+      //alert(gcj02PositionRaw + " " + typeof gcj02PositionRaw[0]);
       const gcj02Position = [parseFloat(gcj02PositionRaw[0]), parseFloat(gcj02PositionRaw[1])];
-      alert(gcj02Position + " " + typeof gcj02Position[0]);
+      //alert(gcj02Position + " " + typeof gcj02Position[0]);
 
       matchedPoint.value = checkPoints.value.find(point => {
         const distance = AMap.GeometryUtil.distance([res.longitude, res.latitude], [point.longitude, point.latitude]);

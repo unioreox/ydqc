@@ -50,7 +50,7 @@ export function wgs84ToGcj02(strIn) {
     }
 
     // return wgs84 ? `${wgs84[0]},${wgs84[1]}` : '';
-    return [gcj02[0].toFixed(6), gcj02[1].toFixed(6)];
+    return [gcj02[0], gcj02[1]];
 }
 
 // function Empty() {
