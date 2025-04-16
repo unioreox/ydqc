@@ -721,9 +721,9 @@ function getWgs84Gcj02Data() {
     alert('location raw data'
       + '\n1 wx.getLocation'
       + '\ntype: wgs84'
-      + '\nres.latitude ' + form.value.latitude
-      + '\nres.longitude ' + form.value.longitude
-      + '\nres.accuracy ' + form.value.accuracy
+      + '\nres.latitude ' + wxGetLocationWgs84Data.value.latitude
+      + '\nres.longitude ' + wxGetLocationWgs84Data.value.longitude
+      + '\nres.accuracy ' + wxGetLocationWgs84Data.value.accuracy
       + '\n2 wx.getLocation'
       + '\ntype: gcj02'
       + '\nres.latitude ' + wxGetLocationGcj02Data.value.latitude
