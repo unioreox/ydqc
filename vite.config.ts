@@ -14,8 +14,8 @@ import { execSync } from 'child_process'
 function getCustomInfo() {
     // 公告
     const announcement = {
-        switch: false,
-        info: "恭喜各位推送抽奖中奖同学，领奖时间地点我们将于近期公布，请大家及时关注，3月25日下午不设领奖点~",
+        switch: true,
+        info: "登山系统维护中, 我们将尽快重新上线",
     };
     // 更新信息
     const updateInfo = {
