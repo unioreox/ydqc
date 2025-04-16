@@ -211,7 +211,12 @@ const encryptDataAndCheckInHandle = async () => {
   });
 };
 
+const locationButtonCooldown = ref(false);
 const updateLocation = () => {
+  if (locationButtonCooldown.value) return;
+
+  // 冷却
+  locationButtonCooldown.value = true;
 
   // 更新最后一次获取位置的时间
   lastUpdateLocationTime.value = Date.now();
@@ -316,6 +321,10 @@ const updateLocation = () => {
       map.value?.setCenter([res.longitude, res.latitude]);
     }
   });
+
+  setTimeout(() => {
+    locationButtonCooldown.value = false;
+  }, 3000);
 };
 
 const performCheckIn = async () => {
@@ -423,7 +432,9 @@ onMounted(async () => {
     await getLastRecordHandle();
     await initMap();
     // 修复定位在圈内但是打卡按钮禁用问题
-    await updateLocation();
+    setTimeout(() => {
+      updateLocation();
+    }, 500);
     // 第一次必须异步请求
     await getWeather();
     await getAnnouncement();
@@ -449,12 +460,12 @@ socket.on("race", (msg) => {
 });
 
 async function clearSocketMessages(data: string) {
-  if(aqi?.value >= 200){
+  if (aqi?.value >= 200) {
     socketMessages.value.length += 1;
-    if(wInfo?.value.alarmData.w.length > 0){
+    if (wInfo?.value.alarmData.w.length > 0) {
       socketMessages.value.length += wInfo.value.alarmData.w.length;
     }
-  }else if(wInfo?.value.alarmData.w.length > 0){
+  } else if (wInfo?.value.alarmData.w.length > 0) {
     socketMessages.value.length += wInfo.value.alarmData.w.length;
   }
   setTimeout(() => {
@@ -758,12 +769,32 @@ function getDetailData() {
             class="h-28 rounded-lg p-1 shadow-sm transition-transform duration-300 hover:scale-105"
             @click="showImagePreview([simpleMapImgUrl])" />
 
-          <div
+          <!-- <div
             class="p-3 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg shadow-inner cursor-pointer hover:bg-gray-100 transition duration-200 border border-gray-200"
             @click="updateLocation">
             <h2 class="text-sm font-semibold text-center border-b border-gray-300 pb-1 mb-1">点击刷新位置</h2>
             <p class="text-xs text-gray-700">请在红色打卡范围（50m）进行打卡</p>
-          </div>
+          </div> -->
+          <van-cell :title="!locationButtonCooldown ? '刷新位置' : '正在获取'"
+            :label="!locationButtonCooldown ? '请在红色打卡范围(50m)进行打卡' : '当多次无法获取到定位时请刷新页面'" center
+            :clickable="!locationButtonCooldown" :border="true" @click="updateLocation"
+            class="rounded-lg shadow-inner transition duration-300 location-button" :class="{
+              'bg-gradient-to-r from-blue-50 to-sky-100': !locationButtonCooldown,
+              'bg-gray-100 opacity-75': locationButtonCooldown,
+              'pulse-animation': locationButtonCooldown
+            }">
+            <template #icon>
+              <van-icon name="location-o" class="mr-2 text-blue-500"
+                :class="{ 'opacity-50': locationButtonCooldown }" />
+            </template>
+            <template #right-icon>
+              <div class="transition-all duration-300">
+                <van-icon v-if="!locationButtonCooldown" name="refresh" class="text-sky-500" />
+                <van-loading v-else type="spinner" size="18px" color="#a0aec0" />
+              </div>
+            </template>
+          </van-cell>
+
         </div>
       </div>
     </div>
@@ -805,7 +836,7 @@ function getDetailData() {
     <div class="mt-6 p-3 bg-white/80 rounded-lg shadow-sm">
       <div class="text-center text-sm text-gray-700 font-medium">
         正在与 <span class="text-green-600 font-bold">{{ (onlineCount === 0 && isWSConnected) ? "99+" : onlineCount
-          }}</span>
+        }}</span>
         人一起征服岳麓山
       </div>
       <div class="text-center mt-2 text-sm text-gray-600">
@@ -852,6 +883,34 @@ function getDetailData() {
 </template>
 
 <style lang="less" scoped>
+.location-button {
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.location-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transform: translateX(-100%);
+  z-index: 1;
+}
+
+.pulse-animation::before {
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
 .fade-slide-enter-active {
   transition: all 0.4s ease;
 }
