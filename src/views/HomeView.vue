@@ -56,7 +56,12 @@ const showBarrageInput = ref(false);
 const pressButtonCount = ref<number>(0);
 const wxGetLocationGcj02Data = ref({
   latitude: 0,
-  longtitude: 0,
+  longitude: 0,
+  accuracy: 0,
+});
+const wxGetLocationGcj02Data = ref({
+  latitude: 0,
+  longitude: 0,
   accuracy: 0,
 });
 
@@ -310,6 +315,9 @@ const updateLocation = () => {
       // }
     },
     fail: () => {
+      wxGetLocationWgs84Data.value.latitude = 0;
+      wxGetLocationWgs84Data.value.longitude = 0;
+      wxGetLocationWgs84Data.value.accuracy = 0;
       currentLocation.value = '获取位置失败，请重试';
       canCheckIn.value = false;
       showNotify({ type: 'danger', message: '获取位置失败，请检查定位权限' });
@@ -324,7 +332,7 @@ const updateLocation = () => {
         position: new AMap.LngLat(res.longitude, res.latitude),
         title: '当前位置'
       });
-      wxGetLocationGcj02Data.value.longtitude = res.longitude;
+      wxGetLocationGcj02Data.value.longitude = res.longitude;
       wxGetLocationGcj02Data.value.latitude = res.latitude;
       wxGetLocationGcj02Data.value.accuracy = res.accuracy;
       map.value?.remove(map.value.getAllOverlays('marker'));
@@ -334,7 +342,7 @@ const updateLocation = () => {
       map.value?.setCenter([res.longitude, res.latitude]);
     },
     fail: () => {
-      wxGetLocationGcj02Data.value.longtitude = 0;
+      wxGetLocationGcj02Data.value.longitude = 0;
       wxGetLocationGcj02Data.value.latitude = 0;
       wxGetLocationGcj02Data.value.accuracy = 0;
     }
@@ -705,22 +713,24 @@ function getDetailData() {
 
 function getWgs84Gcj02Data() {
   if (pressButtonCount.value >= 2) {
-    let [gcj02Lng, gcj02Lat] = wgs84ToGcj02New(wxGetLocationGcj02Data.value.latitude, wxGetLocationGcj02Data.value.longtitude);
+    let [gcj02LngNew, gcj02LatNew] = wgs84ToGcj02New(wxGetLocationWgs84Data.value.latitude, wxGetLocationWgs84Data.value.longitude);
+    let [gcj02LngOld, gcj02LatOld] = wgs84ToGcj02(wxGetLocationWgs84Data.value.latitude, wxGetLocationWgs84Data.value.longitude);
 
-    alert('1 wx.getLocation'
+    alert('location raw data'
+      + '\n1 wx.getLocation'
       + '\ntype: wgs84'
-      + '\nres.latitude ' + form.value.latitude
-      + '\nres.longitude ' + form.value.longitude
-      + '\nres.accuracy ' + form.value.accuracy
+      + '\nres.latitude ' + wxGetLocationWgs84Data.value.latitude
+      + '\nres.longitude ' + wxGetLocationWgs84Data.value.longitude
+      + '\nres.accuracy ' + wxGetLocationWgs84Data.value.accuracy
       + '\n2 wx.getLocation'
       + '\ntype: gcj02'
       + '\nres.latitude ' + wxGetLocationGcj02Data.value.latitude
-      + '\nres.longitude ' + wxGetLocationGcj02Data.value.longtitude
+      + '\nres.longitude ' + wxGetLocationGcj02Data.value.longitude
       + '\nres.accuracy ' + wxGetLocationGcj02Data.value.accuracy
-      + '\n3 wgs84-gcj02'
+      + '\n3 wgs84-gcj02(new, old)'
       + '\ntype: gcj02'
-      + '\nres.latitude ' + gcj02Lng
-      + '\nres.longitude ' + gcj02Lat
+      + '\nres.latitude ' + gcj02LngNew + " " + gcj02LngOld
+      + '\nres.longitude ' + gcj02LatNew + " " + gcj02LatOld
       + '\nres.accuracy ' + wxGetLocationGcj02Data.value.accuracy
     );
   }
