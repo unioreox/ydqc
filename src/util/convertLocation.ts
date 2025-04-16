@@ -48,7 +48,7 @@ export function wgs84ToGcj02(latitude:any , longitude: any) {
     }
 
     // return wgs84 ? `${wgs84[0]},${wgs84[1]}` : '';
-    return gcj02 ? `${gcj02[0]},${gcj02[1]}` : '';
+    return [gcj02[0], gcj02[1]];
 }
 
 // function Empty() {

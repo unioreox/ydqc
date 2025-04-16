@@ -44,7 +44,7 @@ const currentStage = ref(-1);
 const currentLocation = ref('正在获取位置...');
 const canCheckIn = ref(false);
 const showSuccessPopup = ref(false);
-const map = ref<any | null>(null);
+const map = ref<AMap.Map | null>(null);
 const isLoading = ref(true);
 const isSubmitting = ref(false);
 const checkPoints = ref<CheckPoint[]>([]);
@@ -54,8 +54,8 @@ const showBarrageInput = ref(false);
 // 协助模式
 const pressButtonCount = ref<number>(0);
 const wxGetLocationWgs84Data = ref({
-  latitude: 0,
-  longitude: 0,
+  latitude: 28.195522,
+  longitude: 112.93388,
   accuracy: -1,
 });
 
@@ -142,10 +142,10 @@ const drawCircleHandle = async () => {
     if(!point.longitude || !point.latitude){
       return;
     }
-    const gcj02Data: any = wgs84ToGcj02(point.longitude, point.latitude, "WGS84");
+    const gcj02Data: any = wgs84ToGcj02(point.latitude, point.longitude);
     console.log("添加打卡指示");
     new AMap.Circle({
-      center: new AMap.LngLat(gcj02Data[0], gcj02Data[1]),
+      center: new AMap.LngLat(gcj02Data[1], gcj02Data[0]),
       radius: 50,
       strokeColor: "#ff0000",
       strokeOpacity: 1,
@@ -728,8 +728,8 @@ function getWgs84Gcj02Data() {
       + '\nres.accuracy ' + wxGetLocationWgs84Data.value.accuracy
       + '\n\nwgs84ToGcj02'
       + '\ntype: gcj02'
-      + '\nres.latitude ' + gcj02Data[1]
-      + '\nres.longitude ' + gcj02Data[0]
+      + '\nres.latitude ' + gcj02Data[0]
+      + '\nres.longitude ' + gcj02Data[1]
       + '\nres.accuracy ' + wxGetLocationWgs84Data.value.accuracy
     );
   }
