@@ -27,6 +27,7 @@ const onlineCount = ref(0);
 import simpleMapImgUrl from "@/assets/simpleMap.png";
 import type { WeatherData } from "@/types/weather";
 import type { BuildInfo } from "@/types/buildInfo";
+import { parseBounds } from 'html2canvas/dist/types/css/layout/bounds';
 
 const userStore = useUserStore();
 const curRecord = ref<RecordVo>({
@@ -251,7 +252,7 @@ const updateLocation = () => {
       const strIn = res.latitude + "," + res.longitude;
       const gcj02PositionRaw = wgs84ToGcj02(strIn);
       alert(gcj02PositionRaw + " " + typeof gcj02PositionRaw[0]);
-      const gcj02Position = parseFloat(gcj02PositionRaw);
+      const gcj02Position = [parseFloat(gcj02PositionRaw[0]), parseFloat(gcj02PositionRaw[1])];
       alert(gcj02Position + " " + typeof gcj02Position[0]);
 
       matchedPoint.value = checkPoints.value.find(point => {
@@ -720,8 +721,8 @@ function getDetailData() {
 
 function getWgs84Gcj02Data() {
   if (pressButtonCount.value >= 2) {
-    let gcj02DataC = wgs84ToGcj02(wxGetLocationWgs84Data.value.latitude, wxGetLocationWgs84Data.value.longitude) ?? [0, 0];
-    let gcj02DataB = wgs84ToGcj02(28.16178, 112.92672) ?? [0, 0];
+    let gcj02DataRaw = wgs84ToGcj02(wxGetLocationWgs84Data.value.latitude + "," +wxGetLocationWgs84Data.value.longitude);
+    let gcj02Data = parseFloat(gcj02DataRaw);
 
     alert('原始坐标信息'
       + '\n\nwx.getLocation'
@@ -731,9 +732,8 @@ function getWgs84Gcj02Data() {
       + '\nres.accuracy ' + wxGetLocationWgs84Data.value.accuracy
       + '\n\nwgs84ToGcj02'
       + '\ntype: gcj02'
-      + '\n' + gcj02DataB
-      + '\nres.latitude ' + gcj02DataC[0].toFixed(6)
-      + '\nres.longitude ' + gcj02DataC[1].toFixed(6)
+      + '\nres.latitude ' + gcj02Data[0].toFixed(6)
+      + '\nres.longitude ' + gcj02Data[1].toFixed(6)
       + '\nres.accuracy ' + wxGetLocationWgs84Data.value.accuracy
     );
   }
