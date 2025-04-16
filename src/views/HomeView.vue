@@ -250,7 +250,7 @@ const updateLocation = () => {
     type: 'wgs84',
     success: async (res) => {
       currentLocation.value = ` 纬度: ${res.latitude}, 经度: ${res.longitude}`;
-      const gcj02Position: any = wgs84ToGcj02(res.latitude, res.longitude);
+      const gcj02Position = wgs84ToGcj02(res.latitude, res.longitude);
 
       matchedPoint.value = checkPoints.value.find(point => {
         const distance = AMap.GeometryUtil.distance([res.longitude, res.latitude], [point.longitude, point.latitude]);
@@ -282,7 +282,7 @@ const updateLocation = () => {
       form.value.accuracy = res.accuracy.toString();
 
       const marker = new AMap.Marker({
-        position: new AMap.LngLat(gcj02Position[1], gcj02Position[0]),
+        position: new AMap.LngLat(gcj02Position[1].toFixed(5), gcj02Position[0].toFixed(5)),
         title: '当前位置'
       });
 
@@ -290,7 +290,7 @@ const updateLocation = () => {
       map.value?.add(marker);
       await drawCircleHandle();
       map.value?.setZoom(17);
-      map.value?.setCenter([gcj02Position[1], gcj02Position[0]]);
+      map.value?.setCenter([gcj02Position[1].toFixed(5), gcj02Position[0].toFixed(5)]);
 
       // if (map.value) {
       //   const numbers = wgs84ToGcj02(res.longitude, res.latitude);
@@ -718,7 +718,8 @@ function getDetailData() {
 
 function getWgs84Gcj02Data() {
   if (pressButtonCount.value >= 2) {
-    let gcj02Data = wgs84ToGcj02(wxGetLocationWgs84Data.value.latitude, wxGetLocationWgs84Data.value.longitude) ?? [0, 0];
+    let gcj02DataC = wgs84ToGcj02(wxGetLocationWgs84Data.value.latitude, wxGetLocationWgs84Data.value.longitude) ?? [0, 0];
+    // let gcj02Data = wgs84ToGcj02(28.16178, 112.92672) ?? [0, 0];
 
     alert('原始坐标信息'
       + '\n\nwx.getLocation'
@@ -728,8 +729,8 @@ function getWgs84Gcj02Data() {
       + '\nres.accuracy ' + wxGetLocationWgs84Data.value.accuracy
       + '\n\nwgs84ToGcj02'
       + '\ntype: gcj02'
-      + '\nres.latitude ' + gcj02Data[0]
-      + '\nres.longitude ' + gcj02Data[1]
+      + '\nres.latitude ' + gcj02DataC[0].toFixed(5)
+      + '\nres.longitude ' + gcj02DataC[1].toFixed(5)
       + '\nres.accuracy ' + wxGetLocationWgs84Data.value.accuracy
     );
   }
