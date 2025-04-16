@@ -249,8 +249,9 @@ const updateLocation = () => {
       currentLocation.value = ` 纬度: ${res.latitude}, 经度: ${res.longitude}`;
       alert(res.latitude + " " + res.longitude + " " + typeof res.latitude)
       const strIn = res.latitude + "," + res.longitude;
-      const gcj02Position = wgs84ToGcj02(strIn);
-      alert(gcj02Position + " " + typeof gcj02Position[0])
+      const gcj02PositionRaw = wgs84ToGcj02(strIn);
+      alert(gcj02PositionRaw + " " + typeof gcj02PositionRaw[0]);
+      gcj02Position = parseFloat(gcj02PositionRaw);
 
       matchedPoint.value = checkPoints.value.find(point => {
         const distance = AMap.GeometryUtil.distance([res.longitude, res.latitude], [point.longitude, point.latitude]);
