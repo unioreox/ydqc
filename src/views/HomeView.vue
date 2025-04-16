@@ -143,7 +143,8 @@ const drawCircleHandle = async () => {
     if(!point.longitude || !point.latitude){
       return;
     }
-    const gcj02Data: any = wgs84ToGcj02(point.latitude, point.longitude);
+    const gcj02DataRaw: any = wgs84ToGcj02(point.latitude + "," + point.longitude);
+    const gcj02Data = [parseFloat(gcj02DataRaw[0]), parseFloat(gcj02DataRaw[1])];
     console.log("添加打卡指示");
     new AMap.Circle({
       center: new AMap.LngLat(gcj02Data[1], gcj02Data[0]),
@@ -722,7 +723,7 @@ function getDetailData() {
 function getWgs84Gcj02Data() {
   if (pressButtonCount.value >= 2) {
     let gcj02DataRaw = wgs84ToGcj02(wxGetLocationWgs84Data.value.latitude + "," +wxGetLocationWgs84Data.value.longitude);
-    let gcj02Data = parseFloat(gcj02DataRaw);
+    let gcj02Data = [parseFloat(gcj02DataRaw[0]),parseFloat(gcj02DataRaw[1])];
 
     alert('原始坐标信息'
       + '\n\nwx.getLocation'
@@ -732,8 +733,8 @@ function getWgs84Gcj02Data() {
       + '\nres.accuracy ' + wxGetLocationWgs84Data.value.accuracy
       + '\n\nwgs84ToGcj02'
       + '\ntype: gcj02'
-      + '\nres.latitude ' + gcj02Data[0].toFixed(6)
-      + '\nres.longitude ' + gcj02Data[1].toFixed(6)
+      + '\nres.latitude ' + gcj02Data[0]
+      + '\nres.longitude ' + gcj02Data[1]
       + '\nres.accuracy ' + wxGetLocationWgs84Data.value.accuracy
     );
   }
