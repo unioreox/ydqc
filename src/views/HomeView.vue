@@ -223,9 +223,6 @@ const encryptDataAndCheckInHandle = async () => {
 
 const locationButtonCooldown = ref(false);
 const updateLocation = () => {
-  console.log("[check]wgs84ToGcj02 初始值" + wgs84ToGcj02(0, 0))
-  console.log("[check]wgs84ToGcj02 计算值" + wgs84ToGcj02(28.161783, 112.92671))
-  console.log("[check]wgs84ToGcj02 期待值" + [28.158673101633696, 112.93213203851515])
   pressButtonCount.value++;
   if (locationButtonCooldown.value) return;
 
@@ -250,7 +247,10 @@ const updateLocation = () => {
     type: 'wgs84',
     success: async (res) => {
       currentLocation.value = ` 纬度: ${res.latitude}, 经度: ${res.longitude}`;
-      const gcj02Position = wgs84ToGcj02(res.latitude + "," + res.longitude);
+      alert(res.latitude + " " + res.longitude + " " + typeof res.latitude)
+      const strIn = res.latitude + "," + res.longitude;
+      const gcj02Position = wgs84ToGcj02(strIn);
+      alert(gcj02Position + " " + typeof gcj02Position[0])
 
       matchedPoint.value = checkPoints.value.find(point => {
         const distance = AMap.GeometryUtil.distance([res.longitude, res.latitude], [point.longitude, point.latitude]);
@@ -282,7 +282,7 @@ const updateLocation = () => {
       form.value.accuracy = res.accuracy.toString();
 
       const marker = new AMap.Marker({
-        position: new AMap.LngLat(gcj02Position[1].toFixed(6), gcj02Position[0].toFixed(6)),
+        position: new AMap.LngLat(gcj02Position[1], gcj02Position[0]),
         title: '当前位置'
       });
 
@@ -290,7 +290,7 @@ const updateLocation = () => {
       map.value?.add(marker);
       await drawCircleHandle();
       map.value?.setZoom(17);
-      map.value?.setCenter([gcj02Position[1].toFixed(6), gcj02Position[6].toFixed(5)]);
+      map.value?.setCenter([gcj02Position[1], gcj02Position[0]]);
 
       // if (map.value) {
       //   const numbers = wgs84ToGcj02(res.longitude, res.latitude);
