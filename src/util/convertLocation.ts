@@ -2,7 +2,9 @@ const X_PI = Math.PI * 3000.0 / 180.0;
 const PI = Math.PI;
 const RADIUS = 6378137.0;
 
-export function wgs84ToGcj02(latitude:any , longitude: any) {
+export function wgs84ToGcj02(strIn) {
+    let latLonStr = strIn;
+    let [latitude, longitude] = latLonStr.split(',').map(Number);
     if (isNaN(latitude) || isNaN(longitude)) {
         console.log("坐标值错误, 无法计算")
         return;
