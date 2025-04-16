@@ -249,8 +249,10 @@ const updateLocation = () => {
   wx.getLocation({
     type: 'wgs84',
     success: async (res) => {
+      alert(` 纬度: ${res.latitude}, 经度: ${res.longitude}`)
       currentLocation.value = ` 纬度: ${res.latitude}, 经度: ${res.longitude}`;
       const gcj02Position = wgs84ToGcj02(res.latitude, res.longitude);
+      alert(gcj02Position)
 
       matchedPoint.value = checkPoints.value.find(point => {
         const distance = AMap.GeometryUtil.distance([res.longitude, res.latitude], [point.longitude, point.latitude]);
@@ -281,6 +283,7 @@ const updateLocation = () => {
       form.value.longitude = res.longitude.toString();
       form.value.accuracy = res.accuracy.toString();
 
+      alert(gcj02Position[1].toFixed(6) + " " + gcj02Position[0].toFixed(6))
       const marker = new AMap.Marker({
         position: new AMap.LngLat(gcj02Position[1].toFixed(6), gcj02Position[0].toFixed(6)),
         title: '当前位置'
