@@ -748,8 +748,8 @@ function getDetailData() {
       + '\ntype: gcj02'
       + '\nstandard: GB 20263-2006'
       + '\nresolution: gcoord high accuracy'
-      + '\nlatitude ' + result[0].toString()
-      + '\nlongitude ' + result[1].toString()
+      + '\nlatitude ' + result[1].toString()
+      + '\nlongitude ' + result[0].toString()
       + '\naccuracy ' + wxGetLocationWgs84Data.value.accuracy.toString()
       ,
   })
