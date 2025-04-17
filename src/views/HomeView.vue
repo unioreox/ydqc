@@ -729,22 +729,24 @@ function getDetailData() {
     title: "详细信息",
     message:
       "buildTime: " + new Date(jsonInfo.value.time).toLocaleString()
-      + "\ncommitId: " + jsonInfo.value.commitInfo.commitId
-      + "\ncommitMsg: " + jsonInfo.value.commitInfo.commitMessage
-      + "\ncommitDiff: " + jsonInfo.value.commitInfo.fileStats
-      + "\ncommitTag: " + jsonInfo.value.commitInfo.tagInfo
+      + "\nId: " + jsonInfo.value.commitInfo.commitId
+      + "\nMsg: " + jsonInfo.value.commitInfo.commitMessage
+      + "\nDiff: " + jsonInfo.value.commitInfo.fileStats
+      + "\nTag: " + jsonInfo.value.commitInfo.tagInfo
       + "\nonBranch: " + jsonInfo.value.commitInfo.branchName
-      + "\ngetWgs84Gcj02Data: Press getLocation Button Twice"
-      + '\n\nwx.getLocation'
+      + "\ngetWgs84Gcj02Data: wait for dev"
+      + '\n\n<b>wx.getLocation</b>'
       + '\ntype: wgs84'
-      + '\nres.latitude ' + wxGetLocationWgs84Data.value.latitude.toString()
-      + '\nres.longitude ' + wxGetLocationWgs84Data.value.longitude.toString()
-      + '\nres.accuracy ' + wxGetLocationWgs84Data.value.accuracy.toString()
-      + '\n\nwgs84ToGcj02'
+      + '\nresolution: gnss'
+      + '\nlatitude ' + wxGetLocationWgs84Data.value.latitude.toString()
+      + '\nlongitude ' + wxGetLocationWgs84Data.value.longitude.toString()
+      + '\naccuracy ' + wxGetLocationWgs84Data.value.accuracy.toString()
+      + '\n\n<b>wgs84ToGcj02</b>'
       + '\ntype: gcj02'
-      + '\nres.latitude ' + result[0].toString()
-      + '\nres.longitude ' + result[1].toString()
-      + '\nres.accuracy ' + wxGetLocationWgs84Data.value.accuracy.toString()
+      + '\nresolution: gcoord'
+      + '\nlatitude ' + result[0].toString()
+      + '\nlongitude ' + result[1].toString()
+      + '\naccuracy ' + wxGetLocationWgs84Data.value.accuracy.toString()
       ,
   })
     .then(() => { })
