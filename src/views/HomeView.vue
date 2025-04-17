@@ -12,6 +12,7 @@ import wx from "weixin-js-sdk";
 import { io, Socket } from "socket.io-client";
 import getCanvasFingerPrint from "@/util/canvasFingerPrint"
 import Clarity from '@microsoft/clarity';
+import markerIconUrl from '@/assets/marker.svg';
 
 // WGS84 To GCJ02
 // import { wgs84ToGcj02 } from "@/util/convertLocation";
@@ -180,9 +181,9 @@ const initMap = async () => {
     });
 
     map.value = new AMap.Map("amap-container", {
-      layers: [new AMap.TileLayer.Satellite(),
-        new AMap.TileLayer.Traffic({opacity: 0.5}), 
-        new AMap.TileLayer.RoadNet({opacity: 0.5})],
+      // layers: [new AMap.TileLayer.Satellite(),
+      //   new AMap.TileLayer.Traffic({opacity: 0.5}), 
+      //   new AMap.TileLayer.RoadNet({opacity: 0.5})],
       viewMode: "3D",
       zoom: 14,
       center: [form.value.longitude, form.value.latitude],
@@ -245,6 +246,8 @@ const updateLocation = () => {
 
   // 更新最后一次获取位置的时间
   lastUpdateLocationTime.value = Date.now();
+
+  drawCircleHandle();
 
   wx.getNetworkType({
     success: function (res) {
@@ -309,7 +312,7 @@ const updateLocation = () => {
 
       map.value?.remove(map.value.getAllOverlays('marker'));
       map.value?.add(marker);
-      await drawCircleHandle();
+      // await drawCircleHandle();
       map.value?.setZoom(17);
       map.value?.setCenter([result[0], result[1]]);
 
@@ -380,6 +383,19 @@ const updateLocation = () => {
     locationButtonCooldown.value = false;
   }, 3000);
 };
+
+function debugMarker(){
+  const marker = new AMap.Marker({
+        position: new AMap.LngLat(112.932187, 28.158230),
+        title: '当前位置',
+        icon: markerIconUrl,
+        content: "",
+        label: {content: 'DEBUG'}
+      });
+      map.value?.remove(map.value.getAllOverlays('marker'));
+      map.value?.add(marker);
+      map.value?.setCenter(112.932187, 28.158230);
+}
 
 const performCheckIn = async () => {
 
@@ -492,6 +508,11 @@ onMounted(async () => {
     // 第一次必须异步请求
     await getWeather();
     await getAnnouncement();
+
+    if(import.meta.env.MODE === 'development'){
+      console.log("DEV MODE");
+      debugMarker();
+    }
   } catch (error) {
     console.error('Initialization failed:', error);
     showNotify({ type: 'danger', message: '初始化失败，请刷新重试' });
