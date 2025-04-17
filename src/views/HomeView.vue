@@ -30,6 +30,7 @@ const onlineCount = ref(0);
 import simpleMapImgUrl from "@/assets/simpleMap.png";
 import type { WeatherData } from "@/types/weather";
 import type { BuildInfo } from "@/types/buildInfo";
+import { opacity } from 'html2canvas/dist/types/css/property-descriptors/opacity';
 
 const userStore = useUserStore();
 const curRecord = ref<RecordVo>({
@@ -180,6 +181,9 @@ const initMap = async () => {
     });
 
     map.value = new AMap.Map("amap-container", {
+      layers: [new AMap.TileLayer.Satellite(),
+        new AMap.TileLayer.Traffic({opacity: 0.5}), 
+        new AMap.TileLayer.RoadNet({opacity: 0.5})],
       viewMode: "3D",
       zoom: 14,
       center: [form.value.longitude, form.value.latitude],
@@ -734,7 +738,6 @@ function getDetailData() {
       + "\nDiff: " + jsonInfo.value.commitInfo.fileStats
       + "\nTag: " + jsonInfo.value.commitInfo.tagInfo
       + "\nonBranch: " + jsonInfo.value.commitInfo.branchName
-      + "\ngetWgs84Gcj02Data: wait for dev"
       + '\n\n<b>wx.getLocation</b>'
       + '\ntype: wgs84'
       + '\nresolution: gnss'
@@ -743,7 +746,8 @@ function getDetailData() {
       + '\naccuracy ' + wxGetLocationWgs84Data.value.accuracy.toString()
       + '\n\n<b>wgs84ToGcj02</b>'
       + '\ntype: gcj02'
-      + '\nresolution: gcoord'
+      + '\nstandard: GB 20263-2006'
+      + '\nresolution: gcoord high accuracy'
       + '\nlatitude ' + result[0].toString()
       + '\nlongitude ' + result[1].toString()
       + '\naccuracy ' + wxGetLocationWgs84Data.value.accuracy.toString()
