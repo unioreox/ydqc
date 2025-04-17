@@ -754,29 +754,6 @@ function getDetailData() {
 
 function getWgs84Gcj02Data() {
   // 预留协助接口
-  if (pressButtonCount.value >= 2) {
-    // let gcj02DataRaw = wgs84ToGcj02(wxGetLocationWgs84Data.value.latitude + "," +wxGetLocationWgs84Data.value.longitude);
-    // let gcj02Data = [parseFloat(gcj02DataRaw[0]),parseFloat(gcj02DataRaw[1])];
-    var result = gcoord.transform(
-        // 经纬度坐标
-        [wxGetLocationWgs84Data.value.latitude * 1, wxGetLocationWgs84Data.value.longitude * 1],
-        gcoord.WGS84,               // 当前坐标系
-        gcoord.BD09                 // 目标坐标系
-    );
-
-    alert('原始坐标信息'
-      + '\n\nwx.getLocation'
-      + '\ntype: wgs84'
-      + '\nres.latitude ' + wxGetLocationWgs84Data.value.latitude
-      + '\nres.longitude ' + wxGetLocationWgs84Data.value.longitude
-      + '\nres.accuracy ' + wxGetLocationWgs84Data.value.accuracy
-      + '\n\nwgs84ToGcj02'
-      + '\ntype: gcj02'
-      + '\nres.latitude ' + result[0]
-      + '\nres.longitude ' + result[1]
-      + '\nres.accuracy ' + wxGetLocationWgs84Data.value.accuracy
-    );
-  }
 }
 </script>
 
