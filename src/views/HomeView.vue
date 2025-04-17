@@ -149,7 +149,7 @@ const drawCircleHandle = async () => {
       // 经纬度坐标
       [point.latitude * 1, point.longitude * 1],
       gcoord.WGS84,               // 当前坐标系
-      gcoord.BD09                 // 目标坐标系
+      gcoord.GCJ02                // 目标坐标系
     );
 
     // const gcj02DataRaw: any = wgs84ToGcj02(point.latitude + "," + point.longitude);
@@ -296,7 +296,7 @@ const updateLocation = () => {
         // 经纬度坐标
         [res.latitude * 1, res.longitude * 1],
         gcoord.WGS84,               // 当前坐标系
-        gcoord.BD09                 // 目标坐标系
+        gcoord.GCJ02                 // 目标坐标系
       );
 
       const marker = new AMap.Marker({
@@ -721,7 +721,7 @@ function getDetailData() {
         // 经纬度坐标
         [wxGetLocationWgs84Data.value.latitude * 1, wxGetLocationWgs84Data.value.longitude * 1],
         gcoord.WGS84,               // 当前坐标系
-        gcoord.BD09                 // 目标坐标系
+        gcoord.GCJ02                 // 目标坐标系
     );
   showDialog({
     messageAlign: "left",
