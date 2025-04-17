@@ -147,7 +147,7 @@ const drawCircleHandle = async () => {
     }
     var result = gcoord.transform(
       // 经纬度坐标
-      [point.latitude * 1, point.longitude * 1],
+      [point.longitude * 1, point.latitude * 1],
       gcoord.WGS84,               // 当前坐标系
       gcoord.GCJ02                // 目标坐标系
     );
@@ -294,7 +294,7 @@ const updateLocation = () => {
 
       var result = gcoord.transform(
         // 经纬度坐标
-        [res.latitude * 1, res.longitude * 1],
+        [res.longitude * 1, res.latitude * 1],
         gcoord.WGS84,               // 当前坐标系
         gcoord.GCJ02                 // 目标坐标系
       );
@@ -719,7 +719,7 @@ function getDetailData() {
   getWgs84Gcj02Data();
   var result = gcoord.transform(
         // 经纬度坐标
-        [wxGetLocationWgs84Data.value.latitude * 1, wxGetLocationWgs84Data.value.longitude * 1],
+        [wxGetLocationWgs84Data.value.longitude * 1, wxGetLocationWgs84Data.value.latitude * 1],
         gcoord.WGS84,               // 当前坐标系
         gcoord.GCJ02                 // 目标坐标系
     );
