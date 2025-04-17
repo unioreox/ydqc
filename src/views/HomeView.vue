@@ -10,9 +10,12 @@ import router from "@/router";
 import { useUserStore } from "@/stores/user";
 import wx from "weixin-js-sdk";
 import { io, Socket } from "socket.io-client";
-import { wgs84ToGcj02 } from "@/util/convertLocation";
 import getCanvasFingerPrint from "@/util/canvasFingerPrint"
 import Clarity from '@microsoft/clarity';
+
+// WGS84 To GCJ02
+// import { wgs84ToGcj02 } from "@/util/convertLocation";
+import gcoord from 'gcoord';
 
 const socketLocation = import.meta.env.MODE === 'development' ? "http://localhost:9092" : "";
 
@@ -142,11 +145,18 @@ const drawCircleHandle = async () => {
     if(!point.longitude || !point.latitude){
       return;
     }
-    const gcj02DataRaw: any = wgs84ToGcj02(point.latitude + "," + point.longitude);
-    const gcj02Data = [parseFloat(gcj02DataRaw[0]), parseFloat(gcj02DataRaw[1])];
+    var result = gcoord.transform(
+      // 经纬度坐标
+      [point.latitude * 1, point.longitude * 1],
+      gcoord.WGS84,               // 当前坐标系
+      gcoord.BD09                 // 目标坐标系
+    );
+
+    // const gcj02DataRaw: any = wgs84ToGcj02(point.latitude + "," + point.longitude);
+    // const gcj02Data = [parseFloat(gcj02DataRaw[0]), parseFloat(gcj02DataRaw[1])];
     console.log("添加打卡指示");
     new AMap.Circle({
-      center: new AMap.LngLat(gcj02Data[1], gcj02Data[0]),
+      center: new AMap.LngLat(result[0], result[1]),
       radius: 50,
       strokeColor: "#ff0000",
       strokeOpacity: 1,
@@ -248,12 +258,10 @@ const updateLocation = () => {
     type: 'wgs84',
     success: async (res) => {
       currentLocation.value = ` 纬度: ${res.latitude}, 经度: ${res.longitude}`;
-      //alert(res.latitude + " " + res.longitude + " " + typeof res.latitude)
-      const strIn = res.latitude + "," + res.longitude;
-      const gcj02PositionRaw = wgs84ToGcj02(strIn);
-      //alert(gcj02PositionRaw + " " + typeof gcj02PositionRaw[0]);
-      const gcj02Position = [parseFloat(gcj02PositionRaw[0]), parseFloat(gcj02PositionRaw[1])];
-      //alert(gcj02Position + " " + typeof gcj02Position[0]);
+
+      // const strIn = res.latitude + "," + res.longitude;
+      // const gcj02PositionRaw = wgs84ToGcj02(strIn);
+      // const gcj02Position = [parseFloat(gcj02PositionRaw[0]), parseFloat(gcj02PositionRaw[1])];
 
       matchedPoint.value = checkPoints.value.find(point => {
         const distance = AMap.GeometryUtil.distance([res.longitude, res.latitude], [point.longitude, point.latitude]);
@@ -284,8 +292,15 @@ const updateLocation = () => {
       form.value.longitude = res.longitude.toString();
       form.value.accuracy = res.accuracy.toString();
 
+      var result = gcoord.transform(
+        // 经纬度坐标
+        [res.latitude * 1, res.longitude * 1],
+        gcoord.WGS84,               // 当前坐标系
+        gcoord.BD09                 // 目标坐标系
+      );
+
       const marker = new AMap.Marker({
-        position: new AMap.LngLat(gcj02Position[1], gcj02Position[0]),
+        position: new AMap.LngLat(result[0], result[1]),
         title: '当前位置'
       });
 
@@ -293,7 +308,7 @@ const updateLocation = () => {
       map.value?.add(marker);
       await drawCircleHandle();
       map.value?.setZoom(17);
-      map.value?.setCenter([gcj02Position[1], gcj02Position[0]]);
+      map.value?.setCenter([result[0], result[1]]);
 
       // if (map.value) {
       //   const numbers = wgs84ToGcj02(res.longitude, res.latitude);
@@ -702,6 +717,12 @@ async function getWeatherWithPolling(interval = 10000) {
 
 function getDetailData() {
   getWgs84Gcj02Data();
+  var result = gcoord.transform(
+        // 经纬度坐标
+        [wxGetLocationWgs84Data.value.latitude * 1, wxGetLocationWgs84Data.value.longitude * 1],
+        gcoord.WGS84,               // 当前坐标系
+        gcoord.BD09                 // 目标坐标系
+    );
   showDialog({
     messageAlign: "left",
     allowHtml: true,
@@ -714,15 +735,32 @@ function getDetailData() {
       + "\ncommitTag: " + jsonInfo.value.commitInfo.tagInfo
       + "\nonBranch: " + jsonInfo.value.commitInfo.branchName
       + "\ngetWgs84Gcj02Data: Press getLocation Button Twice"
+      + '\n\nwx.getLocation'
+      + '\ntype: wgs84'
+      + '\nres.latitude ' + wxGetLocationWgs84Data.value.latitude.toString()
+      + '\nres.longitude ' + wxGetLocationWgs84Data.value.longitude.toString()
+      + '\nres.accuracy ' + wxGetLocationWgs84Data.value.accuracy.toString()
+      + '\n\nwgs84ToGcj02'
+      + '\ntype: gcj02'
+      + '\nres.latitude ' + result[0].toString()
+      + '\nres.longitude ' + result[1].toString()
+      + '\nres.accuracy ' + wxGetLocationWgs84Data.value.accuracy.toString()
       ,
   })
     .then(() => { })
 }
 
 function getWgs84Gcj02Data() {
+  // 预留协助接口
   if (pressButtonCount.value >= 2) {
-    let gcj02DataRaw = wgs84ToGcj02(wxGetLocationWgs84Data.value.latitude + "," +wxGetLocationWgs84Data.value.longitude);
-    let gcj02Data = [parseFloat(gcj02DataRaw[0]),parseFloat(gcj02DataRaw[1])];
+    // let gcj02DataRaw = wgs84ToGcj02(wxGetLocationWgs84Data.value.latitude + "," +wxGetLocationWgs84Data.value.longitude);
+    // let gcj02Data = [parseFloat(gcj02DataRaw[0]),parseFloat(gcj02DataRaw[1])];
+    var result = gcoord.transform(
+        // 经纬度坐标
+        [wxGetLocationWgs84Data.value.latitude * 1, wxGetLocationWgs84Data.value.longitude * 1],
+        gcoord.WGS84,               // 当前坐标系
+        gcoord.BD09                 // 目标坐标系
+    );
 
     alert('原始坐标信息'
       + '\n\nwx.getLocation'
@@ -732,8 +770,8 @@ function getWgs84Gcj02Data() {
       + '\nres.accuracy ' + wxGetLocationWgs84Data.value.accuracy
       + '\n\nwgs84ToGcj02'
       + '\ntype: gcj02'
-      + '\nres.latitude ' + gcj02Data[0]
-      + '\nres.longitude ' + gcj02Data[1]
+      + '\nres.latitude ' + result[0]
+      + '\nres.longitude ' + result[1]
       + '\nres.accuracy ' + wxGetLocationWgs84Data.value.accuracy
     );
   }
