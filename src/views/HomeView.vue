@@ -17,7 +17,7 @@ import markerIconUrl from '@/assets/marker.svg';
 // WGS84 To GCJ02
 // import { wgs84ToGcj02 } from "@/util/convertLocation";
 import gcoord from 'gcoord';
-import { AntiFakeGPS, useAntiFakeGPS } from 'anti-fakegps'
+// import { AntiFakeGPS, useAntiFakeGPS } from 'anti-fakegps'
 
 const socketLocation = import.meta.env.MODE === 'development' ? "http://localhost:9092" : "";
 
@@ -406,15 +406,15 @@ const isFakeLocation = ref({
   msg: ""
 });
 
-async function checkFakeLocation() {
-  // 获取检测结果
-  const antiFakeGPSInstance = new AntiFakeGPS;
-  const checkResult = useAntiFakeGPS().check()
-  setTimeout(()=>{
-    isFakeLocation.value.msg = JSON.stringify(checkResult) + " " + JSON.stringify(checkResult.isOk());
-    checkFakeLocation()
-  }, 10000)
-}
+// async function checkFakeLocation() {
+//   // 获取检测结果
+//   const antiFakeGPSInstance = new AntiFakeGPS;
+//   const checkResult = useAntiFakeGPS().check()
+//   setTimeout(()=>{
+//     isFakeLocation.value.msg = JSON.stringify(checkResult) + " " + JSON.stringify(checkResult.isOk());
+//     checkFakeLocation()
+//   }, 10000)
+// }
 
 function debugMarker(){
   const marker = new AMap.Marker({
