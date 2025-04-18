@@ -803,7 +803,7 @@ function getDetailData() {
       lng: wxGetLocationWgs84Data.value.longitude.toString(),
       acc: wxGetLocationWgs84Data.value.accuracy.toString()
     }
-    if(isFakeLocation){
+    if(isFakeLocation.value){
       locationData.acc = "";
     }
   showDialog({
