@@ -17,6 +17,7 @@ import markerIconUrl from '@/assets/marker.svg';
 // WGS84 To GCJ02
 // import { wgs84ToGcj02 } from "@/util/convertLocation";
 import gcoord from 'gcoord';
+import { AntiFakeGPS, useAntiFakeGPS } from 'anti-fakegps'
 
 const socketLocation = import.meta.env.MODE === 'development' ? "http://localhost:9092" : "";
 
@@ -293,10 +294,16 @@ const updateLocation = () => {
 
       wxGetLocationWgs84Data.value.latitude = res.latitude;
       wxGetLocationWgs84Data.value.longitude = res.longitude;
-      wxGetLocationWgs84Data.value.accuracy = res.accuracy;
       form.value.latitude = res.latitude.toString();
       form.value.longitude = res.longitude.toString();
-      form.value.accuracy = res.accuracy.toString();
+      if(isFakeLocation){
+        form.value.accuracy = "5173";
+        wxGetLocationWgs84Data.value.accuracy = 5173;
+      }else{
+        form.value.accuracy = res.accuracy.toString();
+        wxGetLocationWgs84Data.value.accuracy = res.accuracy;
+      }
+
 
       var result = gcoord.transform(
         // 经纬度坐标
@@ -384,6 +391,49 @@ const updateLocation = () => {
   }, 3000);
 };
 
+const isFakeLocation = ref(false);
+async function checkFakeLocation() {
+  // 获取检测结果
+  const checkResultInstance: AntiFakeGPS = new AntiFakeGPS;
+  const checkResult = useAntiFakeGPS(checkResultInstance).check()
+
+  // 根据检测结果，决定下一步操作
+  switch (checkResult.status) {
+    // 正在定位和正在检测时，提示用户正在定位，请稍等
+    case "POSITIONING": // 正在定位
+    case "CHECKING": // 正在检测
+      console.log("正在定位")
+      return
+    // 定位失败时，提示用户打开手机定位开关，并允许网页定位
+    case "POSITION_FAILED": // 定位失败
+      console.log("未开启定位权限")
+      return
+    // 定位间隔超出正常范围时，视为正在使用模拟定位
+    case "LONG_TIME_NOT_UPDATE":
+      // 在服务器记录违规行为
+      // await saveCheatRecord({ uid: 'xxx' })
+      isFakeLocation.value = true;
+      console.log("期待值错误")
+      // showConfirmDialog({ title: '警告', message: '请勿使用模拟定位等作弊软件，本次行为已被记录，如果你确实在项目现场，可继续操作，公司会二次排查，确认要继续么？' })
+      return
+  }
+
+  // 对于巡查定点拍照的场景，可以要求其停留在原地才能使用拍照功能，以应对 AnyGo 类软件
+  // 判断手机正在移动，而不是停留在原地
+  if (checkResult.pathMoved()) {
+    alert("请稍等")
+    // showNotify({ type: 'warning', message: '请在原地稍等一会再拍照...' })
+    return
+  }
+
+  // TODO 进行具体业务操作...
+  // 可使用 checkResult.longitude 和 checkResult.latitude 获取经纬度
+
+  isFakeLocation.value = false;
+  console.log("期待值正确")
+  // showNotify({ type: 'success', message: '操作成功' })
+}
+
 function debugMarker(){
   const marker = new AMap.Marker({
         position: new AMap.LngLat(112.932187, 28.158230),
@@ -394,7 +444,6 @@ function debugMarker(){
       });
       map.value?.remove(map.value.getAllOverlays('marker'));
       map.value?.add(marker);
-      map.value?.setCenter(112.932187, 28.158230);
 }
 
 const performCheckIn = async () => {
@@ -508,6 +557,8 @@ onMounted(async () => {
     // 第一次必须异步请求
     await getWeather();
     await getAnnouncement();
+    // 反虚拟定位
+    await checkFakeLocation();
 
     if(import.meta.env.MODE === 'development'){
       console.log("DEV MODE");
@@ -747,6 +798,14 @@ function getDetailData() {
         gcoord.WGS84,               // 当前坐标系
         gcoord.GCJ02                 // 目标坐标系
     );
+    const locationData = {
+      lat: wxGetLocationWgs84Data.value.latitude.toString(),
+      lng: wxGetLocationWgs84Data.value.longitude.toString(),
+      acc: wxGetLocationWgs84Data.value.accuracy.toString()
+    }
+    if(isFakeLocation){
+      locationData.acc = "";
+    }
   showDialog({
     messageAlign: "left",
     allowHtml: true,
@@ -761,16 +820,16 @@ function getDetailData() {
       + '\n\n<b>wx.getLocation</b>'
       + '\ntype: wgs84'
       + '\nresolution: gnss'
-      + '\nlatitude ' + wxGetLocationWgs84Data.value.latitude.toString()
-      + '\nlongitude ' + wxGetLocationWgs84Data.value.longitude.toString()
-      + '\naccuracy ' + wxGetLocationWgs84Data.value.accuracy.toString()
+      + '\nlatitude ' + locationData.lat
+      + '\nlongitude ' + locationData.lng
+      + '\naccuracy ' + locationData.acc
       + '\n\n<b>wgs84ToGcj02</b>'
       + '\ntype: gcj02'
       + '\nstandard: GB 20263-2006'
       + '\nresolution: gcoord high accuracy'
       + '\nlatitude ' + result[1].toString()
       + '\nlongitude ' + result[0].toString()
-      + '\naccuracy ' + wxGetLocationWgs84Data.value.accuracy.toString()
+      + '\naccuracy ' + locationData.acc
       ,
   })
     .then(() => { })
