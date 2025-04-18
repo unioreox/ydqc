@@ -158,6 +158,21 @@ const routes = [
                 component: () => import("@/views/team/TeamView.vue"),
             }
         ],
+    },
+    {
+        path: "/logout",
+        name: "登出 ",
+        component: () => import("@/layout/BasicLayout.vue"),
+        meta: {
+            hideInMenu: true,
+        },
+        children: [
+            {
+                path: "",
+                name: "加入团队",
+                component: () => import("@/views/LogOutView.vue"),
+            }
+        ],
     }
 ]
 

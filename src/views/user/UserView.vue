@@ -273,7 +273,7 @@ const showAboutDialog = (e: MouseEvent) => {
         <!-- Feedback Section -->
         <div class="bg-white bg-opacity-80 backdrop-filter backdrop-blur-lg rounded-xl shadow-lg overflow-hidden mb-4">
           <div class="p-6">
-            <h2 class="text-xl font-semibold mb-6 text-gray-800"> 遇到问题？反馈给我们 ~</h2>
+            <h2 class="text-xl font-semibold mb-6 text-gray-800"> 遇到问题？</h2>
             <RouterLink to="/feedback"
                         class="flex items-center p-4 text-gray-700 bg-gray-50 rounded-xl hover:bg-gray-100 transition-all duration-300 group hover:shadow-md">
               <MessageSquare

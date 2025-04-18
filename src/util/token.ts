@@ -14,8 +14,8 @@ export async function getToken() {
 
 export async function removeToken() {
     return new Promise<void>((resolve) => {
-        Cookies.remove('token');
-        location.replace(location.href);
+        // Cookies.remove('token');
+        location.replace("/logout");
         resolve();
     });
 }
