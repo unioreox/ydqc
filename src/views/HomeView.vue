@@ -297,7 +297,7 @@ const updateLocation = () => {
       wxGetLocationWgs84Data.value.longitude = res.longitude;
       form.value.latitude = res.latitude.toString();
       form.value.longitude = res.longitude.toString();
-      if(isFakeLocation.value){
+      if(isFakeLocation.value.state){
         if(isFakeLocation.value.ready){
           form.value.accuracy = "3715";
           wxGetLocationWgs84Data.value.accuracy = 3715;
@@ -413,7 +413,7 @@ async function checkFakeLocation() {
   setTimeout(()=>{
     isFakeLocation.value.msg = JSON.stringify(checkResult) + " " + JSON.stringify(checkResult.isOk());
     checkFakeLocation()
-  }, 3000)
+  }, 10000)
 }
 
 function debugMarker(){
