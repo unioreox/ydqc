@@ -296,9 +296,9 @@ const updateLocation = () => {
       wxGetLocationWgs84Data.value.longitude = res.longitude;
       form.value.latitude = res.latitude.toString();
       form.value.longitude = res.longitude.toString();
-      if(isFakeLocation){
-        form.value.accuracy = "5173";
-        wxGetLocationWgs84Data.value.accuracy = 5173;
+      if(isFakeLocation.value){
+        form.value.accuracy = "3715";
+        wxGetLocationWgs84Data.value.accuracy = 3715;
       }else{
         form.value.accuracy = res.accuracy.toString();
         wxGetLocationWgs84Data.value.accuracy = res.accuracy;
