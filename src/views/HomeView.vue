@@ -540,7 +540,7 @@ onMounted(async () => {
     await getWeather();
     await getAnnouncement();
     // 反虚拟定位
-    await checkFakeLocation();
+    // await checkFakeLocation();
 
     if(import.meta.env.MODE === 'development'){
       console.log("DEV MODE");
