@@ -27,39 +27,48 @@
 
 <script setup>
 // https://ca.csu.edu.cn/personalInfo/logout
+// https://ca.csu.edu.cn/authserver/logout
 import { useRouter } from 'vue-router';
 import Logo from '@/assets/logo.png';
 import Cookies from "js-cookie";
+import { showDialog } from 'vant';
 
 const router = useRouter();
 
 const goToHome = async () => {
   // TODO: 向https://ca.csu.edu.cn/personalInfo/logout POST数据 请求头Cookie带上Cookies
-  try {
-    const response = await fetch('https://ca.csu.edu.cn/personalInfo/logout', {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-Type': 'application/json',
-      }
-    });
-    if (!response.ok) {
-      throw new Error(`退出请求失败: ${response.status}`);
-    }
+  // try {
+  //   const response = await fetch('https://ca.csu.edu.cn/personalInfo/logout', {
+  //     method: 'POST',
+  //     credentials: 'include',
+  //     headers: {
+  //       'Content-Type': 'application/json',
+  //     }
+  //   });
+  //   if (!response.ok) {
+  //     throw new Error(`退出请求失败: ${response.status}`);
+  //   }
+  //   Cookies.remove('token');
+  //   router.push('/login');
+  // } catch (error) {
+  //   console.error('退出登录失败:', error);
+  //   Cookies.remove('token');
+  //   alert("本系统已注销Token, 统一身份认证系统Token注销错误\n重定向至统一身份认证登录页面强制退出")
+  //   location.replace("https://ca.csu.edu.cn/personalInfo/logout");
+  // }
+  showDialog({
+    title: '登出成功',
+    message: '点击确定后将重定向至统一身份认证系统\n此操作将注销 OAuth2.0 令牌\n注销后请重新访问ydqc.csu.edu.cn',
+  }).then(() => {
     Cookies.remove('token');
-    router.push('/login');
-  } catch (error) {
-    console.error('退出登录失败:', error);
-    Cookies.remove('token');
-    alert("本系统已注销Token, 统一身份认证系统Token注销错误\n重定向至统一身份认证登录页面强制退出")
-    location.replace("https://ca.csu.edu.cn/personalInfo/logout");
-  }
+    location.replace("https://ca.csu.edu.cn/authserver/logout");
+  });
 }
 </script>
 
 <style scoped>
 .logout-container {
-  /* min-height: 100vh; */
+  min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
