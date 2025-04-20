@@ -77,22 +77,15 @@ const fetchCollegeUsers = async () => {
 }
 
 const fetchUnionUsers = async () => {
-  showDialog({
-    title: '提示',
-    message: '工会排行榜暂未上线, 敬请期待',
-  }).then(() => {
-    // on close
+  getUnionLeaderBoard().then((res) => {
+    if (res.data?.data?.leaderBoard && res.data?.data?.lastUpdateTime) {
+      // 应murmur要求删除的工会名称
+      const delUnionName = ["测试工会1", "测试工会2", "测试工会3"];
+      unionUser.value = res.data?.data?.leaderBoard.filter(item =>
+      item.unionName && !delUnionName.includes(item.unionName));
+      lastUpdated.value = res.data.data.lastUpdateTime;
+    }
   });
-  // 取消注释即可上线
-  // getUnionLeaderBoard().then((res) => {
-  //   if (res.data?.data?.leaderBoard && res.data?.data?.lastUpdateTime) {
-  //     // 应murmur要求删除的工会名称
-  //     const delUnionName = ["测试工会1", "测试工会2", "测试工会3"];
-  //     unionUser.value = res.data?.data?.leaderBoard.filter(item => 
-  //     item.unionName && !delUnionName.includes(item.unionName));
-  //     lastUpdated.value = res.data.data.lastUpdateTime;
-  //   }
-  // });
 }
 </script>
 
