@@ -5,16 +5,20 @@ import {
   getCollegeLeaderBoard,
   getTop30UsersByBestScore,
   getUserCountLeaderBoard,
+  getUnionLeaderBoard,
+  type UnionCountLeaderBoardVo,
   type UserBestScoreLeaderBoardVo,
-  type UserCountLeaderBoardVo
+  type UserCountLeaderBoardVo,
 } from "@/api";
 import {Trophy, Medal, Clock} from 'lucide-vue-next';
+import { showDialog } from "vant";
 
 const current = ref(0);
 const lastUpdated = ref("");
 const top30User = ref<UserBestScoreLeaderBoardVo[]>([]);
 const countUser = ref<UserCountLeaderBoardVo[]>([]);
 const collegeUser = ref<CollegeCountLeaderBoardVo[]>([]);
+const unionUser = ref<UnionCountLeaderBoardVo[]>([]);
 
 const beforeChange = (index: number) => {
   console.log('beforeChange', index);
@@ -27,6 +31,9 @@ const beforeChange = (index: number) => {
       break;
     case 1:
       fetchCollegeUsers();
+      break;
+    case 2:
+      fetchUnionUsers();
       break;
   }
   return true;
@@ -61,11 +68,31 @@ const fetchCollegeUsers = async () => {
     if (res.data?.data?.leaderBoard && res.data?.data?.lastUpdateTime) {
       // 应murmur要求删除的学院名称
       const delCollegeName = ["湘雅医院", "湘雅二医院", "湘雅三医院"];
-      collegeUser.value = res.data?.data?.leaderBoard.filter(item => !delCollegeName.includes(item.collegeName));
+      collegeUser.value = res.data?.data?.leaderBoard.filter(item => 
+      item.collegeName && !delCollegeName.includes(item.collegeName));
       // collegeUser.value = res.data?.data?.leaderBoard;
       lastUpdated.value = res.data.data.lastUpdateTime;
     }
   });
+}
+
+const fetchUnionUsers = async () => {
+  showDialog({
+    title: '提示',
+    message: '工会排行榜暂未上线, 敬请期待',
+  }).then(() => {
+    // on close
+  });
+  // 取消注释即可上线
+  // getUnionLeaderBoard().then((res) => {
+  //   if (res.data?.data?.leaderBoard && res.data?.data?.lastUpdateTime) {
+  //     // 应murmur要求删除的工会名称
+  //     const delUnionName = ["测试工会1", "测试工会2", "测试工会3"];
+  //     unionUser.value = res.data?.data?.leaderBoard.filter(item => 
+  //     item.unionName && !delUnionName.includes(item.unionName));
+  //     lastUpdated.value = res.data.data.lastUpdateTime;
+  //   }
+  // });
 }
 </script>
 
@@ -134,7 +161,7 @@ const fetchCollegeUsers = async () => {
         <!--</van-tab>-->
 
         <!-- 完成次数前30 -->
-        <van-tab title="完成次数前 30 名">
+        <van-tab title="打卡排行榜">
           <div class="table-header">
             <span class="rank-column">排名</span>
             <span class="name-column">姓名</span>
@@ -219,6 +246,51 @@ const fetchCollegeUsers = async () => {
                 <div class="percent-container">
                   <div class="percent-bar" :style="{width: `${Math.min(+(college.collegePercent || 0), 100)}%`}"></div>
                   <span class="percent-text">{{ college.collegePercent }} %</span>
+                </div>
+              </div>
+            </li>
+          </ul>
+
+          <div v-else class="empty-state">
+            <div class="empty-icon">📊</div>
+            <p>暂无数据</p>
+          </div>
+        </van-tab>
+
+        <!-- 工会参与率前10 -->
+        <van-tab title="工会参与率">
+          <div class="table-header">
+            <span class="rank-column">排名</span>
+            <span class="college-column">工会</span>
+            <span class="percent-column">人次占比</span>
+          </div>
+
+          <div class="info-text">
+            这里是所有打卡次数与工会总人数的比例
+          </div>
+
+          <ul v-if="unionUser.length > 0" class="ranking-list">
+            <li v-for="(union, index) in unionUser"
+                :key="index"
+                class="ranking-item"
+                :class="{'top-rank': index < 3}"
+                :style="{'animation-delay': `${index * 0.05}s`}">
+
+              <div class="rank-column">
+                <div v-if="index === 0" class="medal gold">1</div>
+                <div v-else-if="index === 1" class="medal silver">2</div>
+                <div v-else-if="index === 2" class="medal bronze">3</div>
+                <span v-else class="normal-rank">{{ index + 1 }}</span>
+              </div>
+
+              <div class="union-column">
+                <span class="union-name">{{ union.unionName }}</span>
+              </div>
+
+              <div class="percent-column">
+                <div class="percent-container">
+                  <div class="percent-bar" :style="{width: `${Math.min(+(union.unionPercent || 0), 100)}%`}"></div>
+                  <span class="percent-text">{{ union.unionPercent }} %</span>
                 </div>
               </div>
             </li>
@@ -419,6 +491,13 @@ const fetchCollegeUsers = async () => {
   padding-left: 0.5rem;
 }
 
+.union-column {
+  width: 50%;
+  display: flex;
+  align-items: center;
+  padding-left: 0.5rem;
+}
+
 .score-column {
   width: 20%;
   display: flex;
@@ -546,6 +625,11 @@ const fetchCollegeUsers = async () => {
 }
 
 .college-name {
+  font-weight: 600;
+  color: #2d3748;
+}
+
+.union-name {
   font-weight: 600;
   color: #2d3748;
 }

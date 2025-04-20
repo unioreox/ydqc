@@ -105,7 +105,9 @@ import type {
     DeleteTeamData,
     DeleteTeamResponse,
     CancelCheckinData,
-    CancelCheckinResponse, getReviewContentResponse
+    CancelCheckinResponse, getReviewContentResponse,
+    GetUnionLeaderBoardResponse,
+    GetUnionLeaderBoardData
 } from './types.gen';
 import {client as _heyApiClient} from './client.gen';
 
@@ -446,6 +448,13 @@ export const getTop30UsersByBestScore = <ThrowOnError extends boolean = false>(o
 export const getCollegeLeaderBoard = <ThrowOnError extends boolean = false>(options?: Options<GetCollegeLeaderBoardData, ThrowOnError>) => {
     return (options?.client ?? _heyApiClient).get<GetCollegeLeaderBoardResponse, unknown, ThrowOnError>({
         url: '/leaderboard/college',
+        ...options
+    });
+};
+
+export const getUnionLeaderBoard = <ThrowOnError extends boolean = false>(options?: Options<GetUnionLeaderBoardData, ThrowOnError>) => {
+    return (options?.client ?? _heyApiClient).get<GetUnionLeaderBoardResponse, unknown, ThrowOnError>({
+        url: '/leaderboard/union',
         ...options
     });
 };

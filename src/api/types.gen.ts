@@ -315,6 +315,23 @@ export type LeaderBoardVoCollegeCountLeaderBoardVo = {
     lastUpdateTime?: string;
 };
 
+export type ApiResponseLeaderBoardVoUnionCountLeaderBoardVo = {
+    code?: number;
+    msg?: string;
+    data?: LeaderBoardVoUnionCountLeaderBoardVo;
+};
+
+export type UnionCountLeaderBoardVo = {
+    unionName?: string;
+    unionCount?: number;
+    unionPercent?: string;
+};
+
+export type LeaderBoardVoUnionCountLeaderBoardVo = {
+    leaderBoard?: Array<UnionCountLeaderBoardVo>;
+    lastUpdateTime?: string;
+};
+
 export type ApiResponseListHistoryItem = {
     code?: number;
     msg?: string;
@@ -341,6 +358,17 @@ export type ApiResponseListCollegeVo = {
 };
 
 export type CollegeVo = {
+    id?: number;
+    name?: string;
+};
+
+export type ApiResponseListUnionVo = {
+    code?: number;
+    msg?: string;
+    data?: Array<UnionVo>;
+};
+
+export type UnionVo = {
     id?: number;
     name?: string;
 };
@@ -1147,6 +1175,22 @@ export type GetCollegeLeaderBoardResponses = {
 };
 
 export type GetCollegeLeaderBoardResponse = GetCollegeLeaderBoardResponses[keyof GetCollegeLeaderBoardResponses];
+
+export type GetUnionLeaderBoardData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/leaderboard/union';
+};
+
+export type GetUnionLeaderBoardResponses = {
+    /**
+     * OK
+     */
+    200: ApiResponseLeaderBoardVoUnionCountLeaderBoardVo;
+};
+
+export type GetUnionLeaderBoardResponse = GetUnionLeaderBoardResponses[keyof GetUnionLeaderBoardResponses];
 
 export type GetHistoryData = {
     body?: never;
