@@ -80,7 +80,7 @@ const fetchUnionUsers = async () => {
   getUnionLeaderBoard().then((res) => {
     if (res.data?.data?.leaderBoard && res.data?.data?.lastUpdateTime) {
       // 应murmur要求删除的工会名称
-      const delUnionName = ["测试工会1", "测试工会2", "测试工会3"];
+      const delUnionName = ["后勤（无固定期限）"];
       unionUser.value = res.data?.data?.leaderBoard.filter(item =>
       item.unionName && !delUnionName.includes(item.unionName));
       lastUpdated.value = res.data.data.lastUpdateTime;
@@ -100,7 +100,7 @@ const fetchUnionUsers = async () => {
         </h1>
         <div class="update-info">
           <Clock class="clock-icon"/>
-          <span>上次更新: {{ lastUpdated }}</span>
+          <span>{{ lastUpdated }}</span>
         </div>
       </div>
 
