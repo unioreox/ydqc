@@ -885,11 +885,21 @@ const textUploadHandle = () => {
       // 将base64转换为Blob对象
       const blob = base64ToBlob(base64);
 
-      // 由于EXIF.getData期望一个File对象，将Blob转为File
+      // 创建blob URL
+      const blobUrl = URL.createObjectURL(blob);
+
+      // 为EXIF.js准备File对象
       const file = new File([blob], "photo.jpg", { type: blob.type }) as any;
 
+      // 创建图像对象并设置src为blob URL
+      const exifImg = new Image();
+      exifImg.src = blobUrl;
+      setTimeout(()=> {
+        testImg.value = blobUrl;
+      }, 3000)
+
       // 使用Blob/File对象获取EXIF数据
-      EXIF.getData(file, function (this: any) {
+      EXIF.getData(blobUrl, function (this: any) {
         const exifData = EXIF.getAllTags(this);
         const lat = exifData.GPSLatitude || "";
         const lng = exifData.GPSLongitude || "";
@@ -900,6 +910,10 @@ const textUploadHandle = () => {
         } else {
           showNotify({type: 'danger', message: '图片中没有定位信息'});
         }
+      });
+      EXIF.getData(exifImg, function (this: any) {
+        const exifData = EXIF.getAllTags(this);
+        console.log(exifData);
       });
     },
     cancel: () => {
