@@ -867,6 +867,7 @@ const processImage = async (localId: string): Promise<string> => {
         } else {
           imageBase64 = 'data:image/jpeg;base64,' + localData.replace(/\n/g, '');
         }
+        testImg.value = imageBase64;
         resolve(imageBase64);
       },
       fail: function (res) {
@@ -877,6 +878,7 @@ const processImage = async (localId: string): Promise<string> => {
   });
 }
 
+const testImg = ref<string>("");
 const textUploadHandle = () => {
   wx.chooseImage({
     count: 1,
@@ -888,9 +890,9 @@ const textUploadHandle = () => {
       alert(base64);
       image.src = base64 as string || "";
       console.log(image)
-      image.onload = () => {
+      image.onloadeddata = () => {
         console.log(image)
-        EXIF.getData(image.src, function (this: any) {
+        EXIF.getData(image, function (this: any) {
           const exifData = EXIF.getAllTags(this);
           const lat = exifData.GPSLatitude || "";
           const lng = exifData.GPSLongitude || "";
@@ -1049,6 +1051,7 @@ const textUploadHandle = () => {
         type="primary" size="small" class="mt-2">
       测试图片信息
     </van-button>
+    <img :src="testImg" weight="100" height="100" alt="testImg"/>
 
     <!--&lt;!&ndash; 组队打卡链接 &ndash;&gt;-->
     <!--<div class="mt-5 text-center">-->
