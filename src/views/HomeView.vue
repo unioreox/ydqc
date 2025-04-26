@@ -836,7 +836,7 @@ function getWgs84Gcj02Data() {
 
 import EXIF from 'exif-js';
 
-const processImage = async (localId: string) => {
+const processImage = async (localId: string): Promise<string> => {
   // wx.getLocalImgData({
   //   localId,
   //   success: async function (res) {
@@ -862,7 +862,7 @@ const processImage = async (localId: string) => {
       localId,
       success: function (res) {
         const localData = res.localData;
-        let imageBase64 :string = '';
+        let imageBase64: string = '';
         if (localData.indexOf('data:image') == 0) {
           imageBase64 = localData;
         } else {
@@ -888,14 +888,17 @@ const textUploadHandle = () => {
       const base64 = await processImage(res.localIds[0])
       alert(base64);
       image.src = base64 as string || "";
+      console.log(image)
       image.onload = () => {
+        console.log(image)
         // @ts-ignore
         EXIF.getData(image, function (this: any) {
           const exifData = EXIF.getAllTags(this);
           console.log(exifData);
-          const lat = EXIF.getTag(this, "GPSLatitude");
-          const lng = EXIF.getTag(this, "GPSLongitude");
-          const acc = EXIF.getTag(this, "GPSAccuracy");
+          const lat = exifData.GPSLatitude || "";
+          const lng = exifData.GPSLongitude || "";
+          console.log(lat, lng);
+          // const acc = EXIF.getTag(this, "GPSAccuracy");
 
           if (lat && lng) {
             console.log(lat, lng);
