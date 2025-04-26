@@ -13,6 +13,7 @@ import {io, Socket} from "socket.io-client";
 import getCanvasFingerPrint from "@/util/canvasFingerPrint"
 import Clarity from '@microsoft/clarity';
 import markerIconUrl from '@/assets/marker.svg';
+import EXIF from 'exif-js';
 
 // WGS84 To GCJ02
 // import { wgs84ToGcj02 } from "@/util/convertLocation";
@@ -834,8 +835,6 @@ function getWgs84Gcj02Data() {
   // 预留协助接口
 }
 
-import EXIF from 'exif-js';
-
 const processImage = async (localId: string): Promise<string> => {
   // wx.getLocalImgData({
   //   localId,
@@ -891,14 +890,11 @@ const textUploadHandle = () => {
       console.log(image)
       image.onload = () => {
         console.log(image)
-        // @ts-ignore
-        EXIF.getData(image, function (this: any) {
+        EXIF.getData(image.src, function (this: any) {
           const exifData = EXIF.getAllTags(this);
-          console.log(exifData);
           const lat = exifData.GPSLatitude || "";
           const lng = exifData.GPSLongitude || "";
           console.log(lat, lng);
-          // const acc = EXIF.getTag(this, "GPSAccuracy");
 
           if (lat && lng) {
             console.log(lat, lng);

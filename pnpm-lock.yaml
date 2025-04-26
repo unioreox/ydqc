@@ -20,6 +20,9 @@ importers:
       '@originjs/crypto-js-wasm':
         specifier: ^1.1.1
         version: 1.1.1
+      '@types/exif-js':
+        specifier: ^2.3.1
+        version: 2.3.1
       '@types/js-cookie':
         specifier: ^3.0.6
         version: 3.0.6
@@ -593,6 +596,9 @@ packages:
 
   '@types/estree@1.0.7':
     resolution: {integrity: sha512-w28IoSUCJpidD/TGviZwwMJckNESJZXFu7NBZ5YJ4mEUnNraUn9Pm8HSZm/jDF1pDWYKspWE7oVphigUPRakIQ==}
+
+  '@types/exif-js@2.3.1':
+    resolution: {integrity: sha512-vylc2UhpCygw5i1cNA0m+acpq+Ufs3m9ekFJhZ7+PZyDECh05qfmRtgJE0y9QLFZo0hnvHfP+lVkPM746of5Uw==}
 
   '@types/js-cookie@3.0.6':
     resolution: {integrity: sha512-wkw9yd1kEXOPnvEeEV1Go1MmxtBJL0RR79aOTAApecWFVu7w0NNXNqhcWgvw2YgZDYadliXkl14pa3WXw5jlCQ==}
@@ -2311,6 +2317,10 @@ snapshots:
   '@types/amap-js-api@1.4.16': {}
 
   '@types/estree@1.0.7': {}
+
+  '@types/exif-js@2.3.1':
+    dependencies:
+      '@types/node': 20.17.29
 
   '@types/js-cookie@3.0.6': {}
 

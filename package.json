@@ -15,6 +15,7 @@
     "@hey-api/client-axios": "^0.6.3",
     "@microsoft/clarity": "^1.0.0",
     "@originjs/crypto-js-wasm": "^1.1.1",
+    "@types/exif-js": "^2.3.1",
     "@types/js-cookie": "^3.0.6",
     "autoprefixer": "^10.4.21",
     "exif-js": "^2.3.0",
