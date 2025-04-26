@@ -834,202 +834,79 @@ function getDetailData() {
 function getWgs84Gcj02Data() {
   // 预留协助接口
 }
-
-function base64ToArrayBuffer(base64: string): ArrayBuffer {
-  try {
-    const binaryString = window.atob(base64);
-    const len = binaryString.length;
-    const bytes = new Uint8Array(len);
-    for (let i = 0; i < len; i++) {
-      bytes[i] = binaryString.charCodeAt(i);
-    }
-    return bytes.buffer;
-  } catch (error) {
-    console.error("Failed to decode Base64 string:", error);
-    // Rethrow or return a specific indicator of failure
-    throw new Error("Invalid Base64 string for ArrayBuffer conversion.");
-  }
-}
-
-
-// --- Vue Refs (assuming Vue context) ---
-const testImg = ref<string>("");      // To display the selected image
-const exifData = ref<any>(null);      // To store the extracted EXIF data
-const processing = ref<boolean>(false); // Optional: To indicate processing state
-const errorMsg = ref<string>("");     // To display errors
-
-
-// --- Image Processing Function (fetches Base64 URL) ---
 const processImage = async (localId: string): Promise<string> => {
   return new Promise((resolve, reject) => {
     wx.getLocalImgData({
       localId,
-      success: function (res: { localData: string }) {
-        console.log("wx.getLocalImgData success.");
+      success: function (res) {
+        console.log(res.localData);
         const localData = res.localData;
         let imageBase64: string = '';
-
-        // Check if it already has the data URL prefix (iOS behavior)
-        if (localData.startsWith('data:image')) {
+        if (localData.indexOf('data:image') == 0) {
           imageBase64 = localData;
         } else {
-          // Android behavior: needs prefix and potentially newline removal
-          // Ensure it's a jpeg or detect type if possible, otherwise default to jpeg
           imageBase64 = 'data:image/jpeg;base64,' + localData.replace(/\n/g, '');
         }
-        // Assigning testImg here inside the promise might be less ideal
-        // It's better to resolve the value and assign it where the promise is handled
-        // testImg.value = imageBase64; // Moved assignment to textUploadHandle
+        testImg.value = imageBase64;
         resolve(imageBase64);
       },
-      fail: function (res: any) {
-        console.error('wx.getLocalImgData failed:', res);
-        reject(new Error("获取图片数据失败: " + JSON.stringify(res))); // Reject with an error object
+      fail: function (res) {
+        console.log('获取图片失败', res);
+        reject("");
       }
     });
   });
 }
 
-// --- Main Upload/EXIF Extraction Trigger ---
+// base64转换为Blob对象的函数
+const base64ToBlob = (base64: string): Blob => {
+  const parts = base64.split(';base64,');
+  const contentType = parts[0].split(':')[1] || 'image/jpeg';
+  const raw = window.atob(parts[1]);
+  const uInt8Array = new Uint8Array(raw.length);
+
+  for (let i = 0; i < raw.length; ++i) {
+    uInt8Array[i] = raw.charCodeAt(i);
+  }
+
+  return new Blob([uInt8Array], { type: contentType });
+};
+
+const testImg = ref<string>("");
 const textUploadHandle = () => {
-  errorMsg.value = ""; // Clear previous errors
-  exifData.value = null; // Clear previous EXIF data
-  processing.value = true; // Set processing state
-
   wx.chooseImage({
-    count: 1, // Select only one image
-    sizeType: ["original"], // IMPORTANT: Use 'original' to preserve EXIF data
-    sourceType: ["camera", "album"], // Allow selection from camera or album
+    count: 1,
+    sizeType: ["original"],
+    sourceType: ["camera"],
     success: async (res) => {
-      if (res.localIds && res.localIds.length > 0) {
-        const localId = res.localIds[0];
-        console.log("Image chosen, localId:", localId);
+      const base64 = await processImage(res.localIds[0]);
+      testImg.value = base64;
 
-        try {
-          // 1. Get the Base64 Data URL from WeChat API
-          const imageBase64Url = await processImage(localId);
-          testImg.value = imageBase64Url; // Update reactive ref to display the image
-          console.log("Base64 URL received, length:", imageBase64Url.length);
+      // 将base64转换为Blob对象
+      const blob = base64ToBlob(base64);
 
+      // 由于EXIF.getData期望一个File对象，将Blob转为File
+      const file = new File([blob], "photo.jpg", { type: blob.type }) as any;
 
-          // 2. Extract the pure Base64 data (remove the prefix)
-          const parts = imageBase64Url.split(',');
-          if (parts.length < 2 || !parts[1]) {
-            throw new Error("无效的Base64数据URL格式");
-          }
-          const base64Data = parts[1];
-          console.log("Pure Base64 data extracted.");
+      // 使用Blob/File对象获取EXIF数据
+      EXIF.getData(file, function (this: any) {
+        const exifData = EXIF.getAllTags(this);
+        const lat = exifData.GPSLatitude || "";
+        const lng = exifData.GPSLongitude || "";
+        console.log(lat, lng);
 
-
-          // 3. Decode Base64 string into ArrayBuffer
-          const arrayBuffer = base64ToArrayBuffer(base64Data);
-          console.log("Base64 decoded to ArrayBuffer, size:", arrayBuffer.byteLength);
-
-
-          // 4. Use exif-js to parse the ArrayBuffer
-          // Ensure EXIF object is loaded (e.g., via script tag)
-          if (typeof EXIF === 'undefined') {
-            throw new Error("EXIF.js library is not loaded.");
-          }
-
-          // EXIF.getData is asynchronous via callback
-          EXIF.getData(arrayBuffer as any, function(this: any) { // Use 'as any' or check exif-js types if available
-            const allMetaData = EXIF.getAllTags(this);
-            console.log("EXIF Data Extracted:", allMetaData);
-
-            if (Object.keys(allMetaData).length > 0) {
-              exifData.value = allMetaData; // Store the extracted data
-              // You can access specific tags like:
-              // const orientation = EXIF.getTag(this, "Orientation");
-              // console.log("Orientation:", orientation);
-            } else {
-              console.warn("No EXIF data found in the image.");
-              exifData.value = { message: "未找到EXIF信息" }; // Indicate no data found
-            }
-            processing.value = false; // Processing finished (success or no data)
-          });
-
-        } catch (error: any) {
-          console.error("Error processing image or extracting EXIF:", error);
-          errorMsg.value = `处理失败: ${error.message || error}`;
-          processing.value = false; // Processing finished (error)
+        if (lat && lng) {
+          console.log(lat, lng);
+        } else {
+          showNotify({type: 'danger', message: '图片中没有定位信息'});
         }
-
-      } else {
-        console.warn("wx.chooseImage success but no localIds found.");
-        errorMsg.value = "选择图片成功，但未获取到localId";
-        processing.value = false; // Processing finished (error)
-      }
+      });
     },
     cancel: () => {
-      console.log("User cancelled image selection.");
-      processing.value = false; // Processing finished (cancelled)
-    },
-    fail: (res: any) => {
-      console.error("wx.chooseImage failed:", res);
-      errorMsg.value = `选择图片接口调用失败: ${JSON.stringify(res)}`;
-      processing.value = false; // Processing finished (error)
+      console.log("666")
     }
-  });
+  })
 }
-// const processImage = async (localId: string): Promise<string> => {
-//   // wx.getLocalImgData({
-//   //   localId,
-//   //   success: async function (res) {
-//   //     const localData = res.localData;
-//   //     let imageBase64 = '';
-//   //     if (localData.indexOf('data:image') == 0) {
-//   //       //苹果的直接赋值，默认生成'data:image/jpeg;base64,'的头部拼接
-//   //       imageBase64 = localData;
-//   //     } else {
-//   //       //此处是安卓中的唯一得坑！在拼接前需要对localData进行换行符的全局替换
-//   //       //此时一个正常的base64图片路径就完美生成赋值到img的src中了
-//   //       imageBase64 = 'data:image/jpeg;base64,' + localData.replace(/\n/g, '');
-//   //     }
-//   //     return imageBase64;
-//   //   },
-//   //   fail: function (res) {
-//   //     console.log('获取图片失败', res);
-//   //     return null;
-//   //   }
-//   // });
-//   return new Promise((resolve, reject) => {
-//     wx.getLocalImgData({
-//       localId,
-//       success: function (res) {
-//         console.log(res.localData);
-//         const localData = res.localData;
-//         let imageBase64: string = '';
-//         if (localData.indexOf('data:image') == 0) {
-//           imageBase64 = localData;
-//         } else {
-//           imageBase64 = 'data:image/jpeg;base64,' + localData.replace(/\n/g, '');
-//         }
-//         testImg.value = imageBase64;
-//         resolve(imageBase64);
-//       },
-//       fail: function (res) {
-//         console.log('获取图片失败', res);
-//         reject("");
-//       }
-//     });
-//   });
-// }
-//
-// const testImg = ref<string>("");
-// const textUploadHandle = () => {
-//   wx.chooseImage({
-//     count: 1,
-//     sizeType: ["original"],
-//     sourceType: ["camera"],
-//     success: async (res) => {
-//
-//     },
-//     cancel: () => {
-//       console.log("666")
-//     }
-//   })
-// }
 </script>
 
 <template>
