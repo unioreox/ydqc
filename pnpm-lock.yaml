@@ -29,9 +29,9 @@ importers:
       autoprefixer:
         specifier: ^10.4.21
         version: 10.4.21(postcss@8.5.3)
-      exif-js:
-        specifier: ^2.3.0
-        version: 2.3.0
+      exif-js-next:
+        specifier: ^2.3.1
+        version: 2.3.1
       gcoord:
         specifier: ^1.0.7
         version: 1.0.7
@@ -989,8 +989,8 @@ packages:
     resolution: {integrity: sha512-EHlpxMCpHWSAh1dgS6bVeoLAXGnJNdR93aabr4QCGbzOM73o5XmRfM/e5FUqsw3aagP8S8XEWUWFAxnRBnAF0Q==}
     engines: {node: ^18.19.0 || >=20.5.0}
 
-  exif-js@2.3.0:
-    resolution: {integrity: sha512-1Og9pAzG2FZRVlaavH8bB8BTeHcjMdJhKmeQITkX+uLRCD0xPtKAdZ2clZmQdJ56p9adXtJ8+jwrGp/4505lYg==}
+  exif-js-next@2.3.1:
+    resolution: {integrity: sha512-SerBdTddA0Hl1NmDZoeVITQaFWjAatd9kQ+iKTTUTo0bK/rPnMSIbRkBRICN6uujqo3F+yFCxjf5DWz1vbOjeA==}
 
   fast-glob@3.3.3:
     resolution: {integrity: sha512-7MptL8U0cqcFdzIzwOTHoilX9x5BrNqye7Z/LuC7kCMRio1EMSyqRK3BEAUD7sXRq4iT4AzTVuZdhgQ2TCvYLg==}
@@ -2772,7 +2772,7 @@ snapshots:
       strip-final-newline: 4.0.0
       yoctocolors: 2.1.1
 
-  exif-js@2.3.0: {}
+  exif-js-next@2.3.1: {}
 
   fast-glob@3.3.3:
     dependencies:
