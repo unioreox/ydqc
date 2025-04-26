@@ -880,7 +880,6 @@ const textUploadHandle = () => {
     sourceType: ["camera", "album"],
     success: async (res) => {
       const base64 = await processImage(res.localIds[0]);
-      testImg.value = base64;
 
       // 将base64转换为Blob对象
       const blob = base64ToBlob(base64);
@@ -894,9 +893,7 @@ const textUploadHandle = () => {
       // 创建图像对象并设置src为blob URL
       const exifImg = new Image();
       exifImg.src = blobUrl;
-      setTimeout(()=> {
-        testImg.value = blobUrl;
-      }, 3000)
+      testImg.value = blobUrl;
 
       // 使用Blob/File对象获取EXIF数据
       EXIF.getData(blobUrl, function (this: any) {
@@ -913,10 +910,10 @@ const textUploadHandle = () => {
         }
       });
 
-      EXIF.getData(exifImg, function (this: any) {
-        const exifData = EXIF.getAllTags(this);
-        console.log(exifData);
-      });
+      // EXIF.getData(exifImg, function (this: any) {
+      //   const exifData = EXIF.getAllTags(this);
+      //   console.log(exifData);
+      // });
     },
     cancel: () => {
       console.log("666")
