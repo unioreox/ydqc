@@ -860,6 +860,7 @@ const processImage = async (localId: string): Promise<string> => {
     wx.getLocalImgData({
       localId,
       success: function (res) {
+        console.log(res.localData);
         const localData = res.localData;
         let imageBase64: string = '';
         if (localData.indexOf('data:image') == 0) {
