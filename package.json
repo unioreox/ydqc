@@ -17,6 +17,7 @@
     "@originjs/crypto-js-wasm": "^1.1.1",
     "@types/js-cookie": "^3.0.6",
     "autoprefixer": "^10.4.21",
+    "exif-js": "^2.3.0",
     "gcoord": "^1.0.7",
     "highlight.js": "^11.11.1",
     "html2canvas": "^1.4.1",
