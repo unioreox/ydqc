@@ -863,8 +863,6 @@ const handleFileChange = async (event: Event) => {
   testImg.value = URL.createObjectURL(file); // 创建 Blob URL 用于预览
   // -------------------------------
 
-  showToast({ type: 'loading', message: '读取图片信息...', forbidClick: true, duration: 0 });
-
   try {
     // 1. 将文件读取为 ArrayBuffer
     const arrayBuffer = await file.arrayBuffer();
