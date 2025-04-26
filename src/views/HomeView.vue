@@ -836,27 +836,46 @@ function getWgs84Gcj02Data() {
 
 import EXIF from 'exif-js';
 
-const processImage = (localId: string) => {
-  wx.getLocalImgData({
-    localId,
-    success: function (res) {
-      const localData = res.localData;
-      let imageBase64 = '';
-      if (localData.indexOf('data:image') == 0) {
-        //苹果的直接赋值，默认生成'data:image/jpeg;base64,'的头部拼接
-        imageBase64 = localData;
-      } else {
-        //此处是安卓中的唯一得坑！在拼接前需要对localData进行换行符的全局替换
-        //此时一个正常的base64图片路径就完美生成赋值到img的src中了
-        imageBase64 = 'data:image/jpeg;base64,' + localData.replace(/\n/g, '');
+const processImage = async (localId: string) => {
+  // wx.getLocalImgData({
+  //   localId,
+  //   success: async function (res) {
+  //     const localData = res.localData;
+  //     let imageBase64 = '';
+  //     if (localData.indexOf('data:image') == 0) {
+  //       //苹果的直接赋值，默认生成'data:image/jpeg;base64,'的头部拼接
+  //       imageBase64 = localData;
+  //     } else {
+  //       //此处是安卓中的唯一得坑！在拼接前需要对localData进行换行符的全局替换
+  //       //此时一个正常的base64图片路径就完美生成赋值到img的src中了
+  //       imageBase64 = 'data:image/jpeg;base64,' + localData.replace(/\n/g, '');
+  //     }
+  //     return imageBase64;
+  //   },
+  //   fail: function (res) {
+  //     console.log('获取图片失败', res);
+  //     return null;
+  //   }
+  // });
+  return new Promise((resolve, reject) => {
+    wx.getLocalImgData({
+      localId,
+      success: function (res) {
+        const localData = res.localData;
+        let imageBase64 :string = '';
+        if (localData.indexOf('data:image') == 0) {
+          imageBase64 = localData;
+        } else {
+          imageBase64 = 'data:image/jpeg;base64,' + localData.replace(/\n/g, '');
+        }
+        resolve(imageBase64);
+      },
+      fail: function (res) {
+        console.log('获取图片失败', res);
+        reject("");
       }
-      return imageBase64;
-    },
-    fail: function (res) {
-      console.log('获取图片失败', res);
-    }
+    });
   });
-  return null;
 }
 
 const textUploadHandle = () => {
@@ -864,11 +883,11 @@ const textUploadHandle = () => {
     count: 1,
     sizeType: ["original"],
     sourceType: ["camera"],
-    success: (res) => {
+    success: async (res) => {
       const image = new Image();
-      const base64 = processImage(res.localIds[0])
+      const base64 = await processImage(res.localIds[0])
       alert(base64);
-      image.src = base64 || "";
+      image.src = base64 as string || "";
       image.onload = () => {
         // @ts-ignore
         EXIF.getData(image, function (this: any) {
