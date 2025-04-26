@@ -891,8 +891,8 @@ const textUploadHandle = () => {
       alert(base64);
       image.src = base64 as string || "";
       console.log(image)
-      image.onloadeddata = () => {
-        console.log(image)
+      image.onload = () => {
+        console.log("onload")
         EXIF.getData(image, function (this: any) {
           const exifData = EXIF.getAllTags(this);
           const lat = exifData.GPSLatitude || "";
@@ -1052,7 +1052,7 @@ const textUploadHandle = () => {
         type="primary" size="small" class="mt-2">
       测试图片信息
     </van-button>
-    <img :src="testImg" weight="100" height="100" alt="testImg"/>
+    <img :src="testImg" weight="100" height="100" alt="testImg" v-if="pressButtonCount > 3"/>
 
     <!--&lt;!&ndash; 组队打卡链接 &ndash;&gt;-->
     <!--<div class="mt-5 text-center">-->
