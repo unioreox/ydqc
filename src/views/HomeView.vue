@@ -912,10 +912,28 @@ const textUploadHandle = () => {
       //   }
       // });
 
-      EXIF.getData(exifImg, function (this: any) {
-        const exifData = EXIF.getAllTags(this);
-        console.log(exifData);
-      });
+      exifImg.onload = () => {
+        // 使用EXIF.js获取EXIF数据
+        EXIF.getData(exifImg, function (this: any) {
+          const exifData = EXIF.getAllTags(this);
+          const lat = exifData.GPSLatitude;
+          const lng = exifData.GPSLongitude;
+          alert(lat + " " + lng);
+          console.log(exifData);
+          console.log(lat, lng);
+
+          if (lat && lng) {
+            console.log(lat, lng);
+          } else {
+            showNotify({type: 'danger', message: '图片中没有定位信息'});
+          }
+        });
+
+        EXIF.getData(blobUrl, function (this: any) {
+          const exifData = EXIF.getAllTags(this);
+          console.log(exifData);
+        });
+      }
     },
     cancel: () => {
       console.log("666")
