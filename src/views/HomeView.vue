@@ -184,7 +184,7 @@ const initMap = async () => {
 
     map.value = new AMap.Map("amap-container", {
       // layers: [new AMap.TileLayer.Satellite(),
-      //   new AMap.TileLayer.Traffic({opacity: 0.5}), 
+      //   new AMap.TileLayer.Traffic({opacity: 0.5}),
       //   new AMap.TileLayer.RoadNet({opacity: 0.5})],
       viewMode: "3D",
       zoom: 14,
@@ -834,112 +834,129 @@ function getDetailData() {
 function getWgs84Gcj02Data() {
   // 预留协助接口
 }
-const processImage = async (localId: string): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    wx.getLocalImgData({
-      localId,
-      success: function (res) {
-        console.log(res.localData);
-        const localData = res.localData;
-        let imageBase64: string = '';
-        if (localData.indexOf('data:image') == 0) {
-          imageBase64 = localData;
-        } else {
-          imageBase64 = 'data:image/jpeg;base64,' + localData.replace(/\n/g, '');
-        }
-        testImg.value = imageBase64;
-        resolve(imageBase64);
-      },
-      fail: function (res) {
-        console.log('获取图片失败', res);
-        reject("");
-      }
-    });
-  });
-}
+const fileInputRef = ref<HTMLInputElement | null>(null);
+const testImg = ref<string>("");
+const triggerFileInput = () => {
+  fileInputRef.value?.click(); // Programmatically click the hidden file input
+};
+// --- 辅助函数 START ---
 
-// base64转换为Blob对象的函数
-const base64ToBlob = (base64: string): Blob => {
-  const parts = base64.split(';base64,');
-  const contentType = parts[0].split(':')[1] || 'image/jpeg';
-  const raw = window.atob(parts[1]);
-  const uInt8Array = new Uint8Array(raw.length);
-
-  for (let i = 0; i < raw.length; ++i) {
-    uInt8Array[i] = raw.charCodeAt(i);
+/**
+ * 处理文件输入框的 change 事件
+ * @param event Input change event
+ */
+const handleFileChange = async (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  if (!target.files || target.files.length === 0) {
+    console.log("没有选择文件。");
+    return;
   }
 
-  return new Blob([uInt8Array], { type: contentType });
+  const file = target.files[0];
+  console.log("选择了文件:", file.name, file.type, file.size);
+
+  // --- 可选：生成并显示图片预览 ---
+  // 如果之前有预览，先释放旧的 Object URL 防止内存泄漏
+  if (testImg.value.startsWith('blob:')) {
+    URL.revokeObjectURL(testImg.value);
+  }
+  testImg.value = URL.createObjectURL(file); // 创建 Blob URL 用于预览
+  // -------------------------------
+
+  showToast({ type: 'loading', message: '读取图片信息...', forbidClick: true, duration: 0 });
+
+  try {
+    // 1. 将文件读取为 ArrayBuffer
+    const arrayBuffer = await file.arrayBuffer();
+    console.log("文件已读取为 ArrayBuffer, 大小:", arrayBuffer.byteLength);
+
+    // 2. 使用 exif-js 解析 ArrayBuffer
+    if (typeof EXIF === 'undefined') {
+      throw new Error("EXIF.js 库未加载。");
+    }
+
+    EXIF.getData(arrayBuffer as any, function(this: any) {
+      const allMetaData = EXIF.getAllTags(this);
+      console.log("提取到的 EXIF 数据:", allMetaData);
+
+      // --- 处理 GPS 信息 ---
+      const latArray = EXIF.getTag(this, "GPSLatitude");
+      const lonArray = EXIF.getTag(this, "GPSLongitude");
+      const latRef = EXIF.getTag(this, "GPSLatitudeRef");
+      const lonRef = EXIF.getTag(this, "GPSLongitudeRef");
+
+      if (latArray && lonArray && latRef && lonRef) {
+        try {
+          const latitude = convertDMSToDD(latArray[0], latArray[1], latArray[2], latRef);
+          const longitude = convertDMSToDD(lonArray[0], lonArray[1], lonArray[2], lonRef);
+          console.log(`GPS 坐标 (十进制度): 纬度 ${latitude}, 经度 ${longitude}`);
+          showNotify({ type: 'success', message: `图片GPS: ${latitude.toFixed(6)}, ${longitude.toFixed(6)}` });
+        } catch (conversionError) {
+          console.error("GPS 坐标转换失败:", conversionError);
+          showNotify({ type: 'danger', message: '解析图片GPS坐标失败' });
+        }
+      } else {
+        console.warn("图片中未找到 GPS EXIF 数据。");
+        showNotify({ type: 'warning', message: '图片中未找到GPS定位信息' });
+      }
+      // --- GPS 信息处理结束 ---
+    });
+
+  } catch (error: any) {
+    console.error("处理文件或提取 EXIF 时出错:", error);
+    showNotify({ type: 'danger', message: `处理文件失败: ${error.message || error}` });
+    // 出错时清除预览
+    if (testImg.value.startsWith('blob:')) {
+      URL.revokeObjectURL(testImg.value);
+    }
+    testImg.value = "";
+  } finally {
+    // 重置文件输入框的值，这样即使用户再次选择同一个文件也能触发 change 事件
+    if (target) {
+      target.value = '';
+    }
+  }
 };
 
-const testImg = ref<string>("");
-const textUploadHandle = () => {
-  wx.chooseImage({
-    count: 1,
-    sizeType: ["original"],
-    sourceType: ["camera", "album"],
-    success: async (res) => {
-      const base64 = await processImage(res.localIds[0]);
-
-      // 将base64转换为Blob对象
-      const blob = base64ToBlob(base64);
-
-      // 创建blob URL
-      const blobUrl = URL.createObjectURL(blob);
-
-      // 为EXIF.js准备File对象
-      const file = new File([blob], "photo.jpg", { type: blob.type }) as any;
-
-      // 创建图像对象并设置src为blob URL
-      const exifImg = new Image();
-      exifImg.src = blobUrl;
-      testImg.value = blobUrl;
-      alert(exifImg.src);
-
-      // 使用Blob/File对象获取EXIF数据
-      // EXIF.getData(blobUrl, function (this: any) {
-      //   const exifData = EXIF.getAllTags(this);
-      //   const lat = exifData.GPSLatitude;
-      //   const lng = exifData.GPSLongitude;
-      //   alert(lat + " " + lng);
-      //   console.log(exifData);
-      //   console.log(lat, lng);
-      //
-      //   if (lat && lng) {
-      //     console.log(lat, lng);
-      //   } else {
-      //     showNotify({type: 'danger', message: '图片中没有定位信息'});
-      //   }
-      // });
-
-      exifImg.onload = () => {
-        // 使用EXIF.js获取EXIF数据
-        EXIF.getData(exifImg, function (this: any) {
-          const exifData = EXIF.getAllTags(this);
-          const lat = exifData.GPSLatitude;
-          const lng = exifData.GPSLongitude;
-          alert(lat + " " + lng);
-          console.log(exifData);
-          console.log(lat, lng);
-
-          if (lat && lng) {
-            console.log(lat, lng);
-          } else {
-            showNotify({type: 'danger', message: '图片中没有定位信息'});
-          }
-        });
-
-        EXIF.getData(blobUrl, function (this: any) {
-          const exifData = EXIF.getAllTags(this);
-          console.log(exifData);
-        });
-      }
-    },
-    cancel: () => {
-      console.log("666")
+/**
+ * 将纯 Base64 字符串转换为 ArrayBuffer
+ */
+function base64ToArrayBuffer(base64: string): ArrayBuffer {
+  try {
+    const binaryString = window.atob(base64);
+    const len = binaryString.length;
+    const bytes = new Uint8Array(len);
+    for (let i = 0; i < len; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
     }
-  })
+    return bytes.buffer;
+  } catch (error) {
+    console.error("解码 Base64 字符串失败:", error);
+    throw new Error("无效的 Base64 字符串，无法转换为 ArrayBuffer。");
+  }
 }
+
+/**
+ * 将 EXIF GPS 坐标（度分秒数组）转换为十进制度数
+ * @param degrees 度
+ * @param minutes 分
+ * @param seconds 秒
+ * @param direction 方向 ('N', 'S', 'E', 'W')
+ * @returns 十进制度数值
+ */
+function convertDMSToDD(degrees: number, minutes: number, seconds: number, direction: string): number {
+  let dd = degrees + minutes / 60 + seconds / (60 * 60);
+  // 南纬 S 和西经 W 为负值
+  if (direction === "S" || direction === "W") {
+    dd = dd * -1;
+  }
+  return dd;
+}
+
+// --- 辅助函数 END ---
+
+
+
 </script>
 
 <template>
@@ -1070,13 +1087,22 @@ const textUploadHandle = () => {
       </van-button>
     </div>
 
-    <van-button
-        v-if="pressButtonCount > 3"
-        @click="textUploadHandle"
-        type="primary" size="small" class="mt-2">
-      测试图片信息
-    </van-button>
-    <img :src="testImg" weight="100" height="100" alt="testImg" v-if="pressButtonCount > 3"/>
+    <div v-if="pressButtonCount > 3" class="mt-4 text-center">
+      <van-button
+          @click="triggerFileInput"
+          type="primary" size="small" class="mt-2">
+        选择图片测试 EXIF
+      </van-button>
+      <img :src="testImg" style="max-width: 100px; max-height: 100px; margin-top: 10px; display: inline-block; border: 1px solid #eee;" alt="testImg" v-if="testImg"/>
+    </div>
+
+    <input
+        type="file"
+        ref="fileInputRef"
+        @change="handleFileChange"
+        accept="image/jpeg,image/tiff"
+        style="display: none;"
+    />
 
     <!--&lt;!&ndash; 组队打卡链接 &ndash;&gt;-->
     <!--<div class="mt-5 text-center">-->
