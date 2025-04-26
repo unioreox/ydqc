@@ -13,7 +13,7 @@ import {io, Socket} from "socket.io-client";
 import getCanvasFingerPrint from "@/util/canvasFingerPrint"
 import Clarity from '@microsoft/clarity';
 import markerIconUrl from '@/assets/marker.svg';
-import EXIF from 'exif-js';
+import EXIF from 'exif-js-next';
 
 // WGS84 To GCJ02
 // import { wgs84ToGcj02 } from "@/util/convertLocation";
