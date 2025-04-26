@@ -864,16 +864,11 @@ const handleFileChange = async (event: Event) => {
   // -------------------------------
 
   try {
-    // 1. 将文件读取为 ArrayBuffer
-    const arrayBuffer = await file.arrayBuffer();
-    console.log("文件已读取为 ArrayBuffer, 大小:", arrayBuffer.byteLength);
+    const exifImg = new Image();
+    exifImg.src = URL.createObjectURL(file);
 
-    // 2. 使用 exif-js 解析 ArrayBuffer
-    if (typeof EXIF === 'undefined') {
-      throw new Error("EXIF.js 库未加载。");
-    }
-
-    EXIF.getData(arrayBuffer as any, function(this: any) {
+  exifImg.onload = () => {
+    EXIF.getData(exifImg, function(this: any) {
       const allMetaData = EXIF.getAllTags(this);
       console.log("提取到的 EXIF 数据:", allMetaData);
 
@@ -899,6 +894,7 @@ const handleFileChange = async (event: Event) => {
       }
       // --- GPS 信息处理结束 ---
     });
+  }
 
   } catch (error: any) {
     console.error("处理文件或提取 EXIF 时出错:", error);

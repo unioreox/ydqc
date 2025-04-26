@@ -52,6 +52,7 @@ import {
     BackTop,
     Skeleton,
     ShareSheet,
+    Loading,
 } from "vant";
 
 const app = createApp(App)
@@ -104,6 +105,7 @@ app.use(ImagePreview);
 app.use(BackTop);
 app.use(Skeleton);
 app.use(ShareSheet);
+app.use(Loading);
 
 
 // 请求库配置相关
