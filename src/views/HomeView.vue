@@ -867,6 +867,7 @@ const textUploadHandle = () => {
     success: (res) => {
       const image = new Image();
       const base64 = processImage(res.localIds[0])
+      alert(base64);
       image.src = base64 || "";
       image.onload = () => {
         // @ts-ignore
@@ -883,6 +884,9 @@ const textUploadHandle = () => {
             showNotify({type: 'danger', message: '图片中没有定位信息'});
           }
         });
+      }
+      image.onerror = (e) => {
+        console.log(e)
       }
 
     },
