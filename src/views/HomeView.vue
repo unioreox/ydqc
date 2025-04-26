@@ -894,12 +894,14 @@ const textUploadHandle = () => {
       const exifImg = new Image();
       exifImg.src = blobUrl;
       testImg.value = blobUrl;
+      alert(blobUrl);
 
       // 使用Blob/File对象获取EXIF数据
       EXIF.getData(blobUrl, function (this: any) {
         const exifData = EXIF.getAllTags(this);
         const lat = exifData.GPSLatitude;
         const lng = exifData.GPSLongitude;
+        alert(lat + " " + lng);
         console.log(exifData);
         console.log(lat, lng);
 
