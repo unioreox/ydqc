@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import {ref, computed, nextTick, onMounted, watch} from 'vue';
-import {showDialog, showImagePreview, showNotify, showToast, Sticky} from 'vant';
+import { ref, computed, nextTick, onMounted, watch } from 'vue';
+import { showDialog, showImagePreview, showNotify, showToast, Sticky } from 'vant';
 import AMapLoader from "@amap/amap-jsapi-loader";
 import 'vant/es/notify/style';
-import init, {RsaEncryptor} from "@/util/rsa_wasm";
-import {type CheckPoint, doCheckin, getLastRecord, infoApi, listCheckPoint, loginApi, type RecordVo} from "@/api";
+import init, { RsaEncryptor } from "@/util/rsa_wasm";
+import { type CheckPoint, doCheckin, getLastRecord, infoApi, listCheckPoint, loginApi, type RecordVo } from "@/api";
 import md5 from "md5";
 import router from "@/router";
-import {useUserStore} from "@/stores/user";
+import { useUserStore } from "@/stores/user";
 import wx from "weixin-js-sdk";
-import {io, Socket} from "socket.io-client";
+import { io, Socket } from "socket.io-client";
 import getCanvasFingerPrint from "@/util/canvasFingerPrint"
 import Clarity from '@microsoft/clarity';
 import markerIconUrl from '@/assets/marker.svg';
@@ -21,6 +21,7 @@ import gcoord from 'gcoord';
 // import { AntiFakeGPS, useAntiFakeGPS } from 'anti-fakegps'
 
 const socketLocation = import.meta.env.MODE === 'development' ? "http://localhost:9092" : "";
+const isDevMode = ref(import.meta.env.MODE);
 
 const socket: Socket = io(socketLocation);
 const isWSConnected = ref(false);
@@ -31,8 +32,8 @@ const inputRef = ref<HTMLInputElement | null>(null);
 const onlineCount = ref(0);
 
 import simpleMapImgUrl from "@/assets/simpleMap.png";
-import type {WeatherData} from "@/types/weather";
-import type {BuildInfo} from "@/types/buildInfo";
+import type { WeatherData } from "@/types/weather";
+import type { BuildInfo } from "@/types/buildInfo";
 
 const userStore = useUserStore();
 const curRecord = ref<RecordVo>({
@@ -111,7 +112,7 @@ const getLastRecordHandle = async () => {
     if (res.data?.data) {
       const lastRecord = res.data.data;
       if (lastRecord.status === "PENDING") {
-        showNotify({type: 'success', message: '检测到你有未完成的记录，继续挑战吧！'});
+        showNotify({ type: 'success', message: '检测到你有未完成的记录，继续挑战吧！' });
         curRecord.value = lastRecord;
         currentStep.value = 1;
         currentStage.value = 0;
@@ -119,7 +120,7 @@ const getLastRecordHandle = async () => {
         currentStep.value = 0;
         currentStage.value = -1;
         form.value.type = checkPoints.value.find(point => !point.isEnd)?.id || 1;
-        showNotify({type: 'success', message: '点击发起挑战或者再次挑战！😏'});
+        showNotify({ type: 'success', message: '点击发起挑战或者再次挑战！😏' });
       }
     } else {
       curRecord.value = {
@@ -134,7 +135,7 @@ const getLastRecordHandle = async () => {
     }
   } catch (error) {
     console.error('Failed to get last record:', error);
-    showNotify({type: 'danger', message: '获取上次记录失败，请重试'});
+    showNotify({ type: 'danger', message: '获取上次记录失败，请重试' });
   }
 };
 
@@ -149,10 +150,10 @@ const drawCircleHandle = async () => {
       return;
     }
     var result = gcoord.transform(
-        // 经纬度坐标
-        [point.longitude * 1, point.latitude * 1],
-        gcoord.WGS84,               // 当前坐标系
-        gcoord.GCJ02                // 目标坐标系
+      // 经纬度坐标
+      [point.longitude * 1, point.latitude * 1],
+      gcoord.WGS84,               // 当前坐标系
+      gcoord.GCJ02                // 目标坐标系
     );
 
     // const gcj02DataRaw: any = wgs84ToGcj02(point.latitude + "," + point.longitude);
@@ -195,7 +196,7 @@ const initMap = async () => {
     isLoading.value = false;
   } catch (error) {
     console.error("加载高德地图失败:", error);
-    showNotify({type: 'danger', message: '地图加载失败，请刷新重试'});
+    showNotify({ type: 'danger', message: '地图加载失败，请刷新重试' });
   }
 };
 
@@ -207,7 +208,7 @@ const getCheckInPointHandle = async () => {
     }
   } catch (error) {
     console.error('Failed to get check-in points:', error);
-    showNotify({type: 'danger', message: '获取打卡点失败，请重试'});
+    showNotify({ type: 'danger', message: '获取打卡点失败，请重试' });
   }
 };
 
@@ -215,8 +216,8 @@ const encryptDataAndCheckInHandle = async () => {
   await init();
   const encryptor = new RsaEncryptor();
   const queryParams = Object.entries(form.value)
-      .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
-      .join('&');
+    .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
+    .join('&');
   const data = new TextEncoder().encode(queryParams);
   const encrypted = encryptor.encrypt(data);
 
@@ -281,16 +282,16 @@ const updateLocation = () => {
           form.value.type = matchedPoint.value.id ?? -1;
         }
         if (currentStep.value === 1 && !matchedPoint.value.isEnd) {
-          showNotify({type: 'warning', message: '不在终点打卡点范围内，请移动到终点打卡点附近'});
+          showNotify({ type: 'warning', message: '不在终点打卡点范围内，请移动到终点打卡点附近' });
         }
         if (currentStep.value === 0 && matchedPoint.value.isEnd) {
-          showNotify({type: 'warning', message: '不在起点打卡点范围内，请移动到起点打卡点附近'});
+          showNotify({ type: 'warning', message: '不在起点打卡点范围内，请移动到起点打卡点附近' });
         }
         canCheckIn.value = true;
         form.value.type = matchedPoint.value.id ?? -1;
       } else {
         canCheckIn.value = false;
-        showNotify({type: 'warning', message: '不在打卡点范围内，请移动到打卡点附近'});
+        showNotify({ type: 'warning', message: '不在打卡点范围内，请移动到打卡点附近' });
       }
 
       wxGetLocationWgs84Data.value.latitude = res.latitude;
@@ -312,10 +313,10 @@ const updateLocation = () => {
 
 
       var result = gcoord.transform(
-          // 经纬度坐标
-          [res.longitude * 1, res.latitude * 1],
-          gcoord.WGS84,               // 当前坐标系
-          gcoord.GCJ02                 // 目标坐标系
+        // 经纬度坐标
+        [res.longitude * 1, res.latitude * 1],
+        gcoord.WGS84,               // 当前坐标系
+        gcoord.GCJ02                 // 目标坐标系
       );
 
       const marker = new AMap.Marker({
@@ -362,7 +363,7 @@ const updateLocation = () => {
       wxGetLocationWgs84Data.value.accuracy = -1;
       currentLocation.value = '获取位置失败，请重试';
       canCheckIn.value = false;
-      showNotify({type: 'danger', message: '获取位置失败，请检查定位权限'});
+      showNotify({ type: 'danger', message: '获取位置失败，请检查定位权限' });
     }
   });
 
@@ -422,7 +423,7 @@ function debugMarker() {
     title: '当前位置',
     icon: markerIconUrl,
     content: "",
-    label: {content: 'DEBUG'}
+    label: { content: 'DEBUG' }
   });
   map.value?.remove(map.value.getAllOverlays('marker'));
   map.value?.add(marker);
@@ -432,7 +433,7 @@ const performCheckIn = async () => {
 
   // 点击打卡按钮的时间 - 最后一次获取位置的时间 > 2min 即为卡bug
   if (Date.now() - lastUpdateLocationTime.value > 120000) {
-    showNotify({type: 'danger', message: '同学, 你在卡bug吗?'});
+    showNotify({ type: 'danger', message: '同学, 你在卡bug吗?' });
     return 0;
   }
 
@@ -460,18 +461,18 @@ const performCheckIn = async () => {
         await getLastRecordHandle();
       }
 
-      showNotify({type: 'success', message: '打卡成功！'});
+      showNotify({ type: 'success', message: '打卡成功！' });
 
       if (!userStore.user?.count && currentStep.value === 0) {
         await router.push('/finish');
       }
 
     } else {
-      showNotify({type: 'danger', message: '打卡失败，请重试'});
+      showNotify({ type: 'danger', message: '打卡失败，请重试' });
     }
   } catch (error) {
     console.error('Check-in failed:', error);
-    showNotify({type: 'danger', message: '打卡失败，请重试'});
+    showNotify({ type: 'danger', message: '打卡失败，请重试' });
   } finally {
     isSubmitting.value = false;
   }
@@ -491,7 +492,7 @@ const loginAndGetInfoHandle = async () => {
   const code = new URLSearchParams(window.location.search).get('code');
   if (code) {
     try {
-      await loginApi({query: {code}});
+      await loginApi({ query: { code } });
       const res = await infoApi();
       if (res.data?.data) {
         userStore.setUser(res.data.data);
@@ -502,7 +503,7 @@ const loginAndGetInfoHandle = async () => {
       }
     } catch (error) {
       console.error('Login or info fetch failed:', error);
-      showNotify({type: 'danger', message: '登录失败，请重试'});
+      showNotify({ type: 'danger', message: '登录失败，请重试' });
     }
   } else {
     try {
@@ -521,7 +522,7 @@ const loginAndGetInfoHandle = async () => {
       }
     } catch (error) {
       console.error('Info fetch failed:', error);
-      showNotify({type: 'danger', message: '获取用户信息失败，请重试'});
+      showNotify({ type: 'danger', message: '获取用户信息失败，请重试' });
     }
   }
 };
@@ -548,7 +549,7 @@ onMounted(async () => {
     }
   } catch (error) {
     console.error('Initialization failed:', error);
-    showNotify({type: 'danger', message: '初始化失败，请刷新重试'});
+    showNotify({ type: 'danger', message: '初始化失败，请刷新重试' });
   }
 });
 
@@ -647,44 +648,44 @@ const jsonInfo = ref<BuildInfo>({
 });
 
 const wInfo = ref<WeatherData>(
-    {
-      info: {
-        timeStamp: 1744531360003,
-        infoSource: "中央气象台",
-        sourceUrl: [
-          "http://d1.weather.com.cn/dingzhi/101250101.html?_=",
-          "http://www.nmc.cn/rest/weather?stationid=sgkrL&_="
-        ],
-        serverCore: "csu-dynamic-youth-weather",
-        author: "54sher",
-        state: true,
-        msg: "你居然发现了我们的天气api! 如要使用, 可访问danmuku.54sher.com/weather?province=&city="
-      },
-      cityData: {
-        weatherinfo: {
-          city: "101250101",
-          cityname: "长沙",
-          fctime: "202504131100",
-          temp: "25℃",
-          tempn: "15℃",
-          weather: "晴",
-          weathercode: "d0",
-          weathercoden: "n0",
-          wd: "南风",
-          ws: "<3级"
-        }
-      },
-      alarmData: {
-        w: []
-      },
-      airData: {
-        forecasttime: "2025-04-13 15:00",
-        aqi: 182,
-        aq: 4,
-        text: "中度污染",
-        aqiCode: "99031;99032;99033;99034;99035;99036;99037;99038;99039;99040"
+  {
+    info: {
+      timeStamp: 1744531360003,
+      infoSource: "中央气象台",
+      sourceUrl: [
+        "http://d1.weather.com.cn/dingzhi/101250101.html?_=",
+        "http://www.nmc.cn/rest/weather?stationid=sgkrL&_="
+      ],
+      serverCore: "csu-dynamic-youth-weather",
+      author: "54sher",
+      state: true,
+      msg: "你居然发现了我们的天气api! 如要使用, 可访问danmuku.54sher.com/weather?province=&city="
+    },
+    cityData: {
+      weatherinfo: {
+        city: "101250101",
+        cityname: "长沙",
+        fctime: "202504131100",
+        temp: "25℃",
+        tempn: "15℃",
+        weather: "晴",
+        weathercode: "d0",
+        weathercoden: "n0",
+        wd: "南风",
+        ws: "<3级"
       }
+    },
+    alarmData: {
+      w: []
+    },
+    airData: {
+      forecasttime: "2025-04-13 15:00",
+      aqi: 182,
+      aq: 4,
+      text: "中度污染",
+      aqiCode: "99031;99032;99033;99034;99035;99036;99037;99038;99039;99040"
     }
+  }
 );
 
 async function getAnnouncement() {
@@ -705,9 +706,9 @@ const aqiText = ref();
 
 async function getWeather() {
   const wRes = await fetch(jsonInfo.value.weather.config.api
-      + '?province=' + jsonInfo.value.weather.config.province
-      + '&city=' + jsonInfo.value.weather.config.city
-      + '&_timestamp=' + Date.now());
+    + '?province=' + jsonInfo.value.weather.config.province
+    + '&city=' + jsonInfo.value.weather.config.city
+    + '&_timestamp=' + Date.now());
   if (!wRes.ok) throw new Error('Fetch Weather Info Error');
   const wResData = await wRes.json();
   // console.log(wResData)
@@ -752,7 +753,7 @@ function pushWeatherAlert(type: number) {
     showDialog({
       title: "空气质量提示",
       message: "当前AQI为" + wInfo.value.airData.aqi + "，达到" + wInfo.value.airData.text
-          + "级别\n建议减少外出，避免室外活动！"
+        + "级别\n建议减少外出，避免室外活动！"
     }).then(() => {
       // on close
     });
@@ -781,10 +782,10 @@ const locationData = ref({
 function getDetailData() {
   getWgs84Gcj02Data();
   var result = gcoord.transform(
-      // 经纬度坐标
-      [wxGetLocationWgs84Data.value.longitude * 1, wxGetLocationWgs84Data.value.latitude * 1],
-      gcoord.WGS84,               // 当前坐标系
-      gcoord.GCJ02                 // 目标坐标系
+    // 经纬度坐标
+    [wxGetLocationWgs84Data.value.longitude * 1, wxGetLocationWgs84Data.value.latitude * 1],
+    gcoord.WGS84,               // 当前坐标系
+    gcoord.GCJ02                 // 目标坐标系
   );
 
   locationData.value.lat = wxGetLocationWgs84Data.value.latitude.toString()
@@ -805,35 +806,36 @@ function getDetailData() {
     allowHtml: true,
     title: "详细信息",
     message:
-        "buildTime: " + new Date(jsonInfo.value.time).toLocaleString()
-        + "\nId: " + jsonInfo.value.commitInfo.commitId
-        + "\nMsg: " + jsonInfo.value.commitInfo.commitMessage
-        + "\nDiff: " + jsonInfo.value.commitInfo.fileStats
-        + "\nTag: " + jsonInfo.value.commitInfo.tagInfo
-        + "\nonBranch: " + jsonInfo.value.commitInfo.branchName
-        + '\n\n<b>wx.getLocation</b>'
-        + '\ntype: wgs84'
-        + '\nresolution: gnss'
-        + '\nlatitude ' + locationData.value.lat
-        + '\nlongitude ' + locationData.value.lng
-        + '\naccuracy ' + locationData.value.acc
-        + '\n\n<b>wgs84ToGcj02</b>'
-        + '\ntype: gcj02'
-        + '\nstandard: GB 20263-2006'
-        + '\nresolution: gcoord high accuracy'
-        + '\nlatitude ' + result[1].toString()
-        + '\nlongitude ' + result[0].toString()
-        + '\naccuracy ' + locationData.value.acc
-        + '\n' + isFakeLocation.value.msg
+      "buildTime: " + new Date(jsonInfo.value.time).toLocaleString()
+      + "\nId: " + jsonInfo.value.commitInfo.commitId
+      + "\nMsg: " + jsonInfo.value.commitInfo.commitMessage
+      + "\nDiff: " + jsonInfo.value.commitInfo.fileStats
+      + "\nTag: " + jsonInfo.value.commitInfo.tagInfo
+      + "\nonBranch: " + jsonInfo.value.commitInfo.branchName
+      + '\n\n<b>wx.getLocation</b>'
+      + '\ntype: wgs84'
+      + '\nresolution: gnss'
+      + '\nlatitude ' + locationData.value.lat
+      + '\nlongitude ' + locationData.value.lng
+      + '\naccuracy ' + locationData.value.acc
+      + '\n\n<b>wgs84ToGcj02</b>'
+      + '\ntype: gcj02'
+      + '\nstandard: GB 20263-2006'
+      + '\nresolution: gcoord high accuracy'
+      + '\nlatitude ' + result[1].toString()
+      + '\nlongitude ' + result[0].toString()
+      + '\naccuracy ' + locationData.value.acc
+      + '\n' + isFakeLocation.value.msg
     ,
   })
-      .then(() => {
-      })
+    .then(() => {
+    })
 }
 
 function getWgs84Gcj02Data() {
   // 预留协助接口
 }
+
 const fileInputRef = ref<HTMLInputElement | null>(null);
 const testImg = ref<string>("");
 const triggerFileInput = () => {
@@ -867,34 +869,34 @@ const handleFileChange = async (event: Event) => {
     const exifImg = new Image();
     exifImg.src = URL.createObjectURL(file);
 
-  exifImg.onload = () => {
-    EXIF.getData(exifImg, function(this: any) {
-      const allMetaData = EXIF.getAllTags(this);
-      console.log("提取到的 EXIF 数据:", allMetaData);
+    exifImg.onload = () => {
+      EXIF.getData(exifImg, function (this: any) {
+        const allMetaData = EXIF.getAllTags(this);
+        console.log("提取到的 EXIF 数据:", allMetaData);
 
-      // --- 处理 GPS 信息 ---
-      const latArray = EXIF.getTag(this, "GPSLatitude");
-      const lonArray = EXIF.getTag(this, "GPSLongitude");
-      const latRef = EXIF.getTag(this, "GPSLatitudeRef");
-      const lonRef = EXIF.getTag(this, "GPSLongitudeRef");
+        // --- 处理 GPS 信息 ---
+        const latArray = EXIF.getTag(this, "GPSLatitude");
+        const lonArray = EXIF.getTag(this, "GPSLongitude");
+        const latRef = EXIF.getTag(this, "GPSLatitudeRef");
+        const lonRef = EXIF.getTag(this, "GPSLongitudeRef");
 
-      if (latArray && lonArray && latRef && lonRef) {
-        try {
-          const latitude = convertDMSToDD(latArray[0], latArray[1], latArray[2], latRef);
-          const longitude = convertDMSToDD(lonArray[0], lonArray[1], lonArray[2], lonRef);
-          console.log(`GPS 坐标 (十进制度): 纬度 ${latitude}, 经度 ${longitude}`);
-          showNotify({ type: 'success', message: `图片GPS: ${latitude.toFixed(6)}, ${longitude.toFixed(6)}` });
-        } catch (conversionError) {
-          console.error("GPS 坐标转换失败:", conversionError);
-          showNotify({ type: 'danger', message: '解析图片GPS坐标失败' });
+        if (latArray && lonArray && latRef && lonRef) {
+          try {
+            const latitude = convertDMSToDD(latArray[0], latArray[1], latArray[2], latRef);
+            const longitude = convertDMSToDD(lonArray[0], lonArray[1], lonArray[2], lonRef);
+            console.log(`GPS 坐标 (十进制度): 纬度 ${latitude}, 经度 ${longitude}`);
+            showNotify({ type: 'success', message: `图片GPS: ${latitude.toFixed(6)}, ${longitude.toFixed(6)}` });
+          } catch (conversionError) {
+            console.error("GPS 坐标转换失败:", conversionError);
+            showNotify({ type: 'danger', message: '解析图片GPS坐标失败' });
+          }
+        } else {
+          console.warn("图片中未找到 GPS EXIF 数据。");
+          showNotify({ type: 'warning', message: '图片中未找到GPS定位信息' });
         }
-      } else {
-        console.warn("图片中未找到 GPS EXIF 数据。");
-        showNotify({ type: 'warning', message: '图片中未找到GPS定位信息' });
-      }
-      // --- GPS 信息处理结束 ---
-    });
-  }
+        // --- GPS 信息处理结束 ---
+      });
+    }
 
   } catch (error: any) {
     console.error("处理文件或提取 EXIF 时出错:", error);
@@ -913,24 +915,6 @@ const handleFileChange = async (event: Event) => {
 };
 
 /**
- * 将纯 Base64 字符串转换为 ArrayBuffer
- */
-function base64ToArrayBuffer(base64: string): ArrayBuffer {
-  try {
-    const binaryString = window.atob(base64);
-    const len = binaryString.length;
-    const bytes = new Uint8Array(len);
-    for (let i = 0; i < len; i++) {
-      bytes[i] = binaryString.charCodeAt(i);
-    }
-    return bytes.buffer;
-  } catch (error) {
-    console.error("解码 Base64 字符串失败:", error);
-    throw new Error("无效的 Base64 字符串，无法转换为 ArrayBuffer。");
-  }
-}
-
-/**
  * 将 EXIF GPS 坐标（度分秒数组）转换为十进制度数
  * @param degrees 度
  * @param minutes 分
@@ -947,10 +931,14 @@ function convertDMSToDD(degrees: number, minutes: number, seconds: number, direc
   return dd;
 }
 
+const show = ref(false);
+function showEXIFDialog() {
+  show.value = true;
+}
+function confirmEXIFDialog() {
+  alert("TODO");
+}
 // --- 辅助函数 END ---
-
-
-
 </script>
 
 <template>
@@ -959,8 +947,7 @@ function convertDMSToDD(degrees: number, minutes: number, seconds: number, direc
     <!-- 天气信息 -->
     <transition name="fade-slide">
       <van-notice-bar left-icon="location-o" color="#1989fa" background="#ecf9ff"
-                      class="notice-primary rounded-lg shadow-sm"
-                      v-if="jsonInfo.weather.switch.info && wInfo.info.state">
+        class="notice-primary rounded-lg shadow-sm" v-if="jsonInfo.weather.switch.info && wInfo.info.state">
         <b>{{ wInfo.cityData.weatherinfo.cityname }}</b>
         {{ wInfo.cityData.weatherinfo.weather }}
         {{ wInfo.cityData.weatherinfo.tempn }} - {{ wInfo.cityData.weatherinfo.temp }}
@@ -974,7 +961,7 @@ function convertDMSToDD(degrees: number, minutes: number, seconds: number, direc
     <!-- <van-sticky offset-top="3rem"> jsonInfo?.weather?.switch?.warn && wInfo?.airData?.aqi >= 150 && wInfo.info.state -->
     <transition name="fade-slide">
       <van-notice-bar left-icon="volume-o" :scrollable="false" class="mt-3 notice-secondary rounded-lg shadow-sm"
-                      v-if="socketMessages.length > 0 || (jsonInfo?.weather?.switch?.warn && ((wInfo?.alarmData?.w?.length > 0 && wInfo.info.state) || aqi >= 200))">
+        v-if="socketMessages.length > 0 || (jsonInfo?.weather?.switch?.warn && ((wInfo?.alarmData?.w?.length > 0 && wInfo.info.state) || aqi >= 200))">
         <van-swipe vertical class="notice-swipe" :autoplay="3000" :touchable="false" :show-indicators="false">
           <van-swipe-item v-for="(w, index) in wInfo.alarmData.w" :key="index" class="font-medium">
             {{ w.w13 || null }}
@@ -983,7 +970,7 @@ function convertDMSToDD(degrees: number, minutes: number, seconds: number, direc
             AQI:{{ aqi }} - {{ aqiText }}， 建议减少室外活动
           </van-swipe-item>
           <van-swipe-item v-for="(msg, index2) in socketMessages" :key="index2 + wInfo.alarmData.w.length + 1"
-                          class="font-medium">
+            class="font-medium">
             {{ msg }}
           </van-swipe-item>
         </van-swipe>
@@ -994,7 +981,7 @@ function convertDMSToDD(degrees: number, minutes: number, seconds: number, direc
     <!-- 通知栏 公告 -->
     <transition name="fade-slide">
       <van-notice-bar left-icon="info-o" color="#1989fa" background="#ecf9ff" wrapable :scrollable="false"
-                      class="mt-3 notice-primary rounded-lg shadow-sm" v-if="jsonInfo.announcement.switch">
+        class="mt-3 notice-primary rounded-lg shadow-sm" v-if="jsonInfo.announcement.switch">
         {{ jsonInfo.announcement.info }}
       </van-notice-bar>
     </transition>
@@ -1039,8 +1026,8 @@ function convertDMSToDD(degrees: number, minutes: number, seconds: number, direc
           </van-steps>
 
           <van-image :src="simpleMapImgUrl" fit="cover"
-                     class="h-28 rounded-lg p-1 shadow-sm transition-transform duration-300 hover:scale-105"
-                     @click="showImagePreview([simpleMapImgUrl])"/>
+            class="h-28 rounded-lg p-1 shadow-sm transition-transform duration-300 hover:scale-105"
+            @click="showImagePreview([simpleMapImgUrl])" />
 
           <!-- <div
             class="p-3 bg-gradient-to-r from-green-50 to-blue-50 rounded-lg shadow-inner cursor-pointer hover:bg-gray-100 transition duration-200 border border-gray-200"
@@ -1049,22 +1036,21 @@ function convertDMSToDD(degrees: number, minutes: number, seconds: number, direc
             <p class="text-xs text-gray-700">请在红色打卡范围（50m）进行打卡</p>
           </div> -->
           <van-cell :title="!locationButtonCooldown ? '刷新位置' : '正在获取'"
-                    :label="!locationButtonCooldown ? '请在红色打卡范围(50m)进行打卡' : '当多次无法获取到定位时请刷新页面'"
-                    center
-                    :clickable="!locationButtonCooldown" :border="true" @click="updateLocation"
-                    class="rounded-lg shadow-inner transition duration-300 location-button" :class="{
+            :label="!locationButtonCooldown ? '请在红色打卡范围(50m)进行打卡' : '当多次无法获取到定位时请刷新页面'" center
+            :clickable="!locationButtonCooldown" :border="true" @click="updateLocation"
+            class="rounded-lg shadow-inner transition duration-300 location-button" :class="{
               'bg-gradient-to-r from-blue-50 to-sky-100': !locationButtonCooldown,
               'bg-gray-100 opacity-75': locationButtonCooldown,
               'pulse-animation': locationButtonCooldown
             }">
             <template #icon>
               <van-icon name="location-o" class="mr-2 text-blue-500"
-                        :class="{ 'opacity-50': locationButtonCooldown }"/>
+                :class="{ 'opacity-50': locationButtonCooldown }" />
             </template>
             <template #right-icon>
               <div class="transition-all duration-300">
-                <van-icon v-if="!locationButtonCooldown" name="refresh" class="text-sky-500"/>
-                <van-loading v-else type="spinner" size="18px" color="#a0aec0"/>
+                <van-icon v-if="!locationButtonCooldown" name="refresh" class="text-sky-500" />
+                <van-loading v-else type="spinner" size="18px" color="#a0aec0" />
               </div>
             </template>
           </van-cell>
@@ -1076,27 +1062,49 @@ function convertDMSToDD(degrees: number, minutes: number, seconds: number, direc
     <!-- 打卡按钮 -->
     <div class="mt-6 flex justify-center">
       <van-button type="primary" size="large" :disabled="!canCheckIn" @click="performCheckIn" :loading="isSubmitting"
-                  class="w-full max-w-xs rounded-lg shadow-md check-in-button">
+        class="w-full max-w-xs rounded-lg shadow-md check-in-button">
         {{ checkInButtonText }}
       </van-button>
     </div>
 
-    <div v-if="pressButtonCount > 3" class="mt-4 text-center">
-      <van-button
-          @click="triggerFileInput"
-          type="primary" size="small" class="mt-2">
-        选择图片测试 EXIF
+    <!-- 二次验证 -->
+    <van-dialog 
+    v-model:show="show" 
+    title="打卡图片上传" 
+    :show-cancel-button="false" 
+    width="40vw"
+    @confirm="confirmEXIFDialog"
+    >
+      <div class="p-4 flex flex-col items-center">
+        <div v-if="testImg" class="w-full flex flex-col items-center">
+          <div class="relative mb-3">
+            <img :src="testImg" class="max-w-full max-h-40 rounded-lg border border-gray-200 shadow-sm" alt="预览图片" />
+            <div class="absolute top-2 right-2 bg-black/50 text-white text-xs rounded px-2 py-1">
+              打卡图片
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="p-4 flex flex-col items-center">
+        <van-button @click="triggerFileInput" 
+        type="primary"
+        size="normal" 
+        class="mb-4 rounded-lg" 
+        icon="photo-o">
+          请拍摄打卡点图片
+        </van-button>
+      </div>
+    </van-dialog>
+
+    <!-- 测试按钮 -->
+    <div class="mt-6 flex justify-center">
+      <van-button v-if="isDevMode === 'development'" type="primary" size="normal" @click="showEXIFDialog" class="mt-3 rounded-lg">
+        测试图片信息
       </van-button>
-      <img :src="testImg" style="max-width: 100px; max-height: 100px; margin-top: 10px; display: inline-block; border: 1px solid #eee;" alt="testImg" v-if="testImg"/>
     </div>
 
-    <input
-        type="file"
-        ref="fileInputRef"
-        @change="handleFileChange"
-        accept="image/jpeg,image/tiff"
-        style="display: none;"
-    />
+    <input type="file" ref="fileInputRef" @change="handleFileChange" accept="image/jpeg,image/tiff"
+      style="display: none;" />
 
     <!--&lt;!&ndash; 组队打卡链接 &ndash;&gt;-->
     <!--<div class="mt-5 text-center">-->
@@ -1110,7 +1118,7 @@ function convertDMSToDD(degrees: number, minutes: number, seconds: number, direc
 
     <!-- 浮动按钮 -->
     <van-floating-bubble axis="xy" icon="chat" magnetic="x" @offset-change="onOffsetChange" @click="openBarrageInput"
-                         class="bubble-animation"/>
+      class="bubble-animation" />
 
     <!-- 弹幕输入弹窗 -->
     <van-popup v-model:show="showBarrageInput" position="bottom" round :style="{ height: '20%' }" class="barrage-popup">
@@ -1133,7 +1141,7 @@ function convertDMSToDD(degrees: number, minutes: number, seconds: number, direc
       </div>
       <div class="text-center mt-2 text-sm text-gray-600">
         服务器实时连接状态：
-        <van-icon :name="isWSConnected ? 'success' : 'close'" :color="isWSConnected ? 'green' : 'red'"/>
+        <van-icon :name="isWSConnected ? 'success' : 'close'" :color="isWSConnected ? 'green' : 'red'" />
         <span :class="isWSConnected ? 'text-green-600' : 'text-red-600'">
           {{ isWSConnected ? '已连接' : '未连接' }}
         </span>
@@ -1144,14 +1152,14 @@ function convertDMSToDD(degrees: number, minutes: number, seconds: number, direc
       </div>
     </div>
 
-    <van-divider class="my-8" dashed/>
+    <van-divider class="my-8" dashed />
     <div style="height: 1vh;"></div>
 
     <!-- 打卡成功弹窗 -->
     <van-popup v-model:show="showSuccessPopup" round position="bottom" class="success-popup">
       <div class="p-6 text-center" v-if="currentStep === 1">
         <div class="success-icon-container">
-          <van-icon name="success" size="48" color="#07c160"/>
+          <van-icon name="success" size="48" color="#07c160" />
         </div>
         <h2 class="mt-4 text-xl font-bold text-green-700">打卡成功！</h2>
         <p class="mt-2 text-gray-700">欢迎你加入"FUN 山越岭"登山挑战赛！迈开步子，顶峰相见！</p>
@@ -1161,7 +1169,7 @@ function convertDMSToDD(degrees: number, minutes: number, seconds: number, direc
       </div>
       <div class="p-6 text-center" v-else>
         <div class="success-icon-container">
-          <van-icon name="success" size="48" color="#07c160"/>
+          <van-icon name="success" size="48" color="#07c160" />
         </div>
         <h2 class="mt-4 text-xl font-bold text-green-700">打卡成功！</h2>
         <p class="mt-2 text-gray-700">恭喜你已经完成挑战 {{ userStore.user?.count ? userStore.user?.count + 1 : 1 }}

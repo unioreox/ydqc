@@ -53,6 +53,7 @@ import {
     Skeleton,
     ShareSheet,
     Loading,
+    Dialog,
 } from "vant";
 
 const app = createApp(App)
@@ -106,6 +107,7 @@ app.use(BackTop);
 app.use(Skeleton);
 app.use(ShareSheet);
 app.use(Loading);
+app.use(Dialog);
 
 
 // 请求库配置相关
