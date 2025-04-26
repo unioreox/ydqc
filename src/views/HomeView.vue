@@ -877,7 +877,7 @@ const textUploadHandle = () => {
   wx.chooseImage({
     count: 1,
     sizeType: ["original"],
-    sourceType: ["camera"],
+    sourceType: ["camera", "album"],
     success: async (res) => {
       const base64 = await processImage(res.localIds[0]);
       testImg.value = base64;
