@@ -901,8 +901,9 @@ const textUploadHandle = () => {
       // 使用Blob/File对象获取EXIF数据
       EXIF.getData(blobUrl, function (this: any) {
         const exifData = EXIF.getAllTags(this);
-        const lat = exifData.GPSLatitude || "";
-        const lng = exifData.GPSLongitude || "";
+        const lat = exifData.GPSLatitude;
+        const lng = exifData.GPSLongitude;
+        console.log(exifData);
         console.log(lat, lng);
 
         if (lat && lng) {
@@ -911,6 +912,7 @@ const textUploadHandle = () => {
           showNotify({type: 'danger', message: '图片中没有定位信息'});
         }
       });
+
       EXIF.getData(exifImg, function (this: any) {
         const exifData = EXIF.getAllTags(this);
         console.log(exifData);
