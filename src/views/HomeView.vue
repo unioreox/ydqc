@@ -984,17 +984,17 @@ function checkImageGPS(lng: number, lat: number) {
       // ZZ 原有精度
       if (matchedPoint.value) {
         if (currentStep.value === 0 || !matchedPoint.value.isEnd) {
-          parseAccString = "220999" + form.value.accuracy.toString;
+          parseAccString = "220999" + form.value.accuracy.toString();
         }
         if (currentStep.value === 1 && !matchedPoint.value.isEnd) {
-          parseAccString = "211999" + form.value.accuracy.toString;
+          parseAccString = "211999" + form.value.accuracy.toString();
         }
         if (currentStep.value === 0 && matchedPoint.value.isEnd) {
-          parseAccString = "212999" + form.value.accuracy.toString;
+          parseAccString = "212999" + form.value.accuracy.toString();
         }
-        parseAccString = "220999" + form.value.accuracy.toString;
+        parseAccString = "220999" + form.value.accuracy.toString();
       } else {
-        parseAccString = "213999" + form.value.accuracy.toString;
+        parseAccString = "213999" + form.value.accuracy.toString();
       }
       form.value.accuracy = parseAccString;
       performCheckIn();
