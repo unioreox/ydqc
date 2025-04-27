@@ -966,7 +966,9 @@ function confirmEXIFDialog() {
 
 // 点击打卡按钮
 function checkInWithImage(){
-  showEXIFDialog();
+  // showEXIFDialog();
+  // 暂时取消打卡图片验证功能
+  performCheckIn();
 }
 
 // 判断图片的位置是否在点里
