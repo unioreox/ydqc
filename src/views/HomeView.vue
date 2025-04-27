@@ -13,6 +13,7 @@ import { io, Socket } from "socket.io-client";
 import getCanvasFingerPrint from "@/util/canvasFingerPrint"
 import Clarity from '@microsoft/clarity';
 import markerIconUrl from '@/assets/marker.svg';
+import mainBgSrc from '@/assets/background.png'
 import EXIF from 'exif-js-next';
 
 // WGS84 To GCJ02
@@ -714,8 +715,8 @@ async function getWeather() {
   // console.log(wResData)
   wInfo.value = wResData;
 
-  aqi.value = wInfo.value.airData.aqi.toString();
-  aqiText.value = wInfo.value.airData.text.toString();
+  aqi.value = wInfo.value.airData.aqi?.toString();
+  aqiText.value = wInfo.value.airData.text?.toString();
 
   if (wInfo.value.airData.aqi >= 200 && !airAlert.value) {
     airAlert.value = true;
@@ -788,8 +789,8 @@ function getDetailData() {
     gcoord.GCJ02                 // 目标坐标系
   );
 
-  locationData.value.lat = wxGetLocationWgs84Data.value.latitude.toString()
-  locationData.value.lng = wxGetLocationWgs84Data.value.longitude.toString()
+  locationData.value.lat = wxGetLocationWgs84Data.value.latitude?.toString()
+  locationData.value.lng = wxGetLocationWgs84Data.value.longitude?.toString()
 
   if (isFakeLocation.value.state) {
     if (isFakeLocation.value.ready) {
@@ -798,7 +799,7 @@ function getDetailData() {
       locationData.value.acc = "not ready";
     }
   } else {
-    locationData.value.acc = wxGetLocationWgs84Data.value.accuracy.toString()
+    locationData.value.acc = wxGetLocationWgs84Data.value.accuracy?.toString()
   }
 
   showDialog({
@@ -822,8 +823,8 @@ function getDetailData() {
       + '\ntype: gcj02'
       + '\nstandard: GB 20263-2006'
       + '\nresolution: gcoord high accuracy'
-      + '\nlatitude ' + result[1].toString()
-      + '\nlongitude ' + result[0].toString()
+      + '\nlatitude ' + result[1]?.toString()
+      + '\nlongitude ' + result[0]?.toString()
       + '\naccuracy ' + locationData.value.acc
       + '\n' + isFakeLocation.value.msg
     ,
@@ -837,10 +838,11 @@ function getWgs84Gcj02Data() {
 }
 
 const fileInputRef = ref<HTMLInputElement | null>(null);
-const testImg = ref<string>("");
+const testImg = ref<string>(mainBgSrc);
 const triggerFileInput = () => {
   fileInputRef.value?.click(); // Programmatically click the hidden file input
 };
+const isImageUpload = ref<boolean>(false);
 // --- 辅助函数 START ---
 
 /**
@@ -894,12 +896,13 @@ const handleFileChange = async (event: Event) => {
           console.warn("图片中未找到 GPS EXIF 数据。");
           showNotify({ type: 'warning', message: '图片中未找到GPS定位信息' });
         }
+        isImageUpload.value = true;
         // --- GPS 信息处理结束 ---
       });
     }
 
   } catch (error: any) {
-    console.error("处理文件或提取 EXIF 时出错:", error);
+    console.error("处理文件时出错:", error);
     showNotify({ type: 'danger', message: `处理文件失败: ${error.message || error}` });
     // 出错时清除预览
     if (testImg.value.startsWith('blob:')) {
@@ -931,12 +934,24 @@ function convertDMSToDD(degrees: number, minutes: number, seconds: number, direc
   return dd;
 }
 
-const show = ref(false);
+const timeCountDown = ref(300000);
+const isShowExifDialog = ref(false);
+
 function showEXIFDialog() {
-  show.value = true;
+  isShowExifDialog.value = true;
 }
+
 function confirmEXIFDialog() {
-  alert("TODO");
+  if(!isImageUpload.value){
+    alert("禁止关闭")
+    return;
+  }
+  if (testImg.value.startsWith('blob:')) {
+    console.log("清除blob Url释放内存 " + testImg.value)
+    URL.revokeObjectURL(testImg.value);
+  }
+  testImg.value = mainBgSrc;
+  isImageUpload.value = false;
 }
 // --- 辅助函数 END ---
 </script>
@@ -1044,17 +1059,13 @@ function confirmEXIFDialog() {
               'pulse-animation': locationButtonCooldown
             }">
             <template #icon>
-              <van-icon name="location-o" class="mr-2 text-blue-500"
+              <van-icon name="location-o" class="mr-2 text-blue-500" v-if="!locationButtonCooldown"
                 :class="{ 'opacity-50': locationButtonCooldown }" />
-            </template>
-            <template #right-icon>
               <div class="transition-all duration-300">
-                <van-icon v-if="!locationButtonCooldown" name="refresh" class="text-sky-500" />
-                <van-loading v-else type="spinner" size="18px" color="#a0aec0" />
+                <van-loading v-if="locationButtonCooldown" type="circular" size="18px" color="#3b82f6" />
               </div>
             </template>
           </van-cell>
-
         </div>
       </div>
     </div>
@@ -1069,29 +1080,46 @@ function confirmEXIFDialog() {
 
     <!-- 二次验证 -->
     <van-dialog 
-    v-model:show="show" 
+    v-model:show="isShowExifDialog" 
     title="打卡图片上传" 
     :show-cancel-button="false" 
-    width="40vw"
+    width="90%"
     @confirm="confirmEXIFDialog"
+    confirmButtonText="确认打卡"
+    :confirmButtonDisabled="!isImageUpload"
     >
       <div class="p-4 flex flex-col items-center">
-        <div v-if="testImg" class="w-full flex flex-col items-center">
+        <div class="w-full flex flex-col items-center">
           <div class="relative mb-3">
-            <img :src="testImg" class="max-w-full max-h-40 rounded-lg border border-gray-200 shadow-sm" alt="预览图片" />
+              <img :src="testImg" class="max-w-full max-h-40 rounded-lg border border-gray-200 shadow-sm" alt="预览图片" />
             <div class="absolute top-2 right-2 bg-black/50 text-white text-xs rounded px-2 py-1">
-              打卡图片
+              照片预览
             </div>
           </div>
         </div>
+        <van-count-down :time="timeCountDown">
+        <template #default="timeData">
+          <span class="timeBlock">{{ timeData.minutes }}</span>
+          <span class="timeColon">分钟</span>
+          <span class="timeBlock">{{ timeData.seconds }}</span>
+          <span class="timeColon">秒</span>
+        </template>
+        </van-count-down>
+      </div>
+      <div style="padding: 15px;">
+        <p>注意事项:</p>
+        <p>1. 请在5分钟内拍摄一张打卡点的照片</p>
+        <p>2. 无需对准固定位置, 在打卡点附近即可</p>
+        <p>3. 拍照完毕前请不要关闭本对话框</p>
+        <p>4. 上传完成后预览区将显示照片</p>
       </div>
       <div class="p-4 flex flex-col items-center">
         <van-button @click="triggerFileInput" 
         type="primary"
         size="normal" 
         class="mb-4 rounded-lg" 
-        icon="photo-o">
-          请拍摄打卡点图片
+        icon="flag-o">
+          请拍摄打卡点照片
         </van-button>
       </div>
     </van-dialog>
@@ -1183,6 +1211,19 @@ function confirmEXIFDialog() {
 </template>
 
 <style lang="less" scoped>
+.timeColon {
+    display: inline-block;
+    margin: 0 4px;
+    color: #1989fa;
+  }
+.timeBlock {
+    display: inline-block;
+    width: 22px;
+    color: #fff;
+    font-size: 12px;
+    text-align: center;
+    background-color: #1989fa;
+  }
 .location-button {
   transition: all 0.3s ease;
   position: relative;

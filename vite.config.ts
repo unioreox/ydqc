@@ -21,7 +21,7 @@ function getCustomInfo() {
     const updateInfo = {
         switch: true,
         header: "更新提示",
-        body: "服务器热更新, 点击刷新\n建议您更新, 防止出现打卡数据异常\n功能更新：现已上线工会排行榜",
+        body: "服务器热更新, 点击刷新\n建议您更新, 防止出现打卡数据异常",
     };
     // 天气信息
     const weather = {
