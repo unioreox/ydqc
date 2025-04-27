@@ -299,6 +299,7 @@ const updateLocation = () => {
       wxGetLocationWgs84Data.value.longitude = res.longitude;
       form.value.latitude = res.latitude.toString();
       form.value.longitude = res.longitude.toString();
+      // 弃用检测fakelocation
       if (isFakeLocation.value.state) {
         if (isFakeLocation.value.ready) {
           form.value.accuracy = "3715";
@@ -852,7 +853,7 @@ const isImageUpload = ref<boolean>(false);
 const handleFileChange = async (event: Event) => {
   const target = event.target as HTMLInputElement;
   if (!target.files || target.files.length === 0) {
-    console.log("没有选择文件。");
+    console.log("没有选择文件");
     return;
   }
 
@@ -873,8 +874,10 @@ const handleFileChange = async (event: Event) => {
 
     exifImg.onload = () => {
       EXIF.getData(exifImg, function (this: any) {
-        const allMetaData = EXIF.getAllTags(this);
-        console.log("提取到的 EXIF 数据:", allMetaData);
+        if(isDevMode.value === 'development'){
+          const allMetaData = EXIF.getAllTags(this);
+          console.log("[开发模式]提取到的数据:", allMetaData);
+        }
 
         // --- 处理 GPS 信息 ---
         const latArray = EXIF.getTag(this, "GPSLatitude");
@@ -886,23 +889,30 @@ const handleFileChange = async (event: Event) => {
           try {
             const latitude = convertDMSToDD(latArray[0], latArray[1], latArray[2], latRef);
             const longitude = convertDMSToDD(lonArray[0], lonArray[1], lonArray[2], lonRef);
-            console.log(`GPS 坐标 (十进制度): 纬度 ${latitude}, 经度 ${longitude}`);
-            showNotify({ type: 'success', message: `图片GPS: ${latitude.toFixed(6)}, ${longitude.toFixed(6)}` });
+            showNotify({ type: 'success', message: `上传成功` });
+            // 校验数据
+            checkImageGPS(longitude, latitude);
+            // form.value.accuracy
           } catch (conversionError) {
-            console.error("GPS 坐标转换失败:", conversionError);
-            showNotify({ type: 'danger', message: '解析图片GPS坐标失败' });
+          if(isDevMode.value === 'development'){
+            console.error("[开发模式]转换失败:", conversionError);
+          }            
+            showNotify({ type: 'danger', message: '获取图片失败, 请重新拍照: 2' });
           }
         } else {
-          console.warn("图片中未找到 GPS EXIF 数据。");
-          showNotify({ type: 'warning', message: '图片中未找到GPS定位信息' });
+          if(isDevMode.value === 'development'){
+            console.error("[开发模式]未找到数据");
+          }     
+          showNotify({ type: 'danger', message: '获取图片失败, 请重新拍照: 3' });
         }
-        isImageUpload.value = true;
         // --- GPS 信息处理结束 ---
       });
     }
 
   } catch (error: any) {
-    console.error("处理文件时出错:", error);
+    if(isDevMode.value === 'development'){
+      console.error("[开发模式]处理文件时出错:", error);
+    } 
     showNotify({ type: 'danger', message: `处理文件失败: ${error.message || error}` });
     // 出错时清除预览
     if (testImg.value.startsWith('blob:')) {
@@ -943,7 +953,6 @@ function showEXIFDialog() {
 
 function confirmEXIFDialog() {
   if(!isImageUpload.value){
-    alert("禁止关闭")
     return;
   }
   if (testImg.value.startsWith('blob:')) {
@@ -954,6 +963,43 @@ function confirmEXIFDialog() {
   isImageUpload.value = false;
 }
 // --- 辅助函数 END ---
+
+// 点击打卡按钮
+function checkInWithImage(){
+  showEXIFDialog();
+}
+
+// 判断图片的位置是否在点里
+function checkImageGPS(lng: number, lat: number) {
+  let parseAccString: string = "113999000";
+  matchedPoint.value = checkPoints.value.find(point => {
+        const distance = AMap.GeometryUtil.distance([lng, lat], [point.longitude, point.latitude]);
+        return distance <= 50;
+      });
+
+      // 定义错误码
+      // X YY 999 ZZ
+      // X 是否校验了 1否 2是
+      // YY 校验是否成功 11不在终点 12不在起点 13哪个都不在 20是
+      // ZZ 原有精度
+      if (matchedPoint.value) {
+        if (currentStep.value === 0 || !matchedPoint.value.isEnd) {
+          parseAccString = "220999" + form.value.accuracy.toString;
+        }
+        if (currentStep.value === 1 && !matchedPoint.value.isEnd) {
+          parseAccString = "211999" + form.value.accuracy.toString;
+        }
+        if (currentStep.value === 0 && matchedPoint.value.isEnd) {
+          parseAccString = "212999" + form.value.accuracy.toString;
+        }
+        parseAccString = "220999" + form.value.accuracy.toString;
+      } else {
+        parseAccString = "213999" + form.value.accuracy.toString;
+      }
+      form.value.accuracy = parseAccString;
+      performCheckIn();
+      isImageUpload.value = true;
+}
 </script>
 
 <template>
@@ -1072,7 +1118,7 @@ function confirmEXIFDialog() {
 
     <!-- 打卡按钮 -->
     <div class="mt-6 flex justify-center">
-      <van-button type="primary" size="large" :disabled="!canCheckIn" @click="performCheckIn" :loading="isSubmitting"
+      <van-button type="primary" size="large" :disabled="!canCheckIn" @click="checkInWithImage" :loading="isSubmitting"
         class="w-full max-w-xs rounded-lg shadow-md check-in-button">
         {{ checkInButtonText }}
       </van-button>
@@ -1110,8 +1156,7 @@ function confirmEXIFDialog() {
         <p>注意事项:</p>
         <p>1. 请在5分钟内拍摄一张打卡点的照片</p>
         <p>2. 无需对准固定位置, 在打卡点附近即可</p>
-        <p>3. 拍照完毕前请不要关闭本对话框</p>
-        <p>4. 上传完成后预览区将显示照片</p>
+        <p>3. 必须选择拍摄, 从相册选择无效</p>
       </div>
       <div class="p-4 flex flex-col items-center">
         <van-button @click="triggerFileInput" 
