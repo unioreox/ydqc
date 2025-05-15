@@ -1,12 +1,9 @@
 /* tslint:disable */
 /* eslint-disable */
+export function set_panic_hook(): void;
 export class RsaEncryptor {
   free(): void;
   constructor();
-  /**
-   * @param {Uint8Array} data
-   * @returns {string}
-   */
   encrypt(data: Uint8Array): string;
 }
 
@@ -15,12 +12,16 @@ export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembl
 export interface InitOutput {
   readonly memory: WebAssembly.Memory;
   readonly __wbg_rsaencryptor_free: (a: number, b: number) => void;
-  readonly rsaencryptor_new: (a: number) => void;
-  readonly rsaencryptor_encrypt: (a: number, b: number, c: number, d: number) => void;
-  readonly __wbindgen_add_to_stack_pointer: (a: number) => number;
+  readonly rsaencryptor_new: () => [number, number, number];
+  readonly rsaencryptor_encrypt: (a: number, b: number, c: number) => [number, number, number, number];
+  readonly set_panic_hook: () => void;
+  readonly __wbindgen_exn_store: (a: number) => void;
+  readonly __externref_table_alloc: () => number;
+  readonly __wbindgen_export_2: WebAssembly.Table;
+  readonly __externref_table_dealloc: (a: number) => void;
   readonly __wbindgen_malloc: (a: number, b: number) => number;
   readonly __wbindgen_free: (a: number, b: number, c: number) => void;
-  readonly __wbindgen_exn_store: (a: number) => void;
+  readonly __wbindgen_start: () => void;
 }
 
 export type SyncInitInput = BufferSource | WebAssembly.Module;
