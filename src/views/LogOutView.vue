@@ -8,7 +8,16 @@
       <div class="iframe-container">
         <p class="iframe-title">您确定登出吗</p>
         <div class="auth-frame">
-          <h3>暂无公告</h3>
+          <h2><b>公告</b></h2>
+          <p style="text-align: left; text-justify: distribute;">
+            <br />
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            请勿尝试和他人配合在起点和终点进行切号打卡。切号打卡将会导致你的打卡数据无效。
+          </p>
+          <p style="text-align: right;">
+            <br />
+            升华工作室
+          </p>
         </div>
       </div>
 
@@ -106,7 +115,7 @@ h1 {
 
 .iframe-container {
   width: 100%;
-  margin-bottom: 24px;
+  margin: 2em 2em 2em 2em;
   border: 1px solid #eaeaea;
   border-radius: 8px;
   overflow: hidden;
@@ -122,8 +131,9 @@ h1 {
 }
 
 .auth-frame {
+  padding: 2em 2em 2em 2em;
   width: 100%;
-  height: 300px;
+  height: 15em;
   border: none;
 }
 
