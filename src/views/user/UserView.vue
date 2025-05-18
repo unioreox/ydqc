@@ -8,6 +8,7 @@ import {
   Share2,
   MessageSquare,
   Settings,
+  CheckCheck,
   ChevronRight, ScanQrCode
 } from 'lucide-vue-next';
 import {getLuckyGuy, infoApi} from "@/api";
@@ -234,16 +235,20 @@ const showAboutDialog = (e: MouseEvent) => {
               </div>
             </div>
             <div class="text-center md:text-left flex-grow">
-              <div class="uppercase tracking-wide text-sm text-indigo-600 font-semibold">{{ user?.college }}</div>
+              <div class="uppercase tracking-wide text-sm text-indigo-600 font-semibold">{{ user?.college ?? '未填写' }}</div>
               <h1 class="text-3xl font-bold text-gray-900 mt-2">{{ user?.nickname }}</h1>
               <div class="mt-4 text-gray-600 space-y-2">
-                <p class="flex items-center justify-center md:justify-start">
+                <p class="flex items-center justify-start md:justify-start">
                   <UserIcon class="w-5 h-5 mr-2 text-indigo-500"/>
-                  <span class="font-medium mr-2"> 学号 / 工号：</span>{{ user?.idNumber }}
+                  <span class="font-medium mr-2"> 学号 / 工号:</span>{{ user?.idNumber ?? '未填写'}}
                 </p>
-                <p class="flex items-center justify-center md:justify-start">
+                <p class="flex items-center justify-start md:justify-start">
+                  <CheckCheck class="w-5 h-5 mr-2 text-green-500"/>
+                  <span class="font-medium mr-2"> 打卡次数:</span>{{ user?.count ?? 0 }}
+                </p>
+                <p class="flex items-center justify-start md:justify-start">
                   <Award class="w-5 h-5 mr-2 text-yellow-500"/>
-                  <span class="font-medium mr-2"> 最好成绩:</span>{{ user?.bestRecord }}
+                  <span class="font-medium mr-2"> 最好成绩:</span>{{ user?.bestRecord ?? '无' }}
                 </p>
               </div>
             </div>

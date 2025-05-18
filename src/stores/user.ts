@@ -1,11 +1,11 @@
 import { defineStore } from 'pinia';
 import { ref } from 'vue';
-import type { UserVO } from '@/api/types.gen';
+import type { UserVo } from '@/api/types.gen';
 
 export const useUserStore = defineStore('user', () => {
-    const user = ref<UserVO | null>(null);
+    const user = ref<UserVo | null>(null);
 
-    function setUser(userData: UserVO) {
+    function setUser(userData: UserVo) {
         user.value = userData;
     }
 
