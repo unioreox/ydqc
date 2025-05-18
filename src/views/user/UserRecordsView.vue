@@ -30,7 +30,7 @@ const fetchRecords = async () => {
   } finally {
     // 查询是否存在无效数据
     for (const item of records.value) {
-      if (item.isValid === false) {
+      if (item.isValid === false && item.status !== 'CANCELLED') {
         showIsValidWarn();
         break;
       }
