@@ -1,11 +1,21 @@
 <script setup lang="ts">
 import {ref, onMounted, computed} from 'vue'
-import {cancelCheckin, listRecord, type RecordVO} from "@/api"
+import {cancelCheckin, listRecord, type RecordVo} from "@/api"
 import {ClockIcon, CalendarIcon, CheckCircleIcon, XCircleIcon, LoaderIcon} from 'lucide-vue-next'
-import {showConfirmDialog} from "vant";
+import {showConfirmDialog, showDialog} from "vant";
 
-const records = ref<RecordVO[]>([])
+const records = ref<RecordVo[]>([])
+const recordsSorted = ref<RecordVo[]>([])
 const isLoading = ref(true)
+
+function showIsValidWarn(){
+  showDialog({
+    title: '提示',
+    message: '经系统研判, 你的部分打卡记录存在异常\n异常记录已被标记为无效',
+  }).then(() => {
+  // on close
+  });
+}
 
 const fetchRecords = async () => {
   isLoading.value = true
@@ -13,11 +23,29 @@ const fetchRecords = async () => {
     const res = await listRecord()
     if (res.data?.data) {
       console.log("获取记录成功:", res.data.data)
-      records.value = res.data.data
+      records.value = res.data.data;
     }
   } catch (error) {
     console.error("获取记录失败:", error)
   } finally {
+    // 查询是否存在无效数据
+    for (const item of records.value) {
+      if (item.isValid === false) {
+        showIsValidWarn();
+        break;
+      }
+    }
+
+    // 安全排序
+    recordsSorted.value = records.value.sort((a, b) => {
+      if (!a.endTime && !b.endTime) return 0;
+      if (!a.endTime) return 1;    // a没有endTime，排到后面
+      if (!b.endTime) return -1;   // b没有endTime，排到后面
+  
+      // 两个都有endTime，正常比较
+      return b.endTime.localeCompare(a.endTime);
+    });
+    
     isLoading.value = false
   }
 }
@@ -34,7 +62,7 @@ const formatDate = (dateString: string | undefined) => {
 }
 
 const latestPendingRecord = computed(() => {
-  return records.value.find(record => record.status === 'PENDING')
+  return records.value.find((record) => record.status === 'PENDING')
 })
 
 const handleCancelRecord = async (recordId: string | undefined) => {
@@ -84,7 +112,7 @@ onMounted(fetchRecords)
       </div>
 
       <div class="bg-white rounded-lg shadow overflow-hidden">
-        <div v-for="record in records"
+        <div v-for="record in recordsSorted"
              class="border-b last:border-b-0 p-4 hover:bg-gray-50 transition duration-300">
           <div class="flex justify-between items-center">
             <div>
