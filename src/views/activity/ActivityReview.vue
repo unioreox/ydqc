@@ -2,7 +2,7 @@
 import {ref, onMounted, computed} from 'vue';
 import {useRoute, useRouter} from 'vue-router';
 import MarkdownIt from 'markdown-it';
-import hljs from 'highlight.js';
+// import hljs from 'highlight.js';
 import {type ActivityReviewVO, getReviewContent} from "@/api";
 
 const md = new MarkdownIt({
@@ -10,12 +10,13 @@ const md = new MarkdownIt({
   linkify: true,
   typographer: true,
   highlight: function (str, lang) {
-    if (lang && hljs.getLanguage(lang)) {
-      try {
-        return hljs.highlight(str, {language: lang}).value;
-      } catch (__) {
-      }
-    }
+    // 禁用代码着色
+    // if (lang && hljs.getLanguage(lang)) {
+    //   try {
+    //     return hljs.highlight(str, {language: lang}).value;
+    //   } catch (__) {
+    //   }
+    // }
     return ''; // use external default escaping
   }
 });
