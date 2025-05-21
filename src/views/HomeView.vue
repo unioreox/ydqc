@@ -819,14 +819,14 @@ function getDetailData() {
       + '\nresolution: gnss'
       + '\nlatitude ' + locationData.value.lat
       + '\nlongitude ' + locationData.value.lng
-      + '\naccuracy ' + locationData.value.acc
+      + '\nversion ' + locationData.value.acc
       + '\n\n<b>wgs84ToGcj02</b>'
       + '\ntype: gcj02'
       + '\nstandard: GB 20263-2006'
       + '\nresolution: gcoord high accuracy'
       + '\nlatitude ' + result[1]?.toString()
       + '\nlongitude ' + result[0]?.toString()
-      + '\naccuracy ' + locationData.value.acc
+      + '\nversion ' + locationData.value.acc
       + '\n' + isFakeLocation.value.msg
     ,
   })
@@ -1222,7 +1222,7 @@ function checkImageGPS(lng: number, lat: number) {
         </span>
       </div>
       <div class="text-center mt-2 text-sm text-gray-600">
-        <van-button plain hairline type="primary" size="small" block @click="getDetailData">版本详细信息</van-button>
+        <van-button plain hairline type="primary" size="small" block @click="getDetailData">版本信息</van-button>
         <!-- {{ jsonInfo.commitInfo.commitId }} - {{ jsonInfo.commitInfo.commitMessage }} -->
       </div>
     </div>
