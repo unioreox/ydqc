@@ -15,7 +15,7 @@ function getCustomInfo() {
     // 公告
     const announcement = {
         switch: true,
-        info: "13:00 - 16:00开始起点打卡的记录, 将自动完成终点打卡(全程), 打卡次数稍后更新",
+        info: "【公告】13:00 - 17:00开始起点打卡的记录, 将自动完成终点打卡(全程), 打卡次数稍后更新, 可前往起点进行下一次打卡",
     };
     // 更新信息
     const updateInfo = {
