@@ -17,8 +17,8 @@ import mainBgSrc from '@/assets/background.png'
 import EXIF from 'exif-js-next';
 import FingerprintJS from '@fingerprintjs/fingerprintjs'
 
-// Initialize an agent at application startup.
-const fpPromise = FingerprintJS.load()
+// fingerprint.js
+const fpPromise = FingerprintJS.load();
 
 const fpValue = ref<string>("NULL");
 async function getFpValue(){
@@ -527,13 +527,12 @@ const loginAndGetInfoHandle = async () => {
         userStore.setUser(res.data.data);
         // custom-id=学号 friendly-name=昵称+学号
         // https://www.npmjs.com/package/@microsoft/clarity
-        Clarity.identify(userStore.user?.id, "", "", userStore.user?.nickname + userStore.user?.idNumber);
-        Clarity.setTag("id", userStore.user?.id);
-        Clarity.setTag("idNumber", userStore.user?.idNumber);
-        Clarity.setTag("nickname", userStore.user?.nickname);
-        Clarity.setTag("college", userStore.user?.college);
-        Clarity.setTag("phone", userStore.user?.phone);
-
+        Clarity.identify(userStore.user?.id ?? "undefined", "", "", userStore.user?.nickname ?? "undefined" + userStore.user?.idNumber ?? "undefined");
+        Clarity.setTag("id", userStore.user?.id ?? "undefined");
+        Clarity.setTag("idNumber", userStore.user?.idNumber ?? "undefined");
+        Clarity.setTag("nickname", userStore.user?.nickname ?? "undefined");
+        Clarity.setTag("college", userStore.user?.college ?? "undefined");
+        Clarity.setTag("phone", userStore.user?.phone ?? "undefined");
       }
     } catch (error) {
       console.error('Info fetch failed:', error);
