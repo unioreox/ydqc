@@ -14,8 +14,8 @@ import { execSync } from 'child_process'
 function getCustomInfo() {
     // 公告
     const announcement = {
-        switch: false,
-        info: "登山系统维护中, 我们将尽快重新上线",
+        switch: true,
+        info: "13:00 - 16:00开始起点打卡的记录, 将自动完成终点打卡(全程), 打卡次数稍后更新",
     };
     // 更新信息
     const updateInfo = {
