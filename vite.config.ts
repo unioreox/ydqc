@@ -19,7 +19,7 @@ function getCustomInfo() {
     };
     // 更新信息
     const updateInfo = {
-        switch: true,
+        switch: false,
         header: "更新提示",
         body: "服务器热更新, 点击刷新\n建议您更新, 防止出现打卡数据异常",
     };

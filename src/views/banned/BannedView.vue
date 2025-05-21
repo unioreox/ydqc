@@ -3,6 +3,18 @@ import { showNotify } from 'vant';
 import { ref } from 'vue';
 import QRCode from 'qrcode';
 import getCanvasFingerPrint from "@/util/canvasFingerPrint"
+import FingerprintJS from '@fingerprintjs/fingerprintjs'
+
+// fingerprint.js
+const fpPromise = FingerprintJS.load();
+
+const fpValue = ref<string>("NULL");
+async function getFpValue(){
+  const fp = await fpPromise
+  const result = await fp.get()
+  fpValue.value = result.visitorId;
+  // console.log(fpValue.value);
+}
 
 showNotify({
   type: 'warning',
@@ -19,11 +31,14 @@ async function generateQRCode(data: string) {
   }
 }
 
-const identifyCode = ref("");
+const identifyCode = ref<string>("");
+const cpValue = ref("")
 const qrCodeDataUrl = ref("");
 
 async function init() {
-  identifyCode.value = getCanvasFingerPrint();
+  cpValue.value = getCanvasFingerPrint();
+  await getFpValue();
+  identifyCode.value = [cpValue.value, fpValue.value].toString();
   qrCodeDataUrl.value = await generateQRCode(identifyCode.value);
   // document.getElementById('identifyCode').src = qrCodeDataUrl;
 }
