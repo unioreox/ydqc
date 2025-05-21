@@ -104,6 +104,7 @@ export type CheckInRequest = {
     data: string;
     state: string;
     fingerprint: string;
+    fingerprintNew: string;
     timestamp: string;
 };
 

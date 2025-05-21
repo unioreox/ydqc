@@ -15,6 +15,18 @@ import Clarity from '@microsoft/clarity';
 import markerIconUrl from '@/assets/marker.svg';
 import mainBgSrc from '@/assets/background.png'
 import EXIF from 'exif-js-next';
+import FingerprintJS from '@fingerprintjs/fingerprintjs'
+
+// Initialize an agent at application startup.
+const fpPromise = FingerprintJS.load()
+
+const fpValue = ref<string>("NULL");
+async function getFpValue(){
+  const fp = await fpPromise
+  const result = await fp.get()
+  fpValue.value = result.visitorId;
+  // console.log(fpValue.value);
+}
 
 // WGS84 To GCJ02
 // import { wgs84ToGcj02 } from "@/util/convertLocation";
@@ -234,7 +246,8 @@ const encryptDataAndCheckInHandle = async () => {
     body: {
       data: encrypted,
       state: state,
-      fingerprint: initCanvasFingerPrint,
+      fingerprintNew: initCanvasFingerPrint,
+      fingerprint: fpValue.value,
       timestamp: timestamp.toString(),
     }
   });
@@ -542,6 +555,8 @@ onMounted(async () => {
     // 第一次必须异步请求
     await getWeather();
     await getAnnouncement();
+    // Fingerprint.js
+    await getFpValue();
     // 反虚拟定位
     // await checkFakeLocation();
 
