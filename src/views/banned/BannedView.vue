@@ -47,12 +47,16 @@ const userInfo = ref({
   idNumber: ''
 });
 
+function pushToForm(){
+  window.location.href = "https://docs.qq.com/form/page/DYnlrYWxJZ0JjWUJP";
+}
+
 async function init() {
-  if(!userStore.user?.nickname){
-    router.push('/login');
-  }else if(!userStore.user?.isBanned){
-    router.push('/');
-  }
+  // if(!userStore.user?.nickname){
+  //   router.push('/login');
+  // }else if(!userStore.user?.isBanned){
+  //   router.push('/');
+  // }
   
   cpValue.value = getCanvasFingerPrint();
   await getFpValue();
@@ -106,7 +110,8 @@ init();
         <p>3.利用异常方法进行打卡</p>
         <p>4.其他造成打卡记录严重失实或对本系统存在危害的行为</p>
         <br />
-        <p>如对处理有异议，请联系校团委 (0731)88879469</p>
+        <p>对处理有异议</p>
+        <p><van-button plain type="primary" size="small" @click="pushToForm()">点此申诉</van-button></p>
         <br />
       </div>
     </van-floating-panel>
