@@ -513,6 +513,10 @@ const loginAndGetInfoHandle = async () => {
         userStore.setUser(res.data.data);
         // 删掉 code 参数，防止刷新页面时再次登录
         window.history.replaceState({}, document.title, window.location.pathname);
+        if(res.data.data.isBanned === true){
+          // 封禁页面
+          router.push('/banned');
+        }
       } else {
         router.push('/login');
       }

@@ -4,6 +4,8 @@ import { ref } from 'vue';
 import QRCode from 'qrcode';
 import getCanvasFingerPrint from "@/util/canvasFingerPrint"
 import FingerprintJS from '@fingerprintjs/fingerprintjs'
+import { useUserStore } from "@/stores/user";
+const userStore = useUserStore();
 
 // fingerprint.js
 const fpPromise = FingerprintJS.load();
@@ -34,12 +36,24 @@ async function generateQRCode(data: string) {
 const identifyCode = ref<string>("");
 const cpValue = ref("")
 const qrCodeDataUrl = ref("");
+const userInfo = ref({
+  name: '',
+  college: '',
+  idNumber: ''
+});
 
 async function init() {
   cpValue.value = getCanvasFingerPrint();
   await getFpValue();
   identifyCode.value = [cpValue.value, fpValue.value].toString();
-  qrCodeDataUrl.value = await generateQRCode(identifyCode.value);
+  userInfo.value.name = userStore.user?.nickname ?? 'null';
+  userInfo.value.college = userStore.user?.college ?? 'null';
+  userInfo.value.idNumber = userStore.user?.idNumber ?? 'null';
+
+  qrCodeDataUrl.value = await generateQRCode(
+    userInfo.value.college.toString() 
+    + userInfo.value.name.toString() 
+    + userInfo.value.idNumber.toString());
   // document.getElementById('identifyCode').src = qrCodeDataUrl;
 }
 init();
@@ -82,7 +96,6 @@ init();
         <br />
         <p>如对处理有异议，请联系校团委网络信息部</p>
         <br />
-        <van-text-ellipsis :content="identifyCode" expand-text="展开" collapse-text="收起" />
       </div>
     </van-floating-panel>
   </div>
