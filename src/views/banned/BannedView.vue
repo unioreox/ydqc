@@ -52,11 +52,11 @@ function pushToForm(){
 }
 
 async function init() {
-  // if(!userStore.user?.nickname){
-  //   router.push('/login');
-  // }else if(!userStore.user?.isBanned){
-  //   router.push('/');
-  // }
+  if(!userStore.user?.nickname){
+    router.push('/login');
+  }else if(!userStore.user?.isBanned){
+    router.push('/');
+  }
   
   cpValue.value = getCanvasFingerPrint();
   await getFpValue();
