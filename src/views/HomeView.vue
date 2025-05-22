@@ -513,7 +513,7 @@ const loginAndGetInfoHandle = async () => {
         userStore.setUser(res.data.data);
         // 删掉 code 参数，防止刷新页面时再次登录
         window.history.replaceState({}, document.title, window.location.pathname);
-        if(res.data.data.isBanned === true){
+        if(res.data.data.isBanned){
           // 封禁页面
           router.push('/banned');
         }
@@ -529,6 +529,11 @@ const loginAndGetInfoHandle = async () => {
       const res = await infoApi();
       if (res.data?.data) {
         userStore.setUser(res.data.data);
+        if(res.data.data.isBanned){
+          // 封禁页面
+          router.push('/banned');
+        }
+        
         // custom-id=学号 friendly-name=昵称+学号
         // https://www.npmjs.com/package/@microsoft/clarity
         Clarity.identify(userStore.user?.id ?? "undefined", "", "", userStore.user?.nickname ?? "undefined" + userStore.user?.idNumber ?? "undefined");

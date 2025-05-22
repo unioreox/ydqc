@@ -51,8 +51,8 @@ async function init() {
   userInfo.value.idNumber = userStore.user?.idNumber ?? 'null';
 
   qrCodeDataUrl.value = await generateQRCode(
-    userInfo.value.college.toString() 
-    + userInfo.value.name.toString() 
+    userInfo.value.college.toString() + " "
+    + userInfo.value.name.toString() + " "
     + userInfo.value.idNumber.toString());
   // document.getElementById('identifyCode').src = qrCodeDataUrl;
 }
