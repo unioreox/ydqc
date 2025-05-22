@@ -50,6 +50,8 @@ const userInfo = ref({
 async function init() {
   if(!userStore.user?.nickname){
     router.push('/login');
+  }else if(!userStore.user?.isBanned){
+    router.push('/');
   }
   
   cpValue.value = getCanvasFingerPrint();
