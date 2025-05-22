@@ -5,6 +5,7 @@ import QRCode from 'qrcode';
 import getCanvasFingerPrint from "@/util/canvasFingerPrint"
 import FingerprintJS from '@fingerprintjs/fingerprintjs'
 import { useUserStore } from "@/stores/user";
+import router from "@/router";
 const userStore = useUserStore();
 
 // fingerprint.js
@@ -18,11 +19,15 @@ async function getFpValue(){
   // console.log(fpValue.value);
 }
 
-showNotify({
+function showBanner(){
+  setTimeout(()=>{
+    showNotify({
   type: 'warning',
   message: '用户被封禁',
   duration: 0,
 });
+  }, 3000)
+}
 
 async function generateQRCode(data: string) {
   try {
@@ -43,8 +48,13 @@ const userInfo = ref({
 });
 
 async function init() {
+  if(!userStore.user?.nickname){
+    router.push('/login');
+  }
+  
   cpValue.value = getCanvasFingerPrint();
   await getFpValue();
+  showBanner();
   identifyCode.value = [cpValue.value, fpValue.value].toString();
   userInfo.value.name = userStore.user?.nickname ?? 'null';
   userInfo.value.college = userStore.user?.college ?? 'null';
