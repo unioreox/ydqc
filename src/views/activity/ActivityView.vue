@@ -156,10 +156,27 @@ const onRefresh = () => {
   refreshing.value = true;
   fetchData();
 };
+
+// isOHOS
+const isNotOHOS = ref(true)
+const userAgent = navigator.userAgent;
+const uaVersionMatch = userAgent.match(/Firefox\/(\d+\.\d+\.\d+)/);
+
+function isOHOS(){
+if (uaVersionMatch) {
+    const versionNumber = uaVersionMatch[1];
+    if(versionNumber === '141.0.0'){
+      isNotOHOS.value = false;
+    }
+}
+}
+isOHOS();
 </script>
 
 <template>
   <div class="activity-list">
+    <div style="padding: 5vh;" v-if="!isNotOHOS"></div>
+    <div style="padding: 3vh;" v-if="isNotOHOS"></div>
     <van-pull-refresh v-model="refreshing" @refresh="onRefresh">
       <van-skeleton title :row="6" :loading="loading" animated>
         <div class="container">

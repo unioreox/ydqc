@@ -87,10 +87,26 @@ const fetchUnionUsers = async () => {
     }
   });
 }
+// isOHOS
+const isNotOHOS = ref(true)
+const userAgent = navigator.userAgent;
+const uaVersionMatch = userAgent.match(/Firefox\/(\d+\.\d+\.\d+)/);
+
+function isOHOS(){
+if (uaVersionMatch) {
+    const versionNumber = uaVersionMatch[1];
+    if(versionNumber === '141.0.0'){
+      isNotOHOS.value = false;
+    }
+}
+}
+isOHOS();
 </script>
 
 <template>
   <div class="leaderboard-container">
+    <div style="padding: 5vh;" v-if="!isNotOHOS"></div>
+    <div style="padding: 3vh;" v-if="isNotOHOS"></div>
     <div class="leaderboard-card">
       <!-- 标题栏 -->
       <div class="header">
