@@ -95,9 +95,8 @@ const handleBack = () => {
 
 <template>
   <!-- 占位元素, 防止挤压 navBar -->
-  <div class="nav-bar-container">
+  <div class="nav-bar-container" v-if="isNotOHOS">
     <!-- <br v-if="!isNotOHOS" /> -->
-    <h3 style="text-align: center;margin-top: 2.5em;margin-bottom: 1.5vh;" v-if="!isNotOHOS">{{ curTitle }}</h3>
     <van-nav-bar :title="curTitle" :left-arrow="showBackArrow" v-if="isNotOHOS" @click-left="handleBack" class="nav-inner"/>
   </div>
 </template>

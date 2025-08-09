@@ -1,35 +1,51 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <link rel="icon" href="/favicon.ico">
-        <!-- 防止触摸屏异常滑动 -->
-        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-        <title>CSU 悦动青春</title>
-        <!-- Microsoft Clarity -->
-        <!-- <script type="text/javascript">
+
+<head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="/favicon.ico">
+    <!-- 防止触摸屏异常滑动 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <title>CSU 悦动青春</title>
+    <!-- Microsoft Clarity -->
+    <!-- <script type="text/javascript">
             (function(c,l,a,r,i,t,y){
                 c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
                 t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
                 y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
             })(window, document, "clarity", "script", "qu3cf7upw6");
         </script> -->
-    </head>
-    <body>
-        <div id="app"></div>
-        <script type="module" src="/src/main.ts"></script>
-        <script>
-            window.op = window.op || function (...args) {
-                (window.op.q = window.op.q || []).push(args);
-            };
-            window.op('init', {
-                clientId: '8e49192b-5ccb-46aa-8886-2ae1baeca831',
-                trackScreenViews: true,
-                trackOutgoingLinks: true,
-                trackAttributes: true,
-            });
-        </script>
-        <!-- 弃用OpenPanel -->
-        <!-- <script src="https://openpanel.dev/op1.js" defer async></script> -->
-    </body>
+</head>
+
+<body>
+    <div id="app"></div>
+    <div id="ohosLocationKit" style="display: none;">
+        <div id="ohosLocationKitLat">0</div>
+        <div id="ohosLocationKitLng">0</div>
+        <div id="ohosLocationKitAcc">0</div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+    <script>
+        // OHOS Location
+        // function passOHOSLocation(lat, lng, acc) {
+        //     document.getElementById('ohosLocationKitLat').innerText = lat;
+        //     document.getElementById('ohosLocationKitLng').innerText = lng;
+        //     document.getElementById('ohosLocationKitAcc').innerText = acc;
+        //     console.log(param);
+        // }
+        // Clarity
+        window.op = window.op || function (...args) {
+            (window.op.q = window.op.q || []).push(args);
+        };
+        window.op('init', {
+            clientId: '8e49192b-5ccb-46aa-8886-2ae1baeca831',
+            trackScreenViews: true,
+            trackOutgoingLinks: true,
+            trackAttributes: true,
+        });
+    </script>
+    <!-- 弃用OpenPanel -->
+    <!-- <script src="https://openpanel.dev/op1.js" defer async></script> -->
+</body>
+
 </html>

@@ -21,7 +21,7 @@ import FingerprintJS from '@fingerprintjs/fingerprintjs'
 const fpPromise = FingerprintJS.load();
 
 const fpValue = ref<string>("NULL");
-async function getFpValue(){
+async function getFpValue() {
   const fp = await fpPromise
   const result = await fp.get()
   fpValue.value = result.visitorId;
@@ -47,6 +47,8 @@ const onlineCount = ref(0);
 import simpleMapImgUrl from "@/assets/simpleMap.png";
 import type { WeatherData } from "@/types/weather";
 import type { BuildInfo } from "@/types/buildInfo";
+import { LayoutGrid, LayoutTemplate } from 'lucide-vue-next';
+import showOHOSNotify from '@/util/ohosNotify';
 
 const userStore = useUserStore();
 const curRecord = ref<RecordVo>({
@@ -125,7 +127,8 @@ const getLastRecordHandle = async () => {
     if (res.data?.data) {
       const lastRecord = res.data.data;
       if (lastRecord.status === "PENDING") {
-        showNotify({ type: 'success', message: '检测到你有未完成的记录，继续挑战吧！' });
+        showOHOSNotify(isNotOHOS.value, 'success', '检测到你有未完成的记录，继续挑战吧！')
+        // showNotify({ type: 'success', message: '检测到你有未完成的记录，继续挑战吧！' });
         curRecord.value = lastRecord;
         currentStep.value = 1;
         currentStage.value = 0;
@@ -133,7 +136,9 @@ const getLastRecordHandle = async () => {
         currentStep.value = 0;
         currentStage.value = -1;
         form.value.type = checkPoints.value.find(point => !point.isEnd)?.id || 1;
-        showNotify({ type: 'success', message: '点击发起挑战或者再次挑战！😏' });
+
+        showOHOSNotify(isNotOHOS.value, 'success', '点击发起挑战或者再次挑战！😏')
+        // showNotify({ type: 'success', message: '点击发起挑战或者再次挑战！😏' });
       }
     } else {
       curRecord.value = {
@@ -148,7 +153,8 @@ const getLastRecordHandle = async () => {
     }
   } catch (error) {
     console.error('Failed to get last record:', error);
-    showNotify({ type: 'danger', message: '获取上次记录失败，请重试' });
+    showOHOSNotify(isNotOHOS.value, 'danger', '获取上次记录失败，请重试')
+    // showNotify({ type: 'danger', message: '获取上次记录失败，请重试' });
   }
 };
 
@@ -209,7 +215,8 @@ const initMap = async () => {
     isLoading.value = false;
   } catch (error) {
     console.error("加载高德地图失败:", error);
-    showNotify({ type: 'danger', message: '地图加载失败，请刷新重试' });
+    showOHOSNotify(isNotOHOS.value, 'danger', '地图加载失败，请刷新重试')
+    // showNotify({ type: 'danger', message: '地图加载失败，请刷新重试' });
   }
 };
 
@@ -221,7 +228,8 @@ const getCheckInPointHandle = async () => {
     }
   } catch (error) {
     console.error('Failed to get check-in points:', error);
-    showNotify({ type: 'danger', message: '获取打卡点失败，请重试' });
+    showOHOSNotify(isNotOHOS.value, 'danger', '获取打卡点失败，请重试')
+    // showNotify({ type: 'danger', message: '获取打卡点失败，请重试' });
   }
 };
 
@@ -254,6 +262,12 @@ const encryptDataAndCheckInHandle = async () => {
 };
 
 const locationButtonCooldown = ref(false);
+const testInfo = ref("testInfo");
+const ohosPosition = ref({
+      lat: 0,
+      lng: 0,
+      acc: 0,
+    });
 const updateLocation = () => {
   pressButtonCount.value++;
   if (locationButtonCooldown.value) return;
@@ -263,124 +277,215 @@ const updateLocation = () => {
 
   // 更新最后一次获取位置的时间
   lastUpdateLocationTime.value = Date.now();
-
   drawCircleHandle();
 
-  wx.getNetworkType({
-    success: function (res) {
-      if (res.networkType === "wifi") {
-        showNotify({
-          type: 'warning',
-          message: '同学你好！请到室外完成打卡哦！😨'
-        })
-      }
-    }
-  });
+  if (!isNotOHOS.value) {
+    window.location.href = 'ohos://callLocationKitAbility'
+    // OHOS
 
-  wx.getLocation({
-    type: 'wgs84',
-    success: async (res) => {
-      currentLocation.value = ` 纬度: ${res.latitude}, 经度: ${res.longitude}`;
+    // showOHOSNotify(isNotOHOS.value, 'success', 'onUpdate');
+      const ohosLocationKitLatElement = document.getElementById('ohosLocationKitLat');
+      const LatString = ohosLocationKitLatElement ? ohosLocationKitLatElement.innerText : '';
+      const ohosLocationKitLngElement = document.getElementById('ohosLocationKitLng');
+      const LngString = ohosLocationKitLngElement ? ohosLocationKitLngElement.innerText : '';
+      const ohosLocationKitAccElement = document.getElementById('ohosLocationKitAcc');
+      const AccString = ohosLocationKitAccElement ? ohosLocationKitAccElement.innerText : '';
 
-      // const strIn = res.latitude + "," + res.longitude;
-      // const gcj02PositionRaw = wgs84ToGcj02(strIn);
-      // const gcj02Position = [parseFloat(gcj02PositionRaw[0]), parseFloat(gcj02PositionRaw[1])];
+      ohosPosition.value.lat = Number(LatString);
+      ohosPosition.value.lng = Number(LngString);
+      ohosPosition.value.acc = Number(AccString);
 
-      matchedPoint.value = checkPoints.value.find(point => {
-        const distance = AMap.GeometryUtil.distance([res.longitude, res.latitude], [point.longitude, point.latitude]);
-        return distance <= 50;
-      });
+      if (!isNotOHOS.value) {
+        // 访问设备地理位置
 
-      if (matchedPoint.value) {
-        if (currentStep.value === 0 || !matchedPoint.value.isEnd) {
+        matchedPoint.value = checkPoints.value.find(point => {
+          const distance = AMap.GeometryUtil.distance([ohosPosition.value.lng, ohosPosition.value.lat], [point.longitude, point.latitude]);
+          return distance <= 50;
+        });
+
+        if (matchedPoint.value) {
+          if (currentStep.value === 0 || !matchedPoint.value.isEnd) {
+            form.value.type = matchedPoint.value.id ?? -1;
+          }
+          if (currentStep.value === 1 && !matchedPoint.value.isEnd) {
+            showOHOSNotify(isNotOHOS.value, 'warning', '不在终点打卡点范围内，请移动到终点打卡点附近')
+            // showNotify({ type: 'warning', message: '不在终点打卡点范围内，请移动到终点打卡点附近' });
+          }
+          if (currentStep.value === 0 && matchedPoint.value.isEnd) {
+            showOHOSNotify(isNotOHOS.value, 'warning', '不在起点打卡点范围内，请移动到起点打卡点附近')
+            // showNotify({ type: 'warning', message: '不在起点打卡点范围内，请移动到起点打卡点附近' });
+          }
+          canCheckIn.value = true;
           form.value.type = matchedPoint.value.id ?? -1;
-        }
-        if (currentStep.value === 1 && !matchedPoint.value.isEnd) {
-          showNotify({ type: 'warning', message: '不在终点打卡点范围内，请移动到终点打卡点附近' });
-        }
-        if (currentStep.value === 0 && matchedPoint.value.isEnd) {
-          showNotify({ type: 'warning', message: '不在起点打卡点范围内，请移动到起点打卡点附近' });
-        }
-        canCheckIn.value = true;
-        form.value.type = matchedPoint.value.id ?? -1;
-      } else {
-        canCheckIn.value = false;
-        showNotify({ type: 'warning', message: '不在打卡点范围内，请移动到打卡点附近' });
-      }
-
-      wxGetLocationWgs84Data.value.latitude = res.latitude;
-      wxGetLocationWgs84Data.value.longitude = res.longitude;
-      form.value.latitude = res.latitude.toString();
-      form.value.longitude = res.longitude.toString();
-      // 弃用检测fakelocation
-      if (isFakeLocation.value.state) {
-        if (isFakeLocation.value.ready) {
-          form.value.accuracy = "3715";
-          wxGetLocationWgs84Data.value.accuracy = 3715;
         } else {
-          form.value.accuracy = "5173";
-          wxGetLocationWgs84Data.value.accuracy = 5173;
+          canCheckIn.value = false;
+          showOHOSNotify(isNotOHOS.value, 'warning', '不在打卡点范围内，请移动到打卡点附近')
+          // showNotify({ type: 'warning', message: '不在打卡点范围内，请移动到打卡点附近' });
         }
+
+        wxGetLocationWgs84Data.value.latitude = ohosPosition.value.lat;
+        wxGetLocationWgs84Data.value.longitude = ohosPosition.value.lng;
+        form.value.latitude = ohosPosition.value.lat.toString();
+        form.value.longitude = ohosPosition.value.lng.toString();
+        // 弃用检测fakelocation
+        if (isFakeLocation.value.state) {
+          if (isFakeLocation.value.ready) {
+            form.value.accuracy = "3715";
+            wxGetLocationWgs84Data.value.accuracy = 3715;
+          } else {
+            form.value.accuracy = "5173";
+            wxGetLocationWgs84Data.value.accuracy = 5173;
+          }
+        } else {
+          form.value.accuracy = 'ohos';
+          wxGetLocationWgs84Data.value.accuracy = 10;
+        }
+
+        let ohosResult = gcoord.transform(
+          // 经纬度坐标
+          [ohosPosition.value.lng * 1, ohosPosition.value.lat * 1],
+          gcoord.WGS84,               // 当前坐标系
+          gcoord.GCJ02                 // 目标坐标系
+        );
+
+        const marker = new AMap.Marker({
+          position: new AMap.LngLat(ohosResult[0], ohosResult[1]),
+          title: '当前位置'
+        });
+
+        map.value?.remove(map.value.getAllOverlays('marker'));
+        map.value?.add(marker);
+        // await drawCircleHandle();
+        map.value?.setZoom(17);
+        map.value?.setCenter([ohosResult[0], ohosResult[1]]);
+
       } else {
-        form.value.accuracy = res.accuracy.toString();
-        wxGetLocationWgs84Data.value.accuracy = res.accuracy;
+        wxGetLocationWgs84Data.value.accuracy = -10;
       }
 
+  } else {
+    // 微信客户端内
+    wx.getNetworkType({
+      success: function (res) {
+        if (res.networkType === "wifi") {
+          showOHOSNotify(isNotOHOS.value, 'warning', '同学你好！请到室外完成打卡哦！')
+          // showNotify({
+          //   type: 'warning',
+          //   message: '同学你好！请到室外完成打卡哦！😨'
+          // })
+        }
+      }
+    });
 
-      var result = gcoord.transform(
-        // 经纬度坐标
-        [res.longitude * 1, res.latitude * 1],
-        gcoord.WGS84,               // 当前坐标系
-        gcoord.GCJ02                 // 目标坐标系
-      );
+    wx.getLocation({
+      type: 'wgs84',
+      success: async (res) => {
+        currentLocation.value = ` 纬度: ${res.latitude}, 经度: ${res.longitude}`;
 
-      const marker = new AMap.Marker({
-        position: new AMap.LngLat(result[0], result[1]),
-        title: '当前位置'
-      });
+        // const strIn = res.latitude + "," + res.longitude;
+        // const gcj02PositionRaw = wgs84ToGcj02(strIn);
+        // const gcj02Position = [parseFloat(gcj02PositionRaw[0]), parseFloat(gcj02PositionRaw[1])];
 
-      map.value?.remove(map.value.getAllOverlays('marker'));
-      map.value?.add(marker);
-      // await drawCircleHandle();
-      map.value?.setZoom(17);
-      map.value?.setCenter([result[0], result[1]]);
+        matchedPoint.value = checkPoints.value.find(point => {
+          const distance = AMap.GeometryUtil.distance([res.longitude, res.latitude], [point.longitude, point.latitude]);
+          return distance <= 50;
+        });
 
-      // if (map.value) {
-      //   const numbers = wgs84ToGcj02(res.longitude, res.latitude);
-      //   const marker = new AMap.Marker({
-      //     position: new AMap.LngLat(numbers[0], numbers[1]),
-      //     title: '当前位置'
-      //   });
-      //   map.value.remove(map.value.getAllOverlays('marker'));
-      //   map.value.add(marker);
-      //   await drawCircleHandle();
-      //   map.value.setZoom(17);
-      //   map.value.setCenter(numbers);
-      // AMap.convertFrom([res.longitude, res.latitude], 'gps', async (status, result) => {
-      //   if (result.info === 'ok') {
-      //     const convertLatLng = result.locations[0];
-      //     const marker = new AMap.Marker({
-      //       position: new AMap.LngLat(convertLatLng.lng, convertLatLng.lat),
-      //       title: '当前位置'
-      //     });
-      //     map.value?.remove(map.value.getAllOverlays('marker'));
-      //     map.value?.add(marker);
-      //     await drawCircleHandle();
-      //     map.value?.setZoom(17);
-      //     map.value?.setCenter([convertLatLng.lng, convertLatLng.lat]);
-      //   }
-      // });
-      // }
-    },
-    fail: () => {
-      wxGetLocationWgs84Data.value.latitude = 0;
-      wxGetLocationWgs84Data.value.longitude = 0;
-      wxGetLocationWgs84Data.value.accuracy = -1;
-      currentLocation.value = '获取位置失败，请重试';
-      canCheckIn.value = false;
-      showNotify({ type: 'danger', message: '获取位置失败，请检查定位权限' });
-    }
-  });
+        if (matchedPoint.value) {
+          if (currentStep.value === 0 || !matchedPoint.value.isEnd) {
+            form.value.type = matchedPoint.value.id ?? -1;
+          }
+          if (currentStep.value === 1 && !matchedPoint.value.isEnd) {
+            showOHOSNotify(isNotOHOS.value, 'warning', '不在终点打卡点范围内，请移动到终点打卡点附近')
+            // showNotify({ type: 'warning', message: '不在终点打卡点范围内，请移动到终点打卡点附近' });
+          }
+          if (currentStep.value === 0 && matchedPoint.value.isEnd) {
+            showOHOSNotify(isNotOHOS.value, 'warning', '不在起点打卡点范围内，请移动到起点打卡点附近')
+            // showNotify({ type: 'warning', message: '不在起点打卡点范围内，请移动到起点打卡点附近' });
+          }
+          canCheckIn.value = true;
+          form.value.type = matchedPoint.value.id ?? -1;
+        } else {
+          canCheckIn.value = false;
+          showOHOSNotify(isNotOHOS.value, 'warning', '不在打卡点范围内，请移动到打卡点附近')
+          // showNotify({ type: 'warning', message: '不在打卡点范围内，请移动到打卡点附近' });
+        }
+
+        wxGetLocationWgs84Data.value.latitude = res.latitude;
+        wxGetLocationWgs84Data.value.longitude = res.longitude;
+        form.value.latitude = res.latitude.toString();
+        form.value.longitude = res.longitude.toString();
+        // 弃用检测fakelocation
+        if (isFakeLocation.value.state) {
+          if (isFakeLocation.value.ready) {
+            form.value.accuracy = "3715";
+            wxGetLocationWgs84Data.value.accuracy = 3715;
+          } else {
+            form.value.accuracy = "5173";
+            wxGetLocationWgs84Data.value.accuracy = 5173;
+          }
+        } else {
+          form.value.accuracy = res.accuracy.toString();
+          wxGetLocationWgs84Data.value.accuracy = res.accuracy;
+        }
+
+
+        var result = gcoord.transform(
+          // 经纬度坐标
+          [res.longitude * 1, res.latitude * 1],
+          gcoord.WGS84,               // 当前坐标系
+          gcoord.GCJ02                 // 目标坐标系
+        );
+
+        const marker = new AMap.Marker({
+          position: new AMap.LngLat(result[0], result[1]),
+          title: '当前位置'
+        });
+
+        map.value?.remove(map.value.getAllOverlays('marker'));
+        map.value?.add(marker);
+        // await drawCircleHandle();
+        map.value?.setZoom(17);
+        map.value?.setCenter([result[0], result[1]]);
+      },
+      fail: () => {
+        wxGetLocationWgs84Data.value.latitude = 0;
+        wxGetLocationWgs84Data.value.longitude = 0;
+        wxGetLocationWgs84Data.value.accuracy = -1;
+        currentLocation.value = '获取位置失败，请重试';
+        canCheckIn.value = false;
+        showOHOSNotify(isNotOHOS.value, 'danger', '获取位置失败，请检查定位权限')
+        // showNotify({ type: 'danger', message: '获取位置失败，请检查定位权限' });
+      }
+    });
+  }
+
+  // if (map.value) {
+  //   const numbers = wgs84ToGcj02(res.longitude, res.latitude);
+  //   const marker = new AMap.Marker({
+  //     position: new AMap.LngLat(numbers[0], numbers[1]),
+  //     title: '当前位置'
+  //   });
+  //   map.value.remove(map.value.getAllOverlays('marker'));
+  //   map.value.add(marker);
+  //   await drawCircleHandle();
+  //   map.value.setZoom(17);
+  //   map.value.setCenter(numbers);
+  // AMap.convertFrom([res.longitude, res.latitude], 'gps', async (status, result) => {
+  //   if (result.info === 'ok') {
+  //     const convertLatLng = result.locations[0];
+  //     const marker = new AMap.Marker({
+  //       position: new AMap.LngLat(convertLatLng.lng, convertLatLng.lat),
+  //       title: '当前位置'
+  //     });
+  //     map.value?.remove(map.value.getAllOverlays('marker'));
+  //     map.value?.add(marker);
+  //     await drawCircleHandle();
+  //     map.value?.setZoom(17);
+  //     map.value?.setCenter([convertLatLng.lng, convertLatLng.lat]);
+  //   }
+  // });
+  // }
 
   // wx.getLocation({
   //   type: 'gcj02',
@@ -448,7 +553,8 @@ const performCheckIn = async () => {
 
   // 点击打卡按钮的时间 - 最后一次获取位置的时间 > 2min 即为卡bug
   if (Date.now() - lastUpdateLocationTime.value > 120000) {
-    showNotify({ type: 'danger', message: '同学, 你在卡bug吗?' });
+    showOHOSNotify(isNotOHOS.value, 'danger', '同学, 你在卡bug吗?')
+    // showNotify({ type: 'danger', message: '同学, 你在卡bug吗?' });
     return 0;
   }
 
@@ -476,18 +582,21 @@ const performCheckIn = async () => {
         await getLastRecordHandle();
       }
 
-      showNotify({ type: 'success', message: '打卡成功！' });
+      showOHOSNotify(isNotOHOS.value, 'success', '打卡成功！')
+      // showNotify({ type: 'success', message: '打卡成功！' });
 
       if (!userStore.user?.count && currentStep.value === 0) {
         await router.push('/finish');
       }
 
     } else {
-      showNotify({ type: 'danger', message: '打卡失败，请重试' });
+      showOHOSNotify(isNotOHOS.value, 'danger', '打卡失败，请重试')
+      // showNotify({ type: 'danger', message: '打卡失败，请重试' });
     }
   } catch (error) {
     console.error('Check-in failed:', error);
-    showNotify({ type: 'danger', message: '打卡失败，请重试' });
+    showOHOSNotify(isNotOHOS.value, 'danger', '打卡失败，请重试')
+    // showNotify({ type: 'danger', message: '打卡失败，请重试' });
   } finally {
     isSubmitting.value = false;
   }
@@ -513,7 +622,7 @@ const loginAndGetInfoHandle = async () => {
         userStore.setUser(res.data.data);
         // 删掉 code 参数，防止刷新页面时再次登录
         window.history.replaceState({}, document.title, window.location.pathname);
-        if(res.data.data.isBanned){
+        if (res.data.data.isBanned) {
           // 封禁页面
           router.push('/banned');
         }
@@ -522,21 +631,22 @@ const loginAndGetInfoHandle = async () => {
       }
     } catch (error) {
       console.error('Login or info fetch failed:', error);
-      showNotify({ type: 'danger', message: '登录失败，请重试' });
+      showOHOSNotify(isNotOHOS.value, 'danger', '登录失败，请重试')
+      // showNotify({ type: 'danger', message: '登录失败，请重试' });
     }
   } else {
     try {
       const res = await infoApi();
       if (res.data?.data) {
         userStore.setUser(res.data.data);
-        if(res.data.data.isBanned){
+        if (res.data.data.isBanned) {
           // 封禁页面
           router.push('/banned');
         }
-        
+
         // custom-id=学号 friendly-name=昵称+学号
         // https://www.npmjs.com/package/@microsoft/clarity
-        Clarity.identify(userStore.user?.id ?? "undefined", "", "", userStore.user?.nickname ?? "undefined" + userStore.user?.idNumber ?? "undefined");
+        Clarity.identify(userStore.user?.id ?? "undefined", "", "", userStore.user?.nickname ?? userStore.user?.idNumber ?? "undefined");
         Clarity.setTag("id", userStore.user?.id ?? "undefined");
         Clarity.setTag("idNumber", userStore.user?.idNumber ?? "undefined");
         Clarity.setTag("nickname", userStore.user?.nickname ?? "undefined");
@@ -545,13 +655,16 @@ const loginAndGetInfoHandle = async () => {
       }
     } catch (error) {
       console.error('Info fetch failed:', error);
-      showNotify({ type: 'danger', message: '获取用户信息失败，请重试' });
+      showOHOSNotify(isNotOHOS.value, 'danger', '获取用户信息失败，请重试')
+      // showNotify({ type: 'danger', message: '获取用户信息失败，请重试' });
     }
   }
 };
 
 onMounted(async () => {
   try {
+    isOHOS();
+    initOHOS();
     await loginAndGetInfoHandle();
     await getCheckInPointHandle();
     await getLastRecordHandle();
@@ -559,7 +672,7 @@ onMounted(async () => {
     // 修复定位在圈内但是打卡按钮禁用问题
     setTimeout(() => {
       updateLocation();
-    }, 500);
+    }, 3000);
     // 第一次必须异步请求
     await getWeather();
     await getAnnouncement();
@@ -574,9 +687,29 @@ onMounted(async () => {
     }
   } catch (error) {
     console.error('Initialization failed:', error);
-    showNotify({ type: 'danger', message: '初始化失败，请刷新重试' });
+
+    showOHOSNotify(isNotOHOS.value, 'danger', '初始化失败，请刷新重试');
+    
+    // showNotify({ type: 'danger', message: '初始化失败，请刷新重试' });
   }
 });
+
+function initOHOS(){
+
+      window.location.href = 'ohos://callLocationKitAbility'
+      const ohosLocationKitLatElement = document.getElementById('ohosLocationKitLat');
+      const LatString = ohosLocationKitLatElement ? ohosLocationKitLatElement.innerText : '';
+      const ohosLocationKitLngElement = document.getElementById('ohosLocationKitLng');
+      const LngString = ohosLocationKitLngElement ? ohosLocationKitLngElement.innerText : '';
+      const ohosLocationKitAccElement = document.getElementById('ohosLocationKitAcc');
+      const AccString = ohosLocationKitAccElement ? ohosLocationKitAccElement.innerText : '';
+
+      ohosPosition.value.lat = Number(LatString);
+      ohosPosition.value.lng = Number(LngString);
+      ohosPosition.value.acc = Number(AccString);
+      showOHOSNotify(isNotOHOS.value, 'success', '初始化 kit.ArkWeb 成功');
+
+}
 
 // WebSocket event handlers
 socket.on("connect", () => {
@@ -897,7 +1030,7 @@ const handleFileChange = async (event: Event) => {
 
     exifImg.onload = () => {
       EXIF.getData(exifImg, function (this: any) {
-        if(isDevMode.value === 'development'){
+        if (isDevMode.value === 'development') {
           const allMetaData = EXIF.getAllTags(this);
           console.log("[开发模式]提取到的数据:", allMetaData);
         }
@@ -912,20 +1045,22 @@ const handleFileChange = async (event: Event) => {
           try {
             const latitude = convertDMSToDD(latArray[0], latArray[1], latArray[2], latRef);
             const longitude = convertDMSToDD(lonArray[0], lonArray[1], lonArray[2], lonRef);
-            showNotify({ type: 'success', message: `上传成功` });
+            showOHOSNotify(isNotOHOS.value, 'success', '上传成功')
+            // showNotify({ type: 'success', message: `上传成功` });
             // 校验数据
             checkImageGPS(longitude, latitude);
             // form.value.accuracy
           } catch (conversionError) {
-          if(isDevMode.value === 'development'){
-            console.error("[开发模式]转换失败:", conversionError);
-          }            
-            showNotify({ type: 'danger', message: '获取图片失败, 请重新拍照: 2' });
+            if (isDevMode.value === 'development') {
+              console.error("[开发模式]转换失败:", conversionError);
+            }
+            showOHOSNotify(isNotOHOS.value, 'danger', '获取图片失败, 请重新拍照: 2')
+            // showNotify({ type: 'danger', message: '获取图片失败, 请重新拍照: 2' });
           }
         } else {
-          if(isDevMode.value === 'development'){
+          if (isDevMode.value === 'development') {
             console.error("[开发模式]未找到数据");
-          }     
+          }
           showNotify({ type: 'danger', message: '获取图片失败, 请重新拍照: 3' });
         }
         // --- GPS 信息处理结束 ---
@@ -933,9 +1068,9 @@ const handleFileChange = async (event: Event) => {
     }
 
   } catch (error: any) {
-    if(isDevMode.value === 'development'){
+    if (isDevMode.value === 'development') {
       console.error("[开发模式]处理文件时出错:", error);
-    } 
+    }
     showNotify({ type: 'danger', message: `处理文件失败: ${error.message || error}` });
     // 出错时清除预览
     if (testImg.value.startsWith('blob:')) {
@@ -975,7 +1110,7 @@ function showEXIFDialog() {
 }
 
 function confirmEXIFDialog() {
-  if(!isImageUpload.value){
+  if (!isImageUpload.value) {
     return;
   }
   if (testImg.value.startsWith('blob:')) {
@@ -988,7 +1123,7 @@ function confirmEXIFDialog() {
 // --- 辅助函数 END ---
 
 // 点击打卡按钮
-function checkInWithImage(){
+function checkInWithImage() {
   // showEXIFDialog();
   // 暂时取消打卡图片验证功能
   performCheckIn();
@@ -998,47 +1133,63 @@ function checkInWithImage(){
 function checkImageGPS(lng: number, lat: number) {
   let parseAccString: string = "113999000";
   matchedPoint.value = checkPoints.value.find(point => {
-        const distance = AMap.GeometryUtil.distance([lng, lat], [point.longitude, point.latitude]);
-        return distance <= 50;
-      });
+    const distance = AMap.GeometryUtil.distance([lng, lat], [point.longitude, point.latitude]);
+    return distance <= 50;
+  });
 
-      // 定义错误码
-      // X YY 999 ZZ
-      // X 是否校验了 1否 2是
-      // YY 校验是否成功 11不在终点 12不在起点 13哪个都不在 20是
-      // ZZ 原有精度
-      if (matchedPoint.value) {
-        if (currentStep.value === 0 || !matchedPoint.value.isEnd) {
-          parseAccString = "220999" + form.value.accuracy.toString();
-        }
-        if (currentStep.value === 1 && !matchedPoint.value.isEnd) {
-          parseAccString = "211999" + form.value.accuracy.toString();
-        }
-        if (currentStep.value === 0 && matchedPoint.value.isEnd) {
-          parseAccString = "212999" + form.value.accuracy.toString();
-        }
-        parseAccString = "220999" + form.value.accuracy.toString();
-      } else {
-        parseAccString = "213999" + form.value.accuracy.toString();
-      }
-      form.value.accuracy = parseAccString;
-      performCheckIn();
-      isImageUpload.value = true;
+  // 定义错误码
+  // X YY 999 ZZ
+  // X 是否校验了 1否 2是
+  // YY 校验是否成功 11不在终点 12不在起点 13哪个都不在 20是
+  // ZZ 原有精度
+  if (matchedPoint.value) {
+    if (currentStep.value === 0 || !matchedPoint.value.isEnd) {
+      parseAccString = "220999" + form.value.accuracy.toString();
+    }
+    if (currentStep.value === 1 && !matchedPoint.value.isEnd) {
+      parseAccString = "211999" + form.value.accuracy.toString();
+    }
+    if (currentStep.value === 0 && matchedPoint.value.isEnd) {
+      parseAccString = "212999" + form.value.accuracy.toString();
+    }
+    parseAccString = "220999" + form.value.accuracy.toString();
+  } else {
+    parseAccString = "213999" + form.value.accuracy.toString();
+  }
+  form.value.accuracy = parseAccString;
+  performCheckIn();
+  isImageUpload.value = true;
 }
 // isOHOS
 const isNotOHOS = ref(true)
 const userAgent = navigator.userAgent;
 const uaVersionMatch = userAgent.match(/Firefox\/(\d+\.\d+\.\d+)/);
 
-function isOHOS(){
-if (uaVersionMatch) {
+function isOHOS() {
+  if (uaVersionMatch) {
     const versionNumber = uaVersionMatch[1];
-    if(versionNumber === '141.0.0'){
+    if (versionNumber === '141.0.0') {
       isNotOHOS.value = false;
     }
-}
+  }
 }
 isOHOS();
+
+function checkOHOSPerms(){
+    
+  // 预留给arkweb的, 不要删除, 不要实现
+      passOHOSLocation();
+
+      const ohosLocationKitLatElement = document.getElementById('ohosLocationKitLat');
+      const LatString = ohosLocationKitLatElement ? ohosLocationKitLatElement.innerText : '';
+      const ohosLocationKitLngElement = document.getElementById('ohosLocationKitLng');
+      const LngString = ohosLocationKitLngElement ? ohosLocationKitLngElement.innerText : '';
+      const ohosLocationKitAccElement = document.getElementById('ohosLocationKitAcc');
+      const AccString = ohosLocationKitAccElement ? ohosLocationKitAccElement.innerText : '';
+
+      showOHOSNotify(isNotOHOS.value, 'success', 'Acc' + AccString)
+}
+
 </script>
 
 <template>
@@ -1166,31 +1317,24 @@ isOHOS();
     </div>
 
     <!-- 二次验证 -->
-    <van-dialog 
-    v-model:show="isShowExifDialog" 
-    title="打卡图片上传" 
-    :show-cancel-button="false" 
-    width="90%"
-    @confirm="confirmEXIFDialog"
-    confirmButtonText="确认打卡"
-    :confirmButtonDisabled="!isImageUpload"
-    >
+    <van-dialog v-model:show="isShowExifDialog" title="打卡图片上传" :show-cancel-button="false" width="90%"
+      @confirm="confirmEXIFDialog" confirmButtonText="确认打卡" :confirmButtonDisabled="!isImageUpload">
       <div class="p-4 flex flex-col items-center">
         <div class="w-full flex flex-col items-center">
           <div class="relative mb-3">
-              <img :src="testImg" class="max-w-full max-h-40 rounded-lg border border-gray-200 shadow-sm" alt="预览图片" />
+            <img :src="testImg" class="max-w-full max-h-40 rounded-lg border border-gray-200 shadow-sm" alt="预览图片" />
             <div class="absolute top-2 right-2 bg-black/50 text-white text-xs rounded px-2 py-1">
               照片预览
             </div>
           </div>
         </div>
         <van-count-down :time="timeCountDown">
-        <template #default="timeData">
-          <span class="timeBlock">{{ timeData.minutes }}</span>
-          <span class="timeColon">分钟</span>
-          <span class="timeBlock">{{ timeData.seconds }}</span>
-          <span class="timeColon">秒</span>
-        </template>
+          <template #default="timeData">
+            <span class="timeBlock">{{ timeData.minutes }}</span>
+            <span class="timeColon">分钟</span>
+            <span class="timeBlock">{{ timeData.seconds }}</span>
+            <span class="timeColon">秒</span>
+          </template>
         </van-count-down>
       </div>
       <div style="padding: 15px;">
@@ -1200,20 +1344,27 @@ isOHOS();
         <p>3. 必须选择拍摄, 从相册选择无效</p>
       </div>
       <div class="p-4 flex flex-col items-center">
-        <van-button @click="triggerFileInput" 
-        type="primary"
-        size="normal" 
-        class="mb-4 rounded-lg" 
-        icon="flag-o">
+        <van-button @click="triggerFileInput" type="primary" size="normal" class="mb-4 rounded-lg" icon="flag-o">
           请拍摄打卡点照片
         </van-button>
       </div>
     </van-dialog>
 
+    <div class="text-center mt-2 text-sm text-gray-600">
+      <van-button plain hairline type="primary" size="small" block @click="getDetailData">{{ testInfo }}</van-button>
+      <!-- {{ jsonInfo.commitInfo.commitId }} - {{ jsonInfo.commitInfo.commitMessage }} -->
+    </div>
     <!-- 测试按钮 -->
     <div class="mt-6 flex justify-center">
-      <van-button v-if="isDevMode === 'development'" type="primary" size="normal" @click="showEXIFDialog" class="mt-3 rounded-lg">
+      <van-button v-if="isDevMode === 'development'" type="primary" size="normal" @click="showEXIFDialog"
+        class="mt-3 rounded-lg">
         测试图片信息
+      </van-button>
+    </div>
+    <div class="mt-6 flex justify-center">
+      <van-button v-if="isDevMode === 'development'" type="primary" size="normal" @click="checkOHOSPerms"
+        class="mt-3 rounded-lg">
+        OHOS定位授权窗口拉起
       </van-button>
     </div>
 
@@ -1298,18 +1449,20 @@ isOHOS();
 
 <style lang="less" scoped>
 .timeColon {
-    display: inline-block;
-    margin: 0 4px;
-    color: #1989fa;
-  }
+  display: inline-block;
+  margin: 0 4px;
+  color: #1989fa;
+}
+
 .timeBlock {
-    display: inline-block;
-    width: 22px;
-    color: #fff;
-    font-size: 12px;
-    text-align: center;
-    background-color: #1989fa;
-  }
+  display: inline-block;
+  width: 22px;
+  color: #fff;
+  font-size: 12px;
+  text-align: center;
+  background-color: #1989fa;
+}
+
 .location-button {
   transition: all 0.3s ease;
   position: relative;
