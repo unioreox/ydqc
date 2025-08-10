@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {useUserStore} from "@/stores/user";
+import { useUserStore } from "@/stores/user";
 import AboutDialog from "@/components/AboutDialog.vue";
 import {
   User as UserIcon,
@@ -11,14 +11,14 @@ import {
   CheckCheck,
   ChevronRight, ScanQrCode
 } from 'lucide-vue-next';
-import {getLuckyGuy, infoApi} from "@/api";
-import {onMounted, ref} from "vue";
-import {showDialog} from "vant";
+import { getLuckyGuy, infoApi } from "@/api";
+import { onMounted, ref } from "vue";
+import { showDialog } from "vant";
 import wx from "weixin-js-sdk";
-import {removeToken} from "@/util/token";
+import { removeToken } from "@/util/token";
 
 const version = import.meta.env.VITE_APP_VERSION;
-const {user} = useUserStore();
+const { user } = useUserStore();
 const isLoading = ref(true);
 // 我勒个素材复用啊
 // const userAvatar = ref("https://54sh.csu.edu.cn/assets/icons/tuanzi_footer.png")
@@ -43,6 +43,17 @@ onMounted(async () => {
       isLoading.value = false;
     }
   } else {
+    // OHOS 预读取会破坏逻辑判断
+    if (!isNotOHOS.value) {
+      try {
+        const res = await infoApi();
+        if (res.data?.data) {
+          useUserStore().setUser(res.data.data);
+        }
+      } catch (e) {
+        console.log(e);
+      }
+    }
     isLoading.value = false;
   }
 });
@@ -75,11 +86,11 @@ const selectLuckUser = () => {
         showDialog({
           title: '今日幸运儿',
           message: ` 恭喜 ${res.data.data.userName} 获得今天的幸运儿称号！\n` +
-              ` 学号 / 工号：${res.data.data.idNumber}\n` +
-              ` 手机号：${res.data.data.phone}\n` +
-              ` 打卡信息：\n` +
-              ` 打卡完成时间：${res.data.data.endTime}\n` +
-              ` 总时间：${res.data.data.totalMilliseconds}`,
+            ` 学号 / 工号：${res.data.data.idNumber}\n` +
+            ` 手机号：${res.data.data.phone}\n` +
+            ` 打卡信息：\n` +
+            ` 打卡完成时间：${res.data.data.endTime}\n` +
+            ` 总时间：${res.data.data.totalMilliseconds}`,
           confirmButtonText: '确定',
           closeOnClickOverlay: true,
         });
@@ -87,7 +98,7 @@ const selectLuckUser = () => {
         showDialog({
           title: '抽取失败',
           message: '出了点问题:(\n' +
-              '请稍后再试',
+            '请稍后再试',
           confirmButtonText: '确定',
           closeOnClickOverlay: true,
         });
@@ -100,7 +111,7 @@ const blueToothTest = () => {
   showDialog({
     title: '蓝牙功能测试',
     message: '请确保您的设备支持蓝牙功能，并且已经打开蓝牙功能。\n' +
-        '点击确定开始测试',
+      '点击确定开始测试',
     confirmButtonText: '确定',
     closeOnClickOverlay: true,
   }).then(() => {
@@ -149,7 +160,7 @@ const ScanQrCodeTest = () => {
   showDialog({
     title: '扫码功能测试',
     message: '请确保您的设备支持扫码功能，并且已经打开扫码功能。\n' +
-        '点击确定开始测试',
+      '点击确定开始测试',
     confirmButtonText: '确定',
     closeOnClickOverlay: true,
   }).then(() => {
@@ -180,7 +191,7 @@ const locationTest = () => {
   showDialog({
     title: '定位功能测试',
     message: '请确保您的设备支持定位功能，并且已经打开定位功能。\n' +
-        '点击确定开始测试',
+      '点击确定开始测试',
     confirmButtonText: '确定',
     closeOnClickOverlay: true,
   }).then(() => {
@@ -219,13 +230,13 @@ const isNotOHOS = ref(true)
 const userAgent = navigator.userAgent;
 const uaVersionMatch = userAgent.match(/Firefox\/(\d+\.\d+\.\d+)/);
 
-function isOHOS(){
-if (uaVersionMatch) {
+function isOHOS() {
+  if (uaVersionMatch) {
     const versionNumber = uaVersionMatch[1];
-    if(versionNumber === '141.0.0'){
+    if (versionNumber === '141.0.0') {
       isNotOHOS.value = false;
     }
-}
+  }
 }
 isOHOS();
 </script>
@@ -241,7 +252,7 @@ isOHOS();
       <template v-else>
         <!-- User Info Card -->
         <div
-            class="bg-white bg-opacity-80 backdrop-filter backdrop-blur-lg rounded-xl shadow-xl overflow-hidden transition-all duration-300 hover:shadow-2xl mb-8">
+          class="bg-white bg-opacity-80 backdrop-filter backdrop-blur-lg rounded-xl shadow-xl overflow-hidden transition-all duration-300 hover:shadow-2xl mb-8">
           <div class="p-8 flex flex-col items-center md:flex-row md:items-start">
             <div class="flex-shrink-0 mb-4 md:mb-0 md:mr-6">
               <div class="w-32 h-32 rounded-full overflow-hidden bg-gradient-to-r from-blue-400 to-teal-300 p-1">
@@ -249,19 +260,20 @@ isOHOS();
               </div>
             </div>
             <div class="text-center md:text-left flex-grow">
-              <div class="uppercase tracking-wide text-sm text-indigo-600 font-semibold">{{ user?.college ?? '未填写' }}</div>
+              <div class="uppercase tracking-wide text-sm text-indigo-600 font-semibold">{{ user?.college ?? '未填写' }}
+              </div>
               <h1 class="text-3xl font-bold text-gray-900 mt-2">{{ user?.nickname }}</h1>
               <div class="mt-4 text-gray-600 space-y-2">
                 <p class="flex items-center justify-start md:justify-start">
-                  <UserIcon class="w-5 h-5 mr-2 text-indigo-500"/>
-                  <span class="font-medium mr-2"> 学号 / 工号:</span>{{ user?.idNumber ?? '未填写'}}
+                  <UserIcon class="w-5 h-5 mr-2 text-indigo-500" />
+                  <span class="font-medium mr-2"> 学号 / 工号:</span>{{ user?.idNumber ?? '未填写' }}
                 </p>
                 <p class="flex items-center justify-start md:justify-start">
-                  <CheckCheck class="w-5 h-5 mr-2 text-green-500"/>
+                  <CheckCheck class="w-5 h-5 mr-2 text-green-500" />
                   <span class="font-medium mr-2"> 打卡次数:</span>{{ user?.count ?? 0 }}
                 </p>
                 <p class="flex items-center justify-start md:justify-start">
-                  <Award class="w-5 h-5 mr-2 text-yellow-500"/>
+                  <Award class="w-5 h-5 mr-2 text-yellow-500" />
                   <span class="font-medium mr-2"> 最好成绩:</span>{{ user?.bestRecord ?? '无' }}
                 </p>
               </div>
@@ -279,11 +291,11 @@ isOHOS();
                 { to: '/user/records', icon: FileText, text: '记录查询' },
                 { to: '/finish', icon: Share2, text: '分享参赛信息' }
               ]" :key="index" :to="action.to"
-                          class="flex items-center p-4 text-gray-700 bg-gray-50 rounded-xl hover:bg-gray-100 transition-all duration-300 group hover:shadow-md">
+                class="flex items-center p-4 text-gray-700 bg-gray-50 rounded-xl hover:bg-gray-100 transition-all duration-300 group hover:shadow-md">
                 <component :is="action.icon"
-                           class="w-6 h-6 text-indigo-500 group-hover:text-indigo-600 transition-colors duration-300"/>
+                  class="w-6 h-6 text-indigo-500 group-hover:text-indigo-600 transition-colors duration-300" />
                 <span class="flex-1 ml-4 font-medium">{{ action.text }}</span>
-                <ChevronRight class="w-5 h-5 text-gray-400 group-hover:text-gray-600 transition-colors duration-300"/>
+                <ChevronRight class="w-5 h-5 text-gray-400 group-hover:text-gray-600 transition-colors duration-300" />
               </RouterLink>
             </div>
           </div>
@@ -307,52 +319,52 @@ isOHOS();
         <div class="bg-white bg-opacity-80 backdrop-filter backdrop-blur-lg rounded-xl shadow-lg overflow-hidden mb-4">
           <div class="p-6">
             <h2 class="text-xl font-semibold mb-6 text-gray-800"> 账户操作 </h2>
-              <div class="space-y-4">
-                <RouterLink to="/feedback"
-                            class="flex items-center p-4 text-gray-700 bg-gray-50 rounded-xl hover:bg-gray-100 transition-all duration-300 group hover:shadow-md cursor-pointer">
-                  <MessageSquare
-                      class="w-6 h-6 text-indigo-500 group-hover:text-indigo-600 transition-colors duration-300"/>
-                    <span class="flex-1 ml-4 font-medium"> 反馈问题 </span>
-                  <ChevronRight class="w-5 h-5 text-gray-400 group-hover:text-gray-600 transition-colors duration-300"/>
-                </RouterLink>
-                <div @click="()=>{removeToken()}"
-                  class="flex items-center p-4 text-gray-700 bg-gray-50 rounded-xl hover:bg-gray-100 transition-all duration-300 group hover:shadow-md cursor-pointer">
-                  <Settings class="w-6 h-6 text-indigo-500 group-hover:text-indigo-600 transition-colors duration-300"/>
-                    <span class="flex-1 ml-4 font-medium"> 退出当前账户 </span>
-                  <ChevronRight class="w-5 h-5 text-gray-400 group-hover:text-gray-600 transition-colors duration-300"/>
-                </div>
+            <div class="space-y-4">
+              <RouterLink to="/feedback"
+                class="flex items-center p-4 text-gray-700 bg-gray-50 rounded-xl hover:bg-gray-100 transition-all duration-300 group hover:shadow-md cursor-pointer">
+                <MessageSquare
+                  class="w-6 h-6 text-indigo-500 group-hover:text-indigo-600 transition-colors duration-300" />
+                <span class="flex-1 ml-4 font-medium"> 反馈问题 </span>
+                <ChevronRight class="w-5 h-5 text-gray-400 group-hover:text-gray-600 transition-colors duration-300" />
+              </RouterLink>
+              <div @click="() => { removeToken() }"
+                class="flex items-center p-4 text-gray-700 bg-gray-50 rounded-xl hover:bg-gray-100 transition-all duration-300 group hover:shadow-md cursor-pointer">
+                <Settings class="w-6 h-6 text-indigo-500 group-hover:text-indigo-600 transition-colors duration-300" />
+                <span class="flex-1 ml-4 font-medium"> 退出当前账户 </span>
+                <ChevronRight class="w-5 h-5 text-gray-400 group-hover:text-gray-600 transition-colors duration-300" />
+              </div>
             </div>
           </div>
         </div>
 
         <!-- Admin Section -->
         <div v-if="user?.isAdmin"
-             class="bg-white bg-opacity-80 backdrop-filter backdrop-blur-lg rounded-xl shadow-lg overflow-hidden mb-4">
+          class="bg-white bg-opacity-80 backdrop-filter backdrop-blur-lg rounded-xl shadow-lg overflow-hidden mb-4">
           <div class="p-6">
             <h2 class="text-xl font-semibold mb-6 text-gray-800"> 管理员操作 </h2>
             <div @click="selectLuckUser"
-                 class="flex items-center p-4 text-gray-700 bg-gray-50 rounded-xl hover:bg-gray-100 transition-all duration-300 group hover:shadow-md cursor-pointer">
-              <Settings class="w-6 h-6 text-indigo-500 group-hover:text-indigo-600 transition-colors duration-300"/>
+              class="flex items-center p-4 text-gray-700 bg-gray-50 rounded-xl hover:bg-gray-100 transition-all duration-300 group hover:shadow-md cursor-pointer">
+              <Settings class="w-6 h-6 text-indigo-500 group-hover:text-indigo-600 transition-colors duration-300" />
               <span class="flex-1 ml-4 font-medium"> 抽取今天的幸运儿 </span>
-              <ChevronRight class="w-5 h-5 text-gray-400 group-hover:text-gray-600 transition-colors duration-300"/>
+              <ChevronRight class="w-5 h-5 text-gray-400 group-hover:text-gray-600 transition-colors duration-300" />
             </div>
             <div @click="blueToothTest"
-                 class="flex items-center p-4 text-gray-700 bg-gray-50 rounded-xl hover:bg-gray-100 transition-all duration-300 group hover:shadow-md cursor-pointer">
-              <Settings class="w-6 h-6 text-indigo-500 group-hover:text-indigo-600 transition-colors duration-300"/>
+              class="flex items-center p-4 text-gray-700 bg-gray-50 rounded-xl hover:bg-gray-100 transition-all duration-300 group hover:shadow-md cursor-pointer">
+              <Settings class="w-6 h-6 text-indigo-500 group-hover:text-indigo-600 transition-colors duration-300" />
               <span class="flex-1 ml-4 font-medium"> 测试蓝牙功能 </span>
-              <ChevronRight class="w-5 h-5 text-gray-400 group-hover:text-gray-600 transition-colors duration-300"/>
+              <ChevronRight class="w-5 h-5 text-gray-400 group-hover:text-gray-600 transition-colors duration-300" />
             </div>
             <div @click="ScanQrCodeTest"
-                 class="flex items-center p-4 text-gray-700 bg-gray-50 rounded-xl hover:bg-gray-100 transition-all duration-300 group hover:shadow-md cursor-pointer">
-              <Settings class="w-6 h-6 text-indigo-500 group-hover:text-indigo-600 transition-colors duration-300"/>
+              class="flex items-center p-4 text-gray-700 bg-gray-50 rounded-xl hover:bg-gray-100 transition-all duration-300 group hover:shadow-md cursor-pointer">
+              <Settings class="w-6 h-6 text-indigo-500 group-hover:text-indigo-600 transition-colors duration-300" />
               <span class="flex-1 ml-4 font-medium"> 测试扫码功能 </span>
-              <ChevronRight class="w-5 h-5 text-gray-400 group-hover:text-gray-600 transition-colors duration-300"/>
+              <ChevronRight class="w-5 h-5 text-gray-400 group-hover:text-gray-600 transition-colors duration-300" />
             </div>
             <div @click="locationTest"
-                 class="flex items-center p-4 text-gray-700 bg-gray-50 rounded-xl hover:bg-gray-100 transition-all duration-300 group hover:shadow-md cursor-pointer">
-              <Settings class="w-6 h-6 text-indigo-500 group-hover:text-indigo-600 transition-colors duration-300"/>
+              class="flex items-center p-4 text-gray-700 bg-gray-50 rounded-xl hover:bg-gray-100 transition-all duration-300 group hover:shadow-md cursor-pointer">
+              <Settings class="w-6 h-6 text-indigo-500 group-hover:text-indigo-600 transition-colors duration-300" />
               <span class="flex-1 ml-4 font-medium"> 测试定位功能 </span>
-              <ChevronRight class="w-5 h-5 text-gray-400 group-hover:text-gray-600 transition-colors duration-300"/>
+              <ChevronRight class="w-5 h-5 text-gray-400 group-hover:text-gray-600 transition-colors duration-300" />
             </div>
           </div>
         </div>
@@ -362,9 +374,9 @@ isOHOS();
           <span class="text-gray-600">Copyright &copy; 2001-2025 升华工作室 </span>
           <img src="@/assets/logo.png" alt="Logo" class="inline-block mx-2 w-6 h-6">
           <a @click="showAboutDialog"
-             class="text-indigo-600 hover:text-indigo-800 transition-colors duration-300 cursor-pointer"> 关于 ></a>
+            class="text-indigo-600 hover:text-indigo-800 transition-colors duration-300 cursor-pointer"> 关于 ></a>
           <!-- 引入关于弹窗组件 -->
-          <AboutDialog ref="aboutDialogRef"/>
+          <AboutDialog ref="aboutDialogRef" />
         </div>
       </template>
     </div>
@@ -373,7 +385,6 @@ isOHOS();
 </template>
 
 <style lang="less" scoped>
-
 .footer-copyright {
   img {
     transition: transform 0.3s ease;
@@ -389,6 +400,7 @@ isOHOS();
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -406,7 +418,8 @@ isOHOS();
 }
 
 .van-dialog {
-  backdrop-filter: blur(10px); /* 高斯模糊 */
+  backdrop-filter: blur(10px);
+  /* 高斯模糊 */
 }
 
 
@@ -417,7 +430,8 @@ isOHOS();
 
 
 /* 可选：标题和内容的字体样式 */
-.van-dialog__header, .van-dialog__message {
+.van-dialog__header,
+.van-dialog__message {
   color: #333;
   font-weight: 500;
 }
@@ -440,5 +454,4 @@ isOHOS();
   backdrop-filter: blur(2px);
   padding: 10px;
 }
-
 </style>
