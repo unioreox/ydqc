@@ -1355,7 +1355,7 @@ const bubbleOffset = ref({ x: 300, y: 200 });
       </div>
     </van-dialog>
 
-    <div class="text-center mt-2 text-sm text-gray-600">
+    <div class="text-center mt-2 text-sm text-gray-600" v-if="isDevMode === 'development'">
       <van-button plain hairline type="primary" size="small" block @click="getDetailData">{{ testInfo }}</van-button>
       <!-- {{ jsonInfo.commitInfo.commitId }} - {{ jsonInfo.commitInfo.commitMessage }} -->
     </div>
