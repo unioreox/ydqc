@@ -14,7 +14,7 @@ import { execSync } from 'child_process'
 function getCustomInfo() {
     // 公告
     const announcement = {
-        switch: true,
+        switch: false,
         info: "【公告】起点打卡前请点击右上角 ··· 强制刷新一次, 后续无需再进行刷新",
     };
     // 更新信息

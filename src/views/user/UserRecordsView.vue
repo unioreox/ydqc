@@ -113,10 +113,10 @@ isOHOS();
     </div>
 
     <div v-else>
-      <van-notice-bar left-icon="info-o" color="#1989fa" background="#ecf9ff" :scrollable="false" wrapable
+      <!-- <van-notice-bar left-icon="info-o" color="#1989fa" background="#ecf9ff" :scrollable="false" wrapable
         class="notice-primary rounded-lg shadow-sm">
         <b>提示</b> 受系统升级影响，近两日部分记录的详细数据可能存在错误。实际打卡次数请以 <b>“我的”</b> 页面中头像下方 <b>“打卡次数”</b> 为准。
-      </van-notice-bar>
+      </van-notice-bar> -->
       <div v-if="latestPendingRecord" class="bg-green-100 border-l-4 border-blue-500 p-4 mb-4">
         <div class="flex justify-between items-center">
           <div>
