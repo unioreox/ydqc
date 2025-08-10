@@ -13,12 +13,26 @@ onMounted(() => {
     }
   })
 })
+// isOHOS
+const isNotOHOS = ref(true)
+const userAgent = navigator.userAgent;
+const uaVersionMatch = userAgent.match(/Firefox\/(\d+\.\d+\.\d+)/);
 
+function isOHOS(){
+if (uaVersionMatch) {
+    const versionNumber = uaVersionMatch[1];
+    if(versionNumber === '141.0.0'){
+      isNotOHOS.value = false;
+    }
+}
+}
+isOHOS();
 </script>
 
 <template>
   <div class="profile-container">
     <div class="bg-gray-100 min-h-screen p-4">
+      <div style="padding: 5vh;" v-if="!isNotOHOS" class="ohosSafeZone"></div>
       <!-- 用户信息单元格，可以编辑的附带 is-link 标签并监听 click 事件 -->
       <van-cell-group>
         <van-cell title="昵称" :value="user?.nickname"/>

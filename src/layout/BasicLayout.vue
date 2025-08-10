@@ -2,36 +2,48 @@
 
 import NavBar from "@/components/NavBar.vue";
 import BottomBar from "@/components/BottomBar.vue";
-import {onMounted, ref} from "vue";
+import { onMounted, ref } from "vue";
+import { useRouter } from 'vue-router';
+const router = useRouter();
 
 // isOHOS
 const isNotOHOS = ref(true)
 const userAgent = navigator.userAgent;
 const uaVersionMatch = userAgent.match(/Firefox\/(\d+\.\d+\.\d+)/);
 
-function isOHOS(){
-if (uaVersionMatch) {
+function isOHOS() {
+  if (uaVersionMatch) {
     const versionNumber = uaVersionMatch[1];
-    if(versionNumber === '141.0.0'){
+    if (versionNumber === '141.0.0') {
       isNotOHOS.value = false;
     }
-}
+  }
 }
 
-function changeTab(url: string){
+function changeTab(url: string) {
   location.replace("/" + url);
 }
 
-onMounted(()=>{
+onMounted(() => {
   isOHOS();
 })
+// 返回上一页的回调函数
+const handleBack = () => {
+  router.go(0); // 浏览器历史记录回退
+};
+
+const offset = ref({ x: 200, y: 400 });
 </script>
 
 <template>
   <div class="app-container">
-    <NavBar/>
-    <router-view/>
-    <BottomBar v-if="isNotOHOS"/>
+    <NavBar />
+    <router-view />
+    <!-- <div class="ohos-backButton">
+      <van-floating-bubble axis="xy" icon="chat" v-model:offset="offset" @click="handleBack"
+        class="bubble-animation" />
+    </div> -->
+    <BottomBar />
   </div>
 </template>
 

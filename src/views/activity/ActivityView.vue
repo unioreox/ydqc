@@ -342,6 +342,7 @@ isOHOS();
     </van-pull-refresh>
 
     <van-back-top/>
+    <div style="padding: 3vh;" v-if="!isNotOHOS" class="ohosSafeZone"></div>
   </div>
 </template>
 

@@ -1,20 +1,20 @@
 <script setup lang="ts">
 import routes from "@/router/routes";
-import {useRoute} from "vue-router";
-import {onMounted, ref, watch} from "vue";
+import { useRoute } from "vue-router";
+import { onMounted, ref, watch } from "vue";
 
 // isOHOS
 const isNotOHOS = ref(true)
 const userAgent = navigator.userAgent;
 const uaVersionMatch = userAgent.match(/Firefox\/(\d+\.\d+\.\d+)/);
 
-function isOHOS(){
-if (uaVersionMatch) {
+function isOHOS() {
+  if (uaVersionMatch) {
     const versionNumber = uaVersionMatch[1];
-    if(versionNumber === '141.0.0'){
+    if (versionNumber === '141.0.0') {
       isNotOHOS.value = false;
     }
-}
+  }
 }
 
 isOHOS();
@@ -47,25 +47,25 @@ const updateNavBar = () => {
   if (parentRoute) {
     if (childRoute && childRoute.path === "") {
       // 父路由页面，不显示返回按钮
-      if(isNotOHOS.value){
+      if (isNotOHOS.value) {
         curTitle.value = parentRoute.name;
-      }else{
+      } else {
         curTitle.value = parentRoute.name;
       }
       showBackArrow.value = false;
     } else if (childRoute) {
       // 匹配到子路由，显示子路由名称
-      if(isNotOHOS.value){
+      if (isNotOHOS.value) {
         curTitle.value = parentRoute.name;
-      }else{
+      } else {
         curTitle.value = parentRoute.name;
       }
       showBackArrow.value = true;
     } else {
       // 没有子路由，使用父路由的标题
-      if(isNotOHOS.value){
+      if (isNotOHOS.value) {
         curTitle.value = parentRoute.name;
-      }else{
+      } else {
         curTitle.value = parentRoute.name;
       }
       showBackArrow.value = true;
@@ -77,10 +77,10 @@ const updateNavBar = () => {
 
 // 监听路由变化，动态更新
 watch(
-    () => route.path,
-    () => {
-      updateNavBar();
-    }
+  () => route.path,
+  () => {
+    updateNavBar();
+  }
 );
 
 // 初始调用更新函数
@@ -97,7 +97,8 @@ const handleBack = () => {
   <!-- 占位元素, 防止挤压 navBar -->
   <div class="nav-bar-container" v-if="isNotOHOS">
     <!-- <br v-if="!isNotOHOS" /> -->
-    <van-nav-bar :title="curTitle" :left-arrow="showBackArrow" v-if="isNotOHOS" @click-left="handleBack" class="nav-inner"/>
+    <van-nav-bar :title="curTitle" :left-arrow="showBackArrow" v-if="isNotOHOS" @click-left="handleBack"
+      class="nav-inner" />
   </div>
 </template>
 

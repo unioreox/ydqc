@@ -360,6 +360,7 @@ isOHOS();
       <span class="footer-text">数据每五分钟更新一次</span>
       <span class="footer-text">为大家的精彩表现点赞 <span class="footer-emoji">🎉</span></span>
     </div>
+    <div style="padding: 3vh;" v-if="!isNotOHOS" class="ohosSafeZone"></div>
   </div>
 </template>
 

@@ -264,10 +264,10 @@ const encryptDataAndCheckInHandle = async () => {
 const locationButtonCooldown = ref(false);
 const testInfo = ref("testInfo");
 const ohosPosition = ref({
-      lat: 0,
-      lng: 0,
-      acc: 0,
-    });
+  lat: 0,
+  lng: 0,
+  acc: 0,
+});
 const updateLocation = () => {
   pressButtonCount.value++;
   if (locationButtonCooldown.value) return;
@@ -279,89 +279,92 @@ const updateLocation = () => {
   lastUpdateLocationTime.value = Date.now();
   drawCircleHandle();
 
-  if (!isNotOHOS.value) {
-    window.location.href = 'ohos://callLocationKitAbility'
-    // OHOS
+  if (!isNotOHOS.value || isDevMode.value === 'development') {
+    // OHOS 备用方案
+    // window.location.href = 'ohos://callLocationKitAbility'
 
     // showOHOSNotify(isNotOHOS.value, 'success', 'onUpdate');
-      const ohosLocationKitLatElement = document.getElementById('ohosLocationKitLat');
-      const LatString = ohosLocationKitLatElement ? ohosLocationKitLatElement.innerText : '';
-      const ohosLocationKitLngElement = document.getElementById('ohosLocationKitLng');
-      const LngString = ohosLocationKitLngElement ? ohosLocationKitLngElement.innerText : '';
-      const ohosLocationKitAccElement = document.getElementById('ohosLocationKitAcc');
-      const AccString = ohosLocationKitAccElement ? ohosLocationKitAccElement.innerText : '';
+    // const ohosLocationKitLatElement = document.getElementById('ohosLocationKitLat');
+    // const LatString = ohosLocationKitLatElement ? ohosLocationKitLatElement.innerText : '';
+    // const ohosLocationKitLngElement = document.getElementById('ohosLocationKitLng');
+    // const LngString = ohosLocationKitLngElement ? ohosLocationKitLngElement.innerText : '';
+    // const ohosLocationKitAccElement = document.getElementById('ohosLocationKitAcc');
+    // const AccString = ohosLocationKitAccElement ? ohosLocationKitAccElement.innerText : '';
 
-      ohosPosition.value.lat = Number(LatString);
-      ohosPosition.value.lng = Number(LngString);
-      ohosPosition.value.acc = Number(AccString);
+    // ohosPosition.value.lat = Number(LatString);
+    // ohosPosition.value.lng = Number(LngString);
+    // ohosPosition.value.acc = Number(AccString);
 
-      if (!isNotOHOS.value) {
-        // 访问设备地理位置
+    // OHOS 主要方案
+    if (navigator.geolocation) {
+      // 访问设备地理位置
+      navigator.geolocation.getCurrentPosition((arkWebPosition) => {
+        ohosPosition.value.lat = arkWebPosition.coords.latitude;
+        ohosPosition.value.lng = arkWebPosition.coords.longitude;
+        ohosPosition.value.acc = arkWebPosition.coords.accuracy;
+        console.log('OHOS LocationKit', ohosPosition.value, arkWebPosition.coords);
 
-        matchedPoint.value = checkPoints.value.find(point => {
-          const distance = AMap.GeometryUtil.distance([ohosPosition.value.lng, ohosPosition.value.lat], [point.longitude, point.latitude]);
-          return distance <= 50;
-        });
+        // if (ohosPosition.value.lat === 0 && ohosPosition.value.lng === 0) {
+        //   showOHOSNotify(isNotOHOS.value, 'danger', '已获取 ohos.locationKit 数据, 但数据为空\n请打开定位权限')
+        // }
 
-        if (matchedPoint.value) {
-          if (currentStep.value === 0 || !matchedPoint.value.isEnd) {
+        if (arkWebPosition.coords) {
+          // 业务逻辑同wx.getLocation
+          matchedPoint.value = checkPoints.value.find(point => {
+            const distance = AMap.GeometryUtil.distance([ohosPosition.value.lng, ohosPosition.value.lat], [point.longitude, point.latitude]);
+            return distance <= 50;
+          });
+
+          wxGetLocationWgs84Data.value.latitude = ohosPosition.value.lat;
+          wxGetLocationWgs84Data.value.longitude = ohosPosition.value.lng;
+          form.value.latitude = ohosPosition.value.lat.toString();
+          form.value.longitude = ohosPosition.value.lng.toString();
+
+          let ohosResult = gcoord.transform(
+            // 经纬度坐标
+            [ohosPosition.value.lng * 1, ohosPosition.value.lat * 1],
+            gcoord.WGS84,               // 当前坐标系
+            gcoord.GCJ02                 // 目标坐标系
+          );
+
+          const marker = new AMap.Marker({
+            position: new AMap.LngLat(ohosResult[0], ohosResult[1]),
+            title: '当前位置'
+          });
+
+          map.value?.remove(map.value.getAllOverlays('marker'));
+          map.value?.add(marker);
+          // await drawCircleHandle();
+          map.value?.setZoom(17);
+          map.value?.setCenter([ohosResult[0], ohosResult[1]]);
+
+          // 打卡提示放在后面
+          if (matchedPoint.value) {
+            if (currentStep.value === 0 || !matchedPoint.value.isEnd) {
+              form.value.type = matchedPoint.value.id ?? -1;
+            }
+            if (currentStep.value === 1 && !matchedPoint.value.isEnd) {
+              showOHOSNotify(isNotOHOS.value, 'warning', '不在终点打卡点范围内，请移动到终点打卡点附近')
+              // showNotify({ type: 'warning', message: '不在终点打卡点范围内，请移动到终点打卡点附近' });
+            }
+            if (currentStep.value === 0 && matchedPoint.value.isEnd) {
+              showOHOSNotify(isNotOHOS.value, 'warning', '不在起点打卡点范围内，请移动到起点打卡点附近')
+              // showNotify({ type: 'warning', message: '不在起点打卡点范围内，请移动到起点打卡点附近' });
+            }
+            canCheckIn.value = true;
             form.value.type = matchedPoint.value.id ?? -1;
-          }
-          if (currentStep.value === 1 && !matchedPoint.value.isEnd) {
-            showOHOSNotify(isNotOHOS.value, 'warning', '不在终点打卡点范围内，请移动到终点打卡点附近')
-            // showNotify({ type: 'warning', message: '不在终点打卡点范围内，请移动到终点打卡点附近' });
-          }
-          if (currentStep.value === 0 && matchedPoint.value.isEnd) {
-            showOHOSNotify(isNotOHOS.value, 'warning', '不在起点打卡点范围内，请移动到起点打卡点附近')
-            // showNotify({ type: 'warning', message: '不在起点打卡点范围内，请移动到起点打卡点附近' });
-          }
-          canCheckIn.value = true;
-          form.value.type = matchedPoint.value.id ?? -1;
-        } else {
-          canCheckIn.value = false;
-          showOHOSNotify(isNotOHOS.value, 'warning', '不在打卡点范围内，请移动到打卡点附近')
-          // showNotify({ type: 'warning', message: '不在打卡点范围内，请移动到打卡点附近' });
-        }
-
-        wxGetLocationWgs84Data.value.latitude = ohosPosition.value.lat;
-        wxGetLocationWgs84Data.value.longitude = ohosPosition.value.lng;
-        form.value.latitude = ohosPosition.value.lat.toString();
-        form.value.longitude = ohosPosition.value.lng.toString();
-        // 弃用检测fakelocation
-        if (isFakeLocation.value.state) {
-          if (isFakeLocation.value.ready) {
-            form.value.accuracy = "3715";
-            wxGetLocationWgs84Data.value.accuracy = 3715;
           } else {
-            form.value.accuracy = "5173";
-            wxGetLocationWgs84Data.value.accuracy = 5173;
+            canCheckIn.value = false;
+            showOHOSNotify(isNotOHOS.value, 'warning', '不在打卡点范围内，请移动到打卡点附近')
+            // showNotify({ type: 'warning', message: '不在打卡点范围内，请移动到打卡点附近' });
           }
-        } else {
-          form.value.accuracy = 'ohos';
-          wxGetLocationWgs84Data.value.accuracy = 10;
         }
-
-        let ohosResult = gcoord.transform(
-          // 经纬度坐标
-          [ohosPosition.value.lng * 1, ohosPosition.value.lat * 1],
-          gcoord.WGS84,               // 当前坐标系
-          gcoord.GCJ02                 // 目标坐标系
-        );
-
-        const marker = new AMap.Marker({
-          position: new AMap.LngLat(ohosResult[0], ohosResult[1]),
-          title: '当前位置'
-        });
-
-        map.value?.remove(map.value.getAllOverlays('marker'));
-        map.value?.add(marker);
-        // await drawCircleHandle();
-        map.value?.setZoom(17);
-        map.value?.setCenter([ohosResult[0], ohosResult[1]]);
-
-      } else {
-        wxGetLocationWgs84Data.value.accuracy = -10;
-      }
+      });
+    } else {
+      // 未获取到OHOS的 LocationKit 数据
+      // 可能原因 ArkWeb 错误
+      showOHOSNotify(isNotOHOS.value, 'danger', 'SystemCapability.Location.Location.Core 错误\n调用 LocationKit 失败')
+    }
 
   } else {
     // 微信客户端内
@@ -664,7 +667,7 @@ const loginAndGetInfoHandle = async () => {
 onMounted(async () => {
   try {
     isOHOS();
-    initOHOS();
+    // initOHOS();
     await loginAndGetInfoHandle();
     await getCheckInPointHandle();
     await getLastRecordHandle();
@@ -689,27 +692,29 @@ onMounted(async () => {
     console.error('Initialization failed:', error);
 
     showOHOSNotify(isNotOHOS.value, 'danger', '初始化失败，请刷新重试');
-    
+
     // showNotify({ type: 'danger', message: '初始化失败，请刷新重试' });
   }
 });
 
-function initOHOS(){
+// function initOHOS(){
 
-      window.location.href = 'ohos://callLocationKitAbility'
-      const ohosLocationKitLatElement = document.getElementById('ohosLocationKitLat');
-      const LatString = ohosLocationKitLatElement ? ohosLocationKitLatElement.innerText : '';
-      const ohosLocationKitLngElement = document.getElementById('ohosLocationKitLng');
-      const LngString = ohosLocationKitLngElement ? ohosLocationKitLngElement.innerText : '';
-      const ohosLocationKitAccElement = document.getElementById('ohosLocationKitAcc');
-      const AccString = ohosLocationKitAccElement ? ohosLocationKitAccElement.innerText : '';
+//   if(!isNotOHOS.value){
+//       window.location.href = 'ohos://callLocationKitAbility'
+//       const ohosLocationKitLatElement = document.getElementById('ohosLocationKitLat');
+//       const LatString = ohosLocationKitLatElement ? ohosLocationKitLatElement.innerText : '';
+//       const ohosLocationKitLngElement = document.getElementById('ohosLocationKitLng');
+//       const LngString = ohosLocationKitLngElement ? ohosLocationKitLngElement.innerText : '';
+//       const ohosLocationKitAccElement = document.getElementById('ohosLocationKitAcc');
+//       const AccString = ohosLocationKitAccElement ? ohosLocationKitAccElement.innerText : '';
 
-      ohosPosition.value.lat = Number(LatString);
-      ohosPosition.value.lng = Number(LngString);
-      ohosPosition.value.acc = Number(AccString);
-      showOHOSNotify(isNotOHOS.value, 'success', '初始化 kit.ArkWeb 成功');
+//       ohosPosition.value.lat = Number(LatString);
+//       ohosPosition.value.lng = Number(LngString);
+//       ohosPosition.value.acc = Number(AccString);
+//       showOHOSNotify(isNotOHOS.value, 'success', '初始化 kit.ArkWeb 成功');
+//   }
 
-}
+// }
 
 // WebSocket event handlers
 socket.on("connect", () => {
@@ -1175,27 +1180,27 @@ function isOHOS() {
 }
 isOHOS();
 
-function checkOHOSPerms(){
-    
-  // 预留给arkweb的, 不要删除, 不要实现
-      passOHOSLocation();
+function checkOHOSPerms() {
 
-      const ohosLocationKitLatElement = document.getElementById('ohosLocationKitLat');
-      const LatString = ohosLocationKitLatElement ? ohosLocationKitLatElement.innerText : '';
-      const ohosLocationKitLngElement = document.getElementById('ohosLocationKitLng');
-      const LngString = ohosLocationKitLngElement ? ohosLocationKitLngElement.innerText : '';
-      const ohosLocationKitAccElement = document.getElementById('ohosLocationKitAcc');
-      const AccString = ohosLocationKitAccElement ? ohosLocationKitAccElement.innerText : '';
+  const ohosLocationKitLatElement = document.getElementById('ohosLocationKitLat');
+  const LatString = ohosLocationKitLatElement ? ohosLocationKitLatElement.innerText : '';
+  const ohosLocationKitLngElement = document.getElementById('ohosLocationKitLng');
+  const LngString = ohosLocationKitLngElement ? ohosLocationKitLngElement.innerText : '';
+  const ohosLocationKitAccElement = document.getElementById('ohosLocationKitAcc');
+  const AccString = ohosLocationKitAccElement ? ohosLocationKitAccElement.innerText : '';
 
-      showOHOSNotify(isNotOHOS.value, 'success', 'Acc' + AccString)
+  let msg: string = 'Acc ' + AccString + ' ' + ohosPosition.value.acc.toString()
+    + '\nLat ' + LatString + ' ' + ohosPosition.value.lat.toString()
+    + '\nLng ' + LngString + ' ' + ohosPosition.value.lng.toString()
+    + '\n OHOS.Kit.Location';
+  showOHOSNotify(isNotOHOS.value, 'success', msg)
 }
-
+const bubbleOffset = ref({ x: 300, y: 200 });
 </script>
 
 <template>
   <div class="mountain-challenge">
-    <div style="padding: 5vh;" v-if="!isNotOHOS"></div>
-    <div style="padding: 3vh;" v-if="isNotOHOS"></div>
+    <div style="padding: 5vh;" v-if="!isNotOHOS" class="ohosSafeZone"></div>
     <!-- 通知栏 天气 -->
     <!-- 天气信息 -->
     <transition name="fade-slide">
@@ -1382,8 +1387,8 @@ function checkOHOSPerms(){
     <!--</div>-->
 
     <!-- 浮动按钮 -->
-    <van-floating-bubble axis="xy" icon="chat" magnetic="x" @offset-change="onOffsetChange" @click="openBarrageInput"
-      class="bubble-animation" />
+    <van-floating-bubble axis="xy" icon="chat" v-model:offset="bubbleOffset" @offset-change="onOffsetChange"
+      @click="openBarrageInput" class="bubble-animation" />
 
     <!-- 弹幕输入弹窗 -->
     <van-popup v-model:show="showBarrageInput" position="bottom" round :style="{ height: '20%' }" class="barrage-popup">
@@ -1444,6 +1449,7 @@ function checkOHOSPerms(){
         </van-button>
       </div>
     </van-popup>
+    <div style="padding: 3vh;" v-if="!isNotOHOS" class="ohosSafeZone"></div>
   </div>
 </template>
 

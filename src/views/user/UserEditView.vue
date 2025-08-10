@@ -147,11 +147,25 @@ const triggerUploader = () => {
     uploader.value.$el.querySelector('input[type="file"]').click();
   }
 };
+// isOHOS
+const isNotOHOS = ref(true)
+const userAgent = navigator.userAgent;
+const uaVersionMatch = userAgent.match(/Firefox\/(\d+\.\d+\.\d+)/);
 
+function isOHOS(){
+if (uaVersionMatch) {
+    const versionNumber = uaVersionMatch[1];
+    if(versionNumber === '141.0.0'){
+      isNotOHOS.value = false;
+    }
+}
+}
+isOHOS();
 </script>
 
 <template>
   <div class="edit-container bg-gray-100 min-h-screen p-4">
+    <div style="padding: 5vh;" v-if="!isNotOHOS" class="ohosSafeZone"></div>
     <van-form class="" @submit="submitProfileHandle">
       <van-field label="头像" @click="triggerUploader">
         <template #input>

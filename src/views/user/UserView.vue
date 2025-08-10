@@ -214,11 +214,25 @@ const showAboutDialog = (e: MouseEvent) => {
   e.preventDefault();
   aboutDialogRef.value.open();
 };
+// isOHOS
+const isNotOHOS = ref(true)
+const userAgent = navigator.userAgent;
+const uaVersionMatch = userAgent.match(/Firefox\/(\d+\.\d+\.\d+)/);
 
+function isOHOS(){
+if (uaVersionMatch) {
+    const versionNumber = uaVersionMatch[1];
+    if(versionNumber === '141.0.0'){
+      isNotOHOS.value = false;
+    }
+}
+}
+isOHOS();
 </script>
 
 <template>
   <div class=" bg-gradient-to-b from-blue-100 to-green-100 min-h-screen p-4 pb-16">
+    <div style="padding: 5vh;" v-if="!isNotOHOS" class="ohosSafeZone"></div>
     <div class="max-w-4xl mx-auto">
       <div v-if="isLoading" class="flex justify-center items-center h-screen">
         <div class="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500"></div>
@@ -354,6 +368,7 @@ const showAboutDialog = (e: MouseEvent) => {
         </div>
       </template>
     </div>
+    <div style="padding: 3vh;" v-if="!isNotOHOS" class="ohosSafeZone"></div>
   </div>
 </template>
 
