@@ -268,6 +268,12 @@ const ohosPosition = ref({
   lng: 0,
   acc: 0,
 });
+
+const updateLocationV2 = () => {
+  window.location.href = 'ohos://notifyAbility?type=vibrate&msg=vibrate';
+  updateLocation();
+}
+
 const updateLocation = () => {
   pressButtonCount.value++;
   if (locationButtonCooldown.value) return;
@@ -1373,7 +1379,7 @@ const bubbleOffset = ref({ x: 300, y: 200 });
           </div> -->
           <van-cell :title="!locationButtonCooldown ? '刷新位置' : '正在获取'"
             :label="!locationButtonCooldown ? '请在红色打卡范围(50m)进行打卡' : '当多次无法获取到定位时请刷新页面'" center
-            :clickable="!locationButtonCooldown" :border="true" @click="updateLocation"
+            :clickable="!locationButtonCooldown" :border="true" @click="updateLocationV2"
             class="rounded-lg shadow-inner transition duration-300 location-button" :class="{
               'bg-gradient-to-r from-blue-50 to-sky-100': !locationButtonCooldown,
               'bg-gray-100 opacity-75': locationButtonCooldown,
