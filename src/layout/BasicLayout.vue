@@ -29,6 +29,8 @@ onMounted(() => {
   // OHOS ArkWeb JS Bridge
   // { source: string, type: string, path: string }
   window.addEventListener('message', (event) => {
+    // OHOS
+    console.log('Incoming ArkWeb Msg', event.data)
     if (event.data?.source === 'ohos') {
       if (event.data?.type === 'routerNavigate') {
         router.push(event.data.path);
