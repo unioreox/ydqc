@@ -17,13 +17,47 @@ import { showDialog } from "vant";
 import wx from "weixin-js-sdk";
 import { removeToken } from "@/util/token";
 
+// isOHOS
+const isNotOHOS = ref(true)
+const userAgent = navigator.userAgent;
+const uaVersionMatch = userAgent.match(/Firefox\/(\d+\.\d+\.\d+)/);
+
+function isOHOS() {
+  if (uaVersionMatch) {
+    const versionNumber = uaVersionMatch[1];
+    if (versionNumber === '141.0.0') {
+      isNotOHOS.value = false;
+    }
+  }
+}
+isOHOS();
+
 const version = import.meta.env.VITE_APP_VERSION;
-const { user } = useUserStore();
+// 不用const
+var { user } = useUserStore();
+
 const isLoading = ref(true);
 // 我勒个素材复用啊
 // const userAvatar = ref("https://54sh.csu.edu.cn/assets/icons/tuanzi_footer.png")
 
 onMounted(async () => {
+    // OHOS 预读取存在问题 手动请求
+    if (!isNotOHOS.value) {
+      console.log('[CSU-YDQC-OHOS Debug Logger Vue] 准备读取');
+      try {
+        const res = await infoApi();
+        if (res.data?.data) {
+          console.log('[CSU-YDQC-OHOS Debug Logger Vue]', res.data.data.nickname);
+          // 读取后存在store里, 但是 OHOS 不从store里读取, 每次重新请求
+          useUserStore().setUser(res.data.data);
+          // 再手动赋值
+          user = res.data?.data;
+        }
+      } catch (e) {
+        console.log(e);
+      }
+    }
+
   if (!user) {
     try {
       const res = await infoApi();
@@ -43,17 +77,6 @@ onMounted(async () => {
       isLoading.value = false;
     }
   } else {
-    // OHOS 预读取会破坏逻辑判断
-    if (!isNotOHOS.value) {
-      try {
-        const res = await infoApi();
-        if (res.data?.data) {
-          useUserStore().setUser(res.data.data);
-        }
-      } catch (e) {
-        console.log(e);
-      }
-    }
     isLoading.value = false;
   }
 });
@@ -225,20 +248,6 @@ const showAboutDialog = (e: MouseEvent) => {
   e.preventDefault();
   aboutDialogRef.value.open();
 };
-// isOHOS
-const isNotOHOS = ref(true)
-const userAgent = navigator.userAgent;
-const uaVersionMatch = userAgent.match(/Firefox\/(\d+\.\d+\.\d+)/);
-
-function isOHOS() {
-  if (uaVersionMatch) {
-    const versionNumber = uaVersionMatch[1];
-    if (versionNumber === '141.0.0') {
-      isNotOHOS.value = false;
-    }
-  }
-}
-isOHOS();
 </script>
 
 <template>
