@@ -279,7 +279,10 @@ const updateLocation = () => {
   lastUpdateLocationTime.value = Date.now();
   drawCircleHandle();
 
-  if (!isNotOHOS.value || isDevMode.value === 'development') {
+
+
+
+  if (!isNotOHOS.value) {
     // OHOS 备用方案
     // window.location.href = 'ohos://callLocationKitAbility'
 
@@ -365,7 +368,76 @@ const updateLocation = () => {
       // 可能原因 ArkWeb 错误
       showOHOSNotify(isNotOHOS.value, 'danger', 'SystemCapability.Location.Location.Core 错误\n调用 LocationKit 失败')
     }
+  } else if (isAndroidApp) {
+    console.log("发现安卓客户端")
+    const androidBridge = window.AndroidAPP;
+    androidBridge.apply4Location("onLocationReceived");
+    window.onLocationReceived = function(locationInfoJson) {
+      if (locationInfoJson)
+      {
+        const locationInfo = JSON.parse(locationInfoJson);
 
+        ohosPosition.value.lat = locationInfo.latitude;
+        ohosPosition.value.lng = locationInfo.longitude;
+        ohosPosition.value.acc = locationInfo.accuracy;
+
+        // 业务逻辑同wx.getLocation
+        currentLocation.value = ` 纬度: ${locationInfo.latitude}, 经度: ${locationInfo.latitude}`;
+        matchedPoint.value = checkPoints.value.find(point => {
+          const distance = AMap.GeometryUtil.distance([ohosPosition.value.lng, ohosPosition.value.lat], [point.longitude, point.latitude]);
+          return distance <= 50;
+        });
+
+        wxGetLocationWgs84Data.value.latitude = ohosPosition.value.lat;
+        wxGetLocationWgs84Data.value.longitude = ohosPosition.value.lng;
+        form.value.latitude = locationInfo.latitude.toString();
+        form.value.longitude = locationInfo.longitude.toString();
+
+        let ohosResult = gcoord.transform(
+            // 经纬度坐标
+            [ohosPosition.value.lng * 1, ohosPosition.value.lat * 1],
+            gcoord.WGS84,               // 当前坐标系
+            gcoord.GCJ02                 // 目标坐标系
+        );
+
+        const marker = new AMap.Marker({
+          position: new AMap.LngLat(ohosResult[0], ohosResult[1]),
+          title: '当前位置'
+        });
+
+        map.value?.remove(map.value.getAllOverlays('marker'));
+        map.value?.add(marker);
+        // await drawCircleHandle();
+        map.value?.setZoom(17);
+        map.value?.setCenter([ohosResult[0], ohosResult[1]]);
+
+        // 打卡提示放在后面
+        if (matchedPoint.value) {
+          if (currentStep.value === 0 || !matchedPoint.value.isEnd) {
+            form.value.type = matchedPoint.value.id ?? -1;
+          }
+          if (currentStep.value === 1 && !matchedPoint.value.isEnd) {
+            showOHOSNotify(isNotOHOS.value, 'warning', '不在终点打卡点范围内，请移动到终点打卡点附近')
+            // showNotify({ type: 'warning', message: '不在终点打卡点范围内，请移动到终点打卡点附近' });
+          }
+          if (currentStep.value === 0 && matchedPoint.value.isEnd) {
+            showOHOSNotify(isNotOHOS.value, 'warning', '不在起点打卡点范围内，请移动到起点打卡点附近')
+            // showNotify({ type: 'warning', message: '不在起点打卡点范围内，请移动到起点打卡点附近' });
+          }
+          canCheckIn.value = true;
+          form.value.type = matchedPoint.value.id ?? -1;
+        } else {
+          canCheckIn.value = false;
+          showOHOSNotify(isNotOHOS.value, 'warning', '不在打卡点范围内，请移动到打卡点附近')
+          // showNotify({ type: 'warning', message: '不在打卡点范围内，请移动到打卡点附近' });
+        }
+      }
+      else
+      {
+        showOHOSNotify(isNotOHOS.value, 'danger', 'Android Location 错误\n调用 JsBridgeFallBack 失败')
+      }
+
+    }
   } else {
     // 微信客户端内
     wx.getNetworkType({
@@ -1165,9 +1237,14 @@ function checkImageGPS(lng: number, lat: number) {
   performCheckIn();
   isImageUpload.value = true;
 }
+// Get User Agent
+const userAgent = navigator.userAgent;
+// isAndroid
+const uaRegex = /^CSU-YDQC\/(.*?) \(Android\)$/
+const isAndroidApp = uaRegex.test(userAgent)
+
 // isOHOS
 const isNotOHOS = ref(true)
-const userAgent = navigator.userAgent;
 const uaVersionMatch = userAgent.match(/Firefox\/(\d+\.\d+\.\d+)/);
 
 function isOHOS() {

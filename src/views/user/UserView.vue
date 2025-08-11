@@ -21,6 +21,8 @@ import { removeToken } from "@/util/token";
 const isNotOHOS = ref(true)
 const userAgent = navigator.userAgent;
 const uaVersionMatch = userAgent.match(/Firefox\/(\d+\.\d+\.\d+)/);
+const uaRegex = /^CSU-YDQC\/(.*?) \(Android\)$/
+const isAndroidApp = uaRegex.test(userAgent)
 
 function isOHOS() {
   if (uaVersionMatch) {
@@ -42,7 +44,7 @@ const isLoading = ref(true);
 
 onMounted(async () => {
     // OHOS 预读取存在问题 手动请求
-    if (!isNotOHOS.value) {
+    if (!isNotOHOS.value || isAndroidApp) {
       console.log('[CSU-YDQC-OHOS Debug Logger Vue] 准备读取');
       try {
         const res = await infoApi();
