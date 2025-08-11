@@ -26,7 +26,17 @@ function changeTab(url: string) {
 
 onMounted(() => {
   isOHOS();
+  // OHOS ArkWeb JS Bridge
+  // { source: string, type: string, path: string }
+  window.addEventListener('message', (event) => {
+    if (event.data?.source === 'ohos') {
+      if (event.data?.type === 'routerNavigate') {
+        router.push(event.data.path);
+      }
+    }
+  });
 })
+
 // 返回上一页的回调函数
 const handleBack = () => {
   router.go(0); // 浏览器历史记录回退
