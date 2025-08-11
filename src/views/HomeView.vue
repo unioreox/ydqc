@@ -1271,6 +1271,7 @@ function checkOHOSPerms() {
     + '\nLng ' + LngString + ' ' + ohosPosition.value.lng.toString()
     + '\n OHOS.Kit.Location';
   showOHOSNotify(isNotOHOS.value, 'success', msg)
+  showOHOSNotify(isNotOHOS.value, 'success', 'twice toast')
 }
 const bubbleOffset = ref({ x: 300, y: 200 });
 </script>

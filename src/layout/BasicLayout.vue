@@ -4,6 +4,7 @@ import NavBar from "@/components/NavBar.vue";
 import BottomBar from "@/components/BottomBar.vue";
 import { onMounted, ref } from "vue";
 import { useRouter } from 'vue-router';
+import { initOHOSMessager, sendOHOSMessage } from '@/util/ohosMsg';
 const router = useRouter();
 
 // isOHOS
@@ -28,15 +29,24 @@ onMounted(() => {
   isOHOS();
   // OHOS ArkWeb JS Bridge
   // { source: string, type: string, path: string }
-  window.addEventListener('message', (event) => {
-    // OHOS
-    console.log('Incoming ArkWeb Msg', event.data)
-    if (event.data?.source === 'ohos') {
-      if (event.data?.type === 'routerNavigate') {
-        router.push(event.data.path);
+  if (isNotOHOS.value) {
+    window.addEventListener('message', (event) => {
+      // OHOS
+      console.log('Incoming ArkWeb Msg', event.data)
+      if (event.data?.source === 'ohos') {
+        if (event.data?.type === 'routerNavigate') {
+          router.push(event.data.path);
+        }
       }
-    }
-  });
+    });
+
+    // Port
+    // initOHOSMessager();
+    // const h5Port = localStorage.getItem('h5Port');
+    // console.log('storage');
+    // console.log(h5Port);
+    // sendOHOSMessage(h5Port, 'send function init complete');
+  }
 })
 
 // 返回上一页的回调函数
@@ -45,6 +55,7 @@ const handleBack = () => {
 };
 
 const offset = ref({ x: 200, y: 400 });
+
 </script>
 
 <template>
