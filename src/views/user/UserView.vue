@@ -47,7 +47,7 @@ onMounted(async () => {
       try {
         const res = await infoApi();
         if (res.data?.data) {
-          console.log('[CSU-YDQC-OHOS Debug Logger Vue]', res.data.data.nickname);
+          console.log('[CSU-YDQC-OHOS Debug Logger Vue] 读取成功 ', res.data.data.nickname);
           // 读取后存在store里, 但是 OHOS 不从store里读取, 每次重新请求
           useUserStore().setUser(res.data.data);
           // 再手动赋值
