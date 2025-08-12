@@ -127,7 +127,7 @@ const getLastRecordHandle = async () => {
     if (res.data?.data) {
       const lastRecord = res.data.data;
       if (lastRecord.status === "PENDING") {
-        showOHOSNotify(isNotOHOS.value, 'success', '检测到你有未完成的记录，继续挑战吧！')
+        showOHOSNotify(isNotOHOS.value, isAndroidApp, 'success', '检测到你有未完成的记录，继续挑战吧！')
         // showNotify({ type: 'success', message: '检测到你有未完成的记录，继续挑战吧！' });
         curRecord.value = lastRecord;
         currentStep.value = 1;
@@ -137,7 +137,7 @@ const getLastRecordHandle = async () => {
         currentStage.value = -1;
         form.value.type = checkPoints.value.find(point => !point.isEnd)?.id || 1;
 
-        showOHOSNotify(isNotOHOS.value, 'success', '点击发起挑战或者再次挑战！😏')
+        showOHOSNotify(isNotOHOS.value, isAndroidApp, 'success', '点击发起挑战或者再次挑战！😏')
         // showNotify({ type: 'success', message: '点击发起挑战或者再次挑战！😏' });
       }
     } else {
@@ -153,7 +153,7 @@ const getLastRecordHandle = async () => {
     }
   } catch (error) {
     console.error('Failed to get last record:', error);
-    showOHOSNotify(isNotOHOS.value, 'danger', '获取上次记录失败，请重试')
+    showOHOSNotify(isNotOHOS.value, isAndroidApp, 'danger', '获取上次记录失败，请重试')
     // showNotify({ type: 'danger', message: '获取上次记录失败，请重试' });
   }
 };
@@ -215,7 +215,7 @@ const initMap = async () => {
     isLoading.value = false;
   } catch (error) {
     console.error("加载高德地图失败:", error);
-    showOHOSNotify(isNotOHOS.value, 'danger', '地图加载失败，请刷新重试')
+    showOHOSNotify(isNotOHOS.value, isAndroidApp, 'danger', '地图加载失败，请刷新重试')
     // showNotify({ type: 'danger', message: '地图加载失败，请刷新重试' });
   }
 };
@@ -228,7 +228,7 @@ const getCheckInPointHandle = async () => {
     }
   } catch (error) {
     console.error('Failed to get check-in points:', error);
-    showOHOSNotify(isNotOHOS.value, 'danger', '获取打卡点失败，请重试')
+    showOHOSNotify(isNotOHOS.value, isAndroidApp, 'danger', '获取打卡点失败，请重试')
     // showNotify({ type: 'danger', message: '获取打卡点失败，请重试' });
   }
 };
@@ -294,7 +294,7 @@ const updateLocation = () => {
     // OHOS 备用方案
     // window.location.href = 'ohos://callLocationKitAbility'
 
-    // showOHOSNotify(isNotOHOS.value, 'success', 'onUpdate');
+    // showOHOSNotify(isNotOHOS.value, isAndroidApp, 'success', 'onUpdate');
     // const ohosLocationKitLatElement = document.getElementById('ohosLocationKitLat');
     // const LatString = ohosLocationKitLatElement ? ohosLocationKitLatElement.innerText : '';
     // const ohosLocationKitLngElement = document.getElementById('ohosLocationKitLng');
@@ -316,7 +316,7 @@ const updateLocation = () => {
         console.log('OHOS LocationKit', ohosPosition.value, arkWebPosition.coords);
 
         // if (ohosPosition.value.lat === 0 && ohosPosition.value.lng === 0) {
-        //   showOHOSNotify(isNotOHOS.value, 'danger', '已获取 ohos.locationKit 数据, 但数据为空\n请打开定位权限')
+        //   showOHOSNotify(isNotOHOS.value, isAndroidApp, 'danger', '已获取 ohos.locationKit 数据, 但数据为空\n请打开定位权限')
         // }
 
         if (arkWebPosition.coords) {
@@ -355,18 +355,18 @@ const updateLocation = () => {
               form.value.type = matchedPoint.value.id ?? -1;
             }
             if (currentStep.value === 1 && !matchedPoint.value.isEnd) {
-              showOHOSNotify(isNotOHOS.value, 'warning', '不在终点打卡点范围内，请移动到终点打卡点附近')
+              showOHOSNotify(isNotOHOS.value, isAndroidApp, 'warning', '不在终点打卡点范围内，请移动到终点打卡点附近')
               // showNotify({ type: 'warning', message: '不在终点打卡点范围内，请移动到终点打卡点附近' });
             }
             if (currentStep.value === 0 && matchedPoint.value.isEnd) {
-              showOHOSNotify(isNotOHOS.value, 'warning', '不在起点打卡点范围内，请移动到起点打卡点附近')
+              showOHOSNotify(isNotOHOS.value, isAndroidApp, 'warning', '不在起点打卡点范围内，请移动到起点打卡点附近')
               // showNotify({ type: 'warning', message: '不在起点打卡点范围内，请移动到起点打卡点附近' });
             }
             canCheckIn.value = true;
             form.value.type = matchedPoint.value.id ?? -1;
           } else {
             canCheckIn.value = false;
-            showOHOSNotify(isNotOHOS.value, 'warning', '不在打卡点范围内，请移动到打卡点附近')
+            showOHOSNotify(isNotOHOS.value, isAndroidApp, 'warning', '不在打卡点范围内，请移动到打卡点附近')
             // showNotify({ type: 'warning', message: '不在打卡点范围内，请移动到打卡点附近' });
           }
         }
@@ -374,7 +374,7 @@ const updateLocation = () => {
     } else {
       // 未获取到OHOS的 LocationKit 数据
       // 可能原因 ArkWeb 错误
-      showOHOSNotify(isNotOHOS.value, 'danger', 'SystemCapability.Location.Location.Core 错误\n调用 LocationKit 失败')
+      showOHOSNotify(isNotOHOS.value, isAndroidApp, 'danger', 'SystemCapability.Location.Location.Core 错误\n调用 LocationKit 失败')
     }
   } else if (isAndroidApp) {
     console.log("发现安卓客户端")
@@ -425,24 +425,24 @@ const updateLocation = () => {
             form.value.type = matchedPoint.value.id ?? -1;
           }
           if (currentStep.value === 1 && !matchedPoint.value.isEnd) {
-            showOHOSNotify(isNotOHOS.value, 'warning', '不在终点打卡点范围内，请移动到终点打卡点附近')
+            showOHOSNotify(isNotOHOS.value, isAndroidApp, 'warning', '不在终点打卡点范围内，请移动到终点打卡点附近')
             // showNotify({ type: 'warning', message: '不在终点打卡点范围内，请移动到终点打卡点附近' });
           }
           if (currentStep.value === 0 && matchedPoint.value.isEnd) {
-            showOHOSNotify(isNotOHOS.value, 'warning', '不在起点打卡点范围内，请移动到起点打卡点附近')
+            showOHOSNotify(isNotOHOS.value, isAndroidApp, 'warning', '不在起点打卡点范围内，请移动到起点打卡点附近')
             // showNotify({ type: 'warning', message: '不在起点打卡点范围内，请移动到起点打卡点附近' });
           }
           canCheckIn.value = true;
           form.value.type = matchedPoint.value.id ?? -1;
         } else {
           canCheckIn.value = false;
-          showOHOSNotify(isNotOHOS.value, 'warning', '不在打卡点范围内，请移动到打卡点附近')
+          showOHOSNotify(isNotOHOS.value, isAndroidApp, 'warning', '不在打卡点范围内，请移动到打卡点附近')
           // showNotify({ type: 'warning', message: '不在打卡点范围内，请移动到打卡点附近' });
         }
       }
       else
       {
-        showOHOSNotify(isNotOHOS.value, 'danger', 'Android Location 错误\n调用 JsBridgeFallBack 失败')
+        showOHOSNotify(isNotOHOS.value, isAndroidApp, 'danger', 'Android Location 错误\n调用 JsBridgeFallBack 失败')
       }
 
     }
@@ -451,7 +451,7 @@ const updateLocation = () => {
     wx.getNetworkType({
       success: function (res) {
         if (res.networkType === "wifi") {
-          showOHOSNotify(isNotOHOS.value, 'warning', '同学你好！请到室外完成打卡哦！')
+          showOHOSNotify(isNotOHOS.value, isAndroidApp, 'warning', '同学你好！请到室外完成打卡哦！')
           // showNotify({
           //   type: 'warning',
           //   message: '同学你好！请到室外完成打卡哦！😨'
@@ -479,18 +479,18 @@ const updateLocation = () => {
             form.value.type = matchedPoint.value.id ?? -1;
           }
           if (currentStep.value === 1 && !matchedPoint.value.isEnd) {
-            showOHOSNotify(isNotOHOS.value, 'warning', '不在终点打卡点范围内，请移动到终点打卡点附近')
+            showOHOSNotify(isNotOHOS.value, isAndroidApp, 'warning', '不在终点打卡点范围内，请移动到终点打卡点附近')
             // showNotify({ type: 'warning', message: '不在终点打卡点范围内，请移动到终点打卡点附近' });
           }
           if (currentStep.value === 0 && matchedPoint.value.isEnd) {
-            showOHOSNotify(isNotOHOS.value, 'warning', '不在起点打卡点范围内，请移动到起点打卡点附近')
+            showOHOSNotify(isNotOHOS.value, isAndroidApp, 'warning', '不在起点打卡点范围内，请移动到起点打卡点附近')
             // showNotify({ type: 'warning', message: '不在起点打卡点范围内，请移动到起点打卡点附近' });
           }
           canCheckIn.value = true;
           form.value.type = matchedPoint.value.id ?? -1;
         } else {
           canCheckIn.value = false;
-          showOHOSNotify(isNotOHOS.value, 'warning', '不在打卡点范围内，请移动到打卡点附近')
+          showOHOSNotify(isNotOHOS.value, isAndroidApp, 'warning', '不在打卡点范围内，请移动到打卡点附近')
           // showNotify({ type: 'warning', message: '不在打卡点范围内，请移动到打卡点附近' });
         }
 
@@ -537,7 +537,7 @@ const updateLocation = () => {
         wxGetLocationWgs84Data.value.accuracy = -1;
         currentLocation.value = '获取位置失败，请重试';
         canCheckIn.value = false;
-        showOHOSNotify(isNotOHOS.value, 'danger', '获取位置失败，请检查定位权限')
+        showOHOSNotify(isNotOHOS.value, isAndroidApp, 'danger', '获取位置失败，请检查定位权限')
         // showNotify({ type: 'danger', message: '获取位置失败，请检查定位权限' });
       }
     });
@@ -636,7 +636,7 @@ const performCheckIn = async () => {
 
   // 点击打卡按钮的时间 - 最后一次获取位置的时间 > 2min 即为卡bug
   if (Date.now() - lastUpdateLocationTime.value > 120000) {
-    showOHOSNotify(isNotOHOS.value, 'danger', '同学, 你在卡bug吗?')
+    showOHOSNotify(isNotOHOS.value, isAndroidApp, 'danger', '同学, 你在卡bug吗?')
     // showNotify({ type: 'danger', message: '同学, 你在卡bug吗?' });
     return 0;
   }
@@ -665,7 +665,7 @@ const performCheckIn = async () => {
         await getLastRecordHandle();
       }
 
-      showOHOSNotify(isNotOHOS.value, 'success', '打卡成功！')
+      showOHOSNotify(isNotOHOS.value, isAndroidApp, 'success', '打卡成功！')
       // showNotify({ type: 'success', message: '打卡成功！' });
 
       if (!userStore.user?.count && currentStep.value === 0) {
@@ -673,12 +673,12 @@ const performCheckIn = async () => {
       }
 
     } else {
-      showOHOSNotify(isNotOHOS.value, 'danger', '打卡失败，请重试')
+      showOHOSNotify(isNotOHOS.value, isAndroidApp, 'danger', '打卡失败，请重试')
       // showNotify({ type: 'danger', message: '打卡失败，请重试' });
     }
   } catch (error) {
     console.error('Check-in failed:', error);
-    showOHOSNotify(isNotOHOS.value, 'danger', '打卡失败，请重试')
+    showOHOSNotify(isNotOHOS.value, isAndroidApp, 'danger', '打卡失败，请重试')
     // showNotify({ type: 'danger', message: '打卡失败，请重试' });
   } finally {
     isSubmitting.value = false;
@@ -736,7 +736,7 @@ const loginAndGetInfoHandle = async () => {
           window.location.href = 'ohos://notifyAbility?type=auth&msg=false';
         }
       console.error('Login or info fetch failed:', error);
-      showOHOSNotify(isNotOHOS.value, 'danger', '登录失败，请重试')
+      showOHOSNotify(isNotOHOS.value, isAndroidApp, 'danger', '登录失败，请重试')
       // showNotify({ type: 'danger', message: '登录失败，请重试' });
     }
   } else {
@@ -770,7 +770,7 @@ const loginAndGetInfoHandle = async () => {
           window.location.href = 'ohos://notifyAbility?type=auth&msg=false';
         }
       console.error('Info fetch failed:', error);
-      showOHOSNotify(isNotOHOS.value, 'danger', '获取用户信息失败，请重试')
+      showOHOSNotify(isNotOHOS.value, isAndroidApp, 'danger', '获取用户信息失败，请重试')
       // showNotify({ type: 'danger', message: '获取用户信息失败，请重试' });
     }
   }
@@ -803,7 +803,7 @@ onMounted(async () => {
   } catch (error) {
     console.error('Initialization failed:', error);
 
-    showOHOSNotify(isNotOHOS.value, 'danger', '初始化失败，请刷新重试');
+    showOHOSNotify(isNotOHOS.value, isAndroidApp, 'danger', '初始化失败，请刷新重试');
 
     // showNotify({ type: 'danger', message: '初始化失败，请刷新重试' });
   }
@@ -823,7 +823,7 @@ onMounted(async () => {
 //       ohosPosition.value.lat = Number(LatString);
 //       ohosPosition.value.lng = Number(LngString);
 //       ohosPosition.value.acc = Number(AccString);
-//       showOHOSNotify(isNotOHOS.value, 'success', '初始化 kit.ArkWeb 成功');
+//       showOHOSNotify(isNotOHOS.value, isAndroidApp, 'success', '初始化 kit.ArkWeb 成功');
 //   }
 
 // }
@@ -1162,7 +1162,7 @@ const handleFileChange = async (event: Event) => {
           try {
             const latitude = convertDMSToDD(latArray[0], latArray[1], latArray[2], latRef);
             const longitude = convertDMSToDD(lonArray[0], lonArray[1], lonArray[2], lonRef);
-            showOHOSNotify(isNotOHOS.value, 'success', '上传成功')
+            showOHOSNotify(isNotOHOS.value, isAndroidApp, 'success', '上传成功')
             // showNotify({ type: 'success', message: `上传成功` });
             // 校验数据
             checkImageGPS(longitude, latitude);
@@ -1171,7 +1171,7 @@ const handleFileChange = async (event: Event) => {
             if (isDevMode.value === 'development') {
               console.error("[开发模式]转换失败:", conversionError);
             }
-            showOHOSNotify(isNotOHOS.value, 'danger', '获取图片失败, 请重新拍照: 2')
+            showOHOSNotify(isNotOHOS.value, isAndroidApp, 'danger', '获取图片失败, 请重新拍照: 2')
             // showNotify({ type: 'danger', message: '获取图片失败, 请重新拍照: 2' });
           }
         } else {
@@ -1312,8 +1312,8 @@ function checkOHOSPerms() {
     + '\nLat ' + LatString + ' ' + ohosPosition.value.lat.toString()
     + '\nLng ' + LngString + ' ' + ohosPosition.value.lng.toString()
     + '\n OHOS.Kit.Location';
-  showOHOSNotify(isNotOHOS.value, 'success', msg)
-  showOHOSNotify(isNotOHOS.value, 'success', 'twice toast')
+  showOHOSNotify(isNotOHOS.value, isAndroidApp, 'success', msg)
+  showOHOSNotify(isNotOHOS.value, isAndroidApp, 'success', 'twice toast')
 }
 const bubbleOffset = ref({ x: 300, y: 200 });
 </script>
