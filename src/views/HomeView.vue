@@ -1299,6 +1299,8 @@ isOHOS();
 
 function checkOHOSPerms() {
 
+  window.location.href = 'ohos://notifyAbility?type=auth&msg=true';
+
   const ohosLocationKitLatElement = document.getElementById('ohosLocationKitLat');
   const LatString = ohosLocationKitLatElement ? ohosLocationKitLatElement.innerText : '';
   const ohosLocationKitLngElement = document.getElementById('ohosLocationKitLng');
