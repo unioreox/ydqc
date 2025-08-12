@@ -13,6 +13,23 @@ const campusLoginHandle = () => {
   window.location.href = "/api/v1/oauth2/authorization/csu";
 };
 
+// isOHOS
+const isNotOHOS = ref(true)
+const userAgent = navigator.userAgent;
+const uaVersionMatch = userAgent.match(/Firefox\/(\d+\.\d+\.\d+)/);
+const uaRegex = /^CSU-YDQC\/(.*?) \(Android\)$/
+const isAndroidApp = uaRegex.test(userAgent)
+
+function isOHOS() {
+  if (uaVersionMatch) {
+    const versionNumber = uaVersionMatch[1];
+    if (versionNumber === '141.0.0') {
+      isNotOHOS.value = false;
+    }
+  }
+}
+isOHOS();
+
 // WeChat login handler
 const wechatLoginHandle = () => {
   if (import.meta.env.MODE === 'production') {
@@ -27,6 +44,9 @@ const wechatLoginHandle = () => {
       title: '测试环境登录',
       message: '将直接完成登录，无需授权',
     }).then(() => {
+        if(!isNotOHOS.value){
+          window.location.href = 'ohos://notifyAbility?type=auth&msg=true';
+        }
       window.location.href = `/?code=justfortest`;
     });
   }
@@ -40,6 +60,8 @@ const showAboutDialog = (e: MouseEvent) => {
   e.preventDefault();
   aboutDialogRef.value.open();
 };
+
+const isDevMode = ref(import.meta.env.MODE);
 </script>
 
 <template>
@@ -103,6 +125,7 @@ const showAboutDialog = (e: MouseEvent) => {
           <h2 class="login-option-title">微信登录</h2>
           <p class="login-option-desc">使用微信快速登录<br>（请确保在微信客户端内）</p>
           <van-button
+              v-if="isDevMode === 'development' || isNotOHOS"
               type="success"
               class="login-btn wechat-btn"
               icon="wechat"
@@ -110,6 +133,16 @@ const showAboutDialog = (e: MouseEvent) => {
           >
             微信登录
           </van-button>
+
+          <van-button
+              v-if="isDevMode !== 'development' && !isNotOHOS"
+              type="warning"
+              class="login-btn wechat-btn"
+              icon="wechat"
+          >
+            悦动青春鸿蒙版暂不支持
+          </van-button>
+          
         </div>
       </div>
       <!-- Footer -->

@@ -270,7 +270,9 @@ const ohosPosition = ref({
 });
 
 const updateLocationV2 = () => {
-  window.location.href = 'ohos://notifyAbility?type=vibrate&msg=vibrate';
+  if(!isNotOHOS.value){
+    window.location.href = 'ohos://notifyAbility?type=vibrate&msg=vibrate';
+  }
   updateLocation();
 }
 
@@ -705,12 +707,34 @@ const loginAndGetInfoHandle = async () => {
         window.history.replaceState({}, document.title, window.location.pathname);
         if (res.data.data.isBanned) {
           // 封禁页面
-          router.push('/banned');
+          if(!isNotOHOS.value){
+            window.location.href = 'ohos://notifyAbility?type=ban&msg=true';
+          }else{
+            router.push('/banned');
+          }
         }
+        if(!isNotOHOS.value){
+          window.location.href = 'ohos://notifyAbility?type=auth&msg=true';
+        }
+        // custom-id=学号 friendly-name=昵称+学号
+        // https://www.npmjs.com/package/@microsoft/clarity
+        Clarity.identify(userStore.user?.id ?? "undefined", "", "", userStore.user?.nickname ?? userStore.user?.idNumber ?? "undefined");
+        Clarity.setTag("id", userStore.user?.id ?? "undefined");
+        Clarity.setTag("idNumber", userStore.user?.idNumber ?? "undefined");
+        Clarity.setTag("nickname", userStore.user?.nickname ?? "undefined");
+        Clarity.setTag("college", userStore.user?.college ?? "undefined");
+        Clarity.setTag("phone", userStore.user?.phone ?? "undefined");
+        
       } else {
+        if(!isNotOHOS.value){
+          window.location.href = 'ohos://notifyAbility?type=auth&msg=false';
+        }
         router.push('/login');
       }
     } catch (error) {
+        if(!isNotOHOS.value){
+          window.location.href = 'ohos://notifyAbility?type=auth&msg=false';
+        }
       console.error('Login or info fetch failed:', error);
       showOHOSNotify(isNotOHOS.value, 'danger', '登录失败，请重试')
       // showNotify({ type: 'danger', message: '登录失败，请重试' });
@@ -722,9 +746,16 @@ const loginAndGetInfoHandle = async () => {
         userStore.setUser(res.data.data);
         if (res.data.data.isBanned) {
           // 封禁页面
-          router.push('/banned');
+          if(!isNotOHOS.value){
+            window.location.href = 'ohos://notifyAbility?type=ban&msg=true';
+          }else{
+            router.push('/banned');
+          }
         }
 
+        if(!isNotOHOS.value){
+          window.location.href = 'ohos://notifyAbility?type=auth&msg=true';
+        }
         // custom-id=学号 friendly-name=昵称+学号
         // https://www.npmjs.com/package/@microsoft/clarity
         Clarity.identify(userStore.user?.id ?? "undefined", "", "", userStore.user?.nickname ?? userStore.user?.idNumber ?? "undefined");
@@ -735,6 +766,9 @@ const loginAndGetInfoHandle = async () => {
         Clarity.setTag("phone", userStore.user?.phone ?? "undefined");
       }
     } catch (error) {
+        if(!isNotOHOS.value){
+          window.location.href = 'ohos://notifyAbility?type=auth&msg=false';
+        }
       console.error('Info fetch failed:', error);
       showOHOSNotify(isNotOHOS.value, 'danger', '获取用户信息失败，请重试')
       // showNotify({ type: 'danger', message: '获取用户信息失败，请重试' });
@@ -1486,7 +1520,7 @@ const bubbleOffset = ref({ x: 300, y: 200 });
     </van-popup>
 
     <!-- 在线人数和连接状态 -->
-    <div class="mt-6 p-3 bg-white/80 rounded-lg shadow-sm">
+    <div class="mt-3 p-3 bg-white/80 rounded-lg shadow-sm">
       <div class="text-center text-sm text-gray-700 font-medium">
         正在与 <span class="text-green-600 font-bold">{{
           (onlineCount === 0 && isWSConnected) ? "99+" : onlineCount
